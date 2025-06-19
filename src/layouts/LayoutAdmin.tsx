@@ -25,7 +25,7 @@ const LayoutAdmin: React.FC = () => {
   const items: MenuProps["items"] = [
     {
       key: "1",
-      icon: <DashboardOutlined />, // Thay bằng icon Dashboard
+      icon: <DashboardOutlined />,
       label: "Dashboard",
       onClick: () => navigate("/admin"),
     },
@@ -33,7 +33,7 @@ const LayoutAdmin: React.FC = () => {
       key: "2",
       icon: <InboxOutlined />,
       label: "Product",
-      onClick: () => navigate("/admin/product/list"),
+      onClick: () => navigate("/admin/product"),
     },
     {
       key: "3",
@@ -44,6 +44,12 @@ const LayoutAdmin: React.FC = () => {
     {
       key: "4",
       icon: <BranchesOutlined />,
+      label: "Brand",
+      onClick: () => navigate("/admin/brand"),
+    },
+    {
+      key: "5",
+      icon: <BranchesOutlined />,
       label: "Category",
       onClick: () => navigate("/admin/category"),
     },
@@ -53,37 +59,43 @@ const LayoutAdmin: React.FC = () => {
       label: "User",
       children: [
         {
-          key: "5",
+          key: "6",
           label: "Admin",
           onClick: () => navigate("/admin/user/listAdmin"),
         },
         {
-          key: "6",
+          key: "7",
           label: "User",
           onClick: () => navigate("/admin/user/listUser"),
         },
       ],
     },
     {
-      key: "7",
+      key: "8",
       icon: <CommentOutlined />,
       label: "Comment",
       onClick: () => navigate("/admin/comment"),
     },
     {
-      key: "8",
+      key: "9",
       icon: <CommentOutlined />,
       label: "Contact",
       onClick: () => navigate("/admin/contact"),
     },
     {
-      key: "9",
+      key: "10",
       icon: <AppleOutlined />,
       label: "Voucher",
       onClick: () => navigate("/admin/voucher"),
     },
     {
-      key: "10",
+      key: "11",
+      icon: <AppleOutlined />,
+      label: "Promotion",
+      onClick: () => navigate("/admin/promotion"),
+    },  
+    {
+      key: "12",
       icon: <LogoutOutlined />, // Thay bằng icon phù hợp cho Logout
       label: "Logout",
       onClick: () => handlelogout(),
@@ -131,10 +143,10 @@ const LayoutAdmin: React.FC = () => {
           Admin
         </Header>
         <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
-            <Breadcrumb.Item>Admin</Breadcrumb.Item>
-            <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            style={{ margin: "16px 0" }}
+            items={[{ title: "Admin" }, { title: "Dashboard" }]}
+          />
           <div
             style={{
               padding: 24,
