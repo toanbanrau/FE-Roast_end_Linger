@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import { Coffee, ShoppingBag, Search, Menu, X, LogIn, UserPlus, User, ChevronDown } from "lucide-react"
 import { Link } from "react-router-dom"
+import HomeNav from "./HomeNav"
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -38,24 +39,7 @@ export default function Header() {
         </div>
 
         {/* Center: Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium transition-colors hover:text-amber-800">
-            Home
-          </Link>
-          <Link to="/products" className="text-sm font-medium transition-colors hover:text-amber-800">
-            Shop
-          </Link>
-          <Link to="/about" className="text-sm font-medium transition-colors hover:text-amber-800">
-            About Us
-          </Link>
-          <Link to="/blog" className="text-sm font-medium transition-colors hover:text-amber-800">
-            Blog
-          </Link>
-          <Link to="/contact" className="text-sm font-medium transition-colors hover:text-amber-800">
-            Contact
-          </Link>
-        </nav>
-
+        <HomeNav/>
         {/* Right: Search + Auth + Cart */}
         <div className="flex items-center gap-3">
           {/* Search */}
