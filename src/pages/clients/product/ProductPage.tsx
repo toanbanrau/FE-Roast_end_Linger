@@ -1,91 +1,19 @@
-
 import { Filter, ChevronDown } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query";
+import { getAllProductsClient } from "../../../services/productService";
+import type { IProduct } from "../../../interfaces/product";
 
 export default function ProductsPage() {
-  const products = [
-    {
-      id: 1,
-      name: "Ethiopian Yirgacheffe",
-      price: "$24.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Floral and citrus notes with a silky smooth finish",
-      category: "Single Origin",
-      origin: "Ethiopia",
-    },
-    {
-      id: 2,
-      name: "Colombian Supremo",
-      price: "$22.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Rich caramel sweetness with a hint of toasted nuts",
-      category: "Single Origin",
-      origin: "Colombia",
-    },
-    {
-      id: 3,
-      name: "Sumatra Mandheling",
-      price: "$26.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Earthy, full-bodied with notes of dark chocolate",
-      category: "Single Origin",
-      origin: "Indonesia",
-    },
-    {
-      id: 4,
-      name: "Morning Blend",
-      price: "$21.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Balanced and smooth with notes of chocolate and nuts",
-      category: "Blend",
-      origin: "Various",
-    },
-    {
-      id: 5,
-      name: "Espresso Roast",
-      price: "$23.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Bold and rich with a caramelized sweetness",
-      category: "Blend",
-      origin: "Various",
-    },
-    {
-      id: 6,
-      name: "Decaf Colombian",
-      price: "$24.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "All the flavor without the caffeine",
-      category: "Decaf",
-      origin: "Colombia",
-    },
-    {
-      id: 7,
-      name: "Guatemala Antigua",
-      price: "$25.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Complex with notes of chocolate and spice",
-      category: "Single Origin",
-      origin: "Guatemala",
-    },
-    {
-      id: 8,
-      name: "Kenya AA",
-      price: "$27.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Bright and vibrant with berry and citrus notes",
-      category: "Single Origin",
-      origin: "Kenya",
-    },
-    {
-      id: 9,
-      name: "Dark Roast Blend",
-      price: "$22.95",
-      image: "/placeholder.svg?height=400&width=400",
-      description: "Bold and smoky with a lingering finish",
-      category: "Blend",
-      origin: "Various",
-    },
-  ]
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["products", 1],
+    queryFn: () => getAllProductsClient(),
+  });
+
+  if (isLoading) return <div className="text-center py-12">Đang tải sản phẩm...</div>;
+  if (isError) return <div className="text-center py-12 text-red-500">Lỗi tải sản phẩm: {error instanceof Error ? error.message : "Unknown error"}</div>;
+
+  const products: IProduct[] = data?.data || [];
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -100,7 +28,7 @@ export default function ProductsPage() {
         {/* Filters - Desktop */}
         <div className="hidden lg:block w-64 space-y-8">
           <div>
-            <h3 className="font-medium text-lg mb-4">Categories</h3>
+            <h3 className="font-medium text-lg mb-4">Danh Mục Sản Phẩm</h3>
             <div className="space-y-2">
               {["All", "Single Origin", "Blends", "Decaf", "Limited Edition"].map((category) => (
                 <div key={category} className="flex items-center space-x-2">
@@ -204,36 +132,34 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cls-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <Link
-                to={`/products/${product.id}`}
+                to={`/product/${product.id}`}
                 key={product.id}
                 className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
               >
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
+                    src={product.primary_image?.image_url || "/placeholder.svg"}
+                    alt={product.primary_image?.alt_text || product.product_name}
                     width={400}
                     height={400}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                 </div>
-                <div className="p-6">
-                  <div className="mb-2">
-                    <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
-                      {product.category}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-medium text-stone-900">{product.name}</h3>
-                  <p className="mt-2 text-stone-600 text-sm">{product.description}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-amber-800">{product.price}</span>
-                    <button className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1 rounded-md text-sm font-medium">
-                      Add to Cart
-                    </button>
-                  </div>
+                <div className="mb-2">
+                  <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
+                    {product.category?.category_name || ""}
+                  </span>
+                </div>
+                <h3 className="text-xl font-medium text-stone-900">{product.product_name}</h3>
+                <p className="mt-2 text-stone-600 text-sm">{product.short_description}</p>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-lg font-semibold text-amber-800">{Number(product.base_price).toLocaleString()}₫</span>
+                  <button className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1 rounded-md text-sm font-medium">
+                    Add to Cart
+                  </button>
                 </div>
               </Link>
             ))}

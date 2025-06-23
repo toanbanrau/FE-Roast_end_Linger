@@ -21,6 +21,12 @@ import OrdersPage from "./pages/clients/account/order/OderPage";
 import BlogPage from "./pages/clients/blog/BlogPage";
 import ContactPage from "./pages/clients/contact/ContactPage";
 import AboutPage from "./pages/clients/about/AboutPage";
+import ListBlogCategory from "./pages/admins/blog-category/ListBlogCategory";
+import AddBlogCategory from "./pages/admins/blog-category/AddBlogCategory";
+import EditBlogCategory from "./pages/admins/blog-category/EditBlogCategory";
+import Dashboard from "./pages/admins/dashboard/Dashboard";
+import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
+import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
 
 function App() {
   const element = useRoutes([
@@ -65,12 +71,16 @@ function App() {
           element:<OrdersPage/>
         },
         {
-          path:'account/wishlist',
+          path:'account/orders/',
           element:<OrdersPage/>
         },
         {
+          path:'account/wishlist',
+          element:<WishlistPage/>
+        },
+        {
           path: "checkout",
-          element: <div>Product detail</div>,
+          element: <CheckoutPage/>,
         },
         {
           path: "auth/login",
@@ -86,6 +96,10 @@ function App() {
       path: "/admin",
       element: <LayoutAdmin />,
       children: [
+        {
+          path:'',
+          element:<Dashboard/>
+        },
         {
           path: "product",
           element: <ListProduct />,
@@ -160,6 +174,19 @@ function App() {
           path: "promotion/edit/:id",
           element: <EditPromotion/>,
         },
+        //Route blog-category
+        {
+          path:"blog-category",
+          element:<ListBlogCategory/>
+        },
+        {
+          path:"blog-category/add",
+          element:<AddBlogCategory/>
+        },
+        {
+          path:"blog-category/edit/:id",
+          element:<EditBlogCategory/>
+        }
       ],
     },
   ]);

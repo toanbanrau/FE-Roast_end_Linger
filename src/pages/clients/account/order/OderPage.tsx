@@ -104,7 +104,7 @@ export default function OrdersPage() {
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">My Orders</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Đơn Hàng Của Bạn</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Navigation */}
