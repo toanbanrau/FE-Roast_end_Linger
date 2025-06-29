@@ -1,10 +1,13 @@
 import React from "react";
-import { Table, Tag, Button, Space, Popconfirm, message, Tooltip } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from "@ant-design/icons";
+import { Table, Tag, message,  } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllPromotions, deletePromotion } from "../../../services/promotionService";
 import { useNavigate } from "react-router-dom";
 import type { IPromotion } from "../../../interfaces/promotion";
+import EyeIcon from "../../../components/icons/EyeIcon";
+import EditIcon from "../../../components/icons/EditIcon";
+import TrashIcon from "../../../components/icons/TrashIcon";
+import toast from "react-hot-toast";
 
 const ListPromotion: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +22,7 @@ const ListPromotion: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deletePromotion,
     onSuccess: () => {
-      message.success("Xóa khuyến mãi thành công!");
+      toast.success("Xóa khuyến mãi thành công!");
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
     },
     onError: () => {
@@ -54,9 +57,7 @@ const ListPromotion: React.FC = () => {
   const columns = [
     {
       title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Tên khuyến mãi",
@@ -131,55 +132,33 @@ const ListPromotion: React.FC = () => {
       key: "actions",
       width: 150,
       render: (record: IPromotion) => (
-        <Space size="small">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              size="small"
-              onClick={() => navigate(`/admin/promotion/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              size="small"
-              onClick={() => navigate(`/admin/promotion/edit/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa khuyến mãi này?"
-              onConfirm={() => handleDelete(record.id)}
-              okText="Có"
-              cancelText="Không"
-            >
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                size="small"
-              />
-            </Popconfirm>
-          </Tooltip>
-        </Space>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <EyeIcon style={{color:'yellow',cursor: 'pointer', transition: 'color 0.2s'}} />
+       <EditIcon
+         style={{ color: '#1677ff', cursor: 'pointer', transition: 'color 0.2s' }}
+         onClick={() => navigate(`/admin/promotion/edit/${record.id}`)}
+        
+       />
+       <TrashIcon
+         style={{ color: '#ff4d4f', cursor: 'pointer', transition: 'color 0.2s' }}
+         onClick={() => handleDelete(record.id)}
+
+       />
+      
+       
+     </div>
       ),
     },
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Danh sách khuyến mãi</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/admin/promotion/add")}
-        >
-          Thêm khuyến mãi
-        </Button>
-      </div>
+    <>
+         <button
+        onClick={() => navigate("/admin/promotion/add")}
+        className="px-4 py-2 mb-3 bg-amber-700 text-white rounded hover:bg-amber-800 transition font-semibold shadow"
+      >
+        Thêm Khuyến Mãi
+      </button>
 
       <Table
         columns={columns}
@@ -196,7 +175,7 @@ const ListPromotion: React.FC = () => {
         scroll={{ x: 1200 }}
         size="middle"
       />
-    </div>
+    </>
   );
 };
 

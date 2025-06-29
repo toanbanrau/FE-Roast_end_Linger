@@ -15,13 +15,13 @@ interface AccountNavProps {
 export default function AccountNav({ active }: AccountNavProps) {
   const navItems = [
     {
-      label: "Profile",
+      label: "Thông Tin",
       to: "/account",
       icon: <User className="h-5 w-5" />,
       value: "profile",
     },
     {
-      label: "Orders",
+      label: "Đơn Hàng",
       to: "/account/orders",
       icon: <Package className="h-5 w-5" />,
       value: "orders",
@@ -39,7 +39,7 @@ export default function AccountNav({ active }: AccountNavProps) {
       value: "wishlist",
     },
     {
-      label: "Settings",
+      label: "Cài Đặt",
       to: "/account/settings",
       icon: <Settings className="h-5 w-5" />,
       value: "settings",
@@ -49,7 +49,7 @@ export default function AccountNav({ active }: AccountNavProps) {
   return (
     <div className="bg-white border rounded-lg overflow-hidden sticky top-24">
       <div className="p-6 border-b">
-        <h2 className="font-medium">Account</h2>
+        <h2 className="font-medium">Tài Khoản</h2>
       </div>
       <nav className="p-2">
         <ul className="space-y-1">
@@ -73,7 +73,7 @@ export default function AccountNav({ active }: AccountNavProps) {
       <div className="p-4 border-t">
         <button className="flex items-center gap-3 px-4 py-2 w-full text-left rounded-md hover:bg-stone-50 text-stone-700 hover:text-stone-900">
           <LogOut className="h-5 w-5" />
-          <span>Sign Out</span>
+          <span>Đăng Xuất</span>
         </button>
       </div>
     </div>

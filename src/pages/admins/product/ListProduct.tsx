@@ -1,81 +1,99 @@
-import { Table } from "antd";
-import { useNavigate } from "react-router-dom";
-import type { IBrand } from "../../../interfaces/brand";
+import { useQuery } from "@tanstack/react-query";
+import { getAdminProducts } from "../../../services/productService";
+import type { IProduct } from "../../../interfaces/product";
+import { Table, Image, Button, Space, Spin } from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import type { ColumnsType } from 'antd/es/table';
 
-const ListProduct = () => {
-  const navigate = useNavigate();
+// Interface phù hợp với dữ liệu trả về từ API admin
 
-  const data = [
+export default function ListProduct() {
+  
+  const navigate = useNavigate()
+
+  const { data:products, isLoading } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: getAdminProducts,
+  });
+
+  const columns: ColumnsType<IProduct> = [
     {
-      key: "1",
-      stt: 1,
-      name: "Apple",
-      description: "Apple",
+      title: 'STT',
+      key: 'stt',
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
-      key: "2",
-      stt: 2,
-      name: "Samsung",
-      description: "Samsung",
-    },
-  ];
-  const columns = [
-    {
-      title: "STT",
-      dataIndex: "stt",
-      key: "stt",
-    },
-    {
-      title: "Tên",
-      dataIndex: "name",
-      key: "name",
+      title: "Ảnh",
+      dataIndex: ["primary_image", "image_url"],
+      key: "image",
+      render: (_: unknown, record: IProduct) => (
+        <Image
+          src={record.primary_image?.image_url || "/placeholder.svg"}
+          alt={record.primary_image?.alt_text || record.product_name}
+          width={60}
+          height={60}
+          style={{ objectFit: "cover", borderRadius: 8 }}
+          preview={false}
+        />
+      ),
     },
     {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      title: "Tên sản phẩm",
+      dataIndex: "product_name",
+      key: "product_name",
     },
     {
-      title: "Logo",
-      dataIndex: "logo",
-      key: "description",
+      title: "Giá",
+      dataIndex: "base_price",
+      key: "base_price",
+      render: (price: string) => `${Number(price).toLocaleString()}₫`,
     },
     {
-      title: "Website",
-      dataIndex: "website",
-      key: "description",
+      title: "Danh mục",
+      dataIndex: ["category", "category_name"],
+      key: "category",
+      render: (_: unknown, record: IProduct) => record.category?.category_name || "",
+    },
+    {
+      title: "Brand",
+      dataIndex: ["brand", "brand_name"],
+      key: "brand",
+      render: (_: unknown, record: IProduct) => record.brand?.brand_name || "",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => status === "active" ? "Hiện" : "Ẩn",
     },
     {
       title: "Hành động",
-      dataIndex: "action",
       key: "action",
-      render: (data: IBrand) => (
-        <>
-          <button
-            onClick={() => navigate(`/admin/product/edit/${data.id}`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition font-medium mr-2"
-          >
-            Sửa
-          </button>
-          <button className="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 transition font-medium">
-            Xóa
-          </button>
-        </>
+      render: (_: unknown, record: IProduct) => (
+        <Space>
+          <Link to={`/admin/product/edit/${record.id}`}><Button type="link">Sửa</Button></Link>
+          <Link to={`/admin/product/${record.id}`}><Button type="link">Xem</Button></Link>
+        </Space>
       ),
     },
   ];
 
   return (
     <>
-      <button
+         <button
         onClick={() => navigate("/admin/product/add")}
-        className="px-4 py-2 bg-amber-700 text-white rounded hover:bg-amber-800 transition font-semibold shadow"
+        className="px-4 py-2 mb-3 bg-amber-700 text-white rounded hover:bg-amber-800 transition font-semibold shadow"
       >
         Thêm Sản Phẩm
       </button>
-      <Table columns={columns} dataSource={data} />
+    
+      <Table
+        columns={columns}
+        dataSource={products}
+        rowKey="id"
+        bordered
+        loading={isLoading}
+      />
     </>
   );
-};
-
-export default ListProduct;
+}

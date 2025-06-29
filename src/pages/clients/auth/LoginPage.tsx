@@ -3,21 +3,36 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Coffee } from "lucide-react"
+import { useMutation } from "@tanstack/react-query"
+import toast from "react-hot-toast"
+import { useUserStore } from "../../../stores/useUserStore"
 
 export default function LoginPage() {
+ const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   })
+  const {login} = useUserStore()
+
+  const mutation = useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+        navigate('/')
+        toast.success("Đăng Nhập Thành Công");
+    },
+    onError: (error) => {
+       alert(error)
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // In a real app, you would handle authentication here
-    console.log("Login attempt:", formData)
+    e.preventDefault();
+    mutation.mutate({ email: formData.email, password: formData.password });
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

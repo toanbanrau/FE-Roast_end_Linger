@@ -1,19 +1,22 @@
 import React, { useState } from "react";
 import {
-  DashboardOutlined, // Dùng cho Dashboard
-  InboxOutlined, // Dùng cho Product
-  AppstoreAddOutlined, // Dùng cho Order
-  BranchesOutlined, // Dùng cho Category
+  DashboardOutlined,
+  InboxOutlined,
   UsergroupAddOutlined,
   LogoutOutlined,
   CommentOutlined,
-  AppleOutlined, // Dùng cho User
+  TrademarkOutlined,
+  ContactsOutlined,
+  GiftOutlined,
+  TagsOutlined,
+  ShoppingOutlined,
+  RocketOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 
 const LayoutAdmin: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,37 +29,37 @@ const LayoutAdmin: React.FC = () => {
     {
       key: "1",
       icon: <DashboardOutlined />,
-      label: "Dashboard",
+      label: "Thống Kê",
       onClick: () => navigate("/admin"),
     },
     {
       key: "2",
       icon: <InboxOutlined />,
-      label: "Product",
+      label: "Sản Phẩm",
       onClick: () => navigate("/admin/product"),
     },
     {
       key: "3",
-      icon: <AppstoreAddOutlined />,
-      label: "Order",
+      icon: <ShoppingOutlined/>,
+      label: "Đơn Hàng",
       onClick: () => navigate("/admin/order"),
     },
     {
       key: "4",
-      icon: <BranchesOutlined />,
-      label: "Brand",
+      icon: <TrademarkOutlined />,
+      label: "Thương Hiệu",
       onClick: () => navigate("/admin/brand"),
     },
     {
       key: "5",
-      icon: <BranchesOutlined />,
-      label: "Category",
+      icon: <TagsOutlined />,
+      label: "Danh Mục Sản Phẩm",
       onClick: () => navigate("/admin/category"),
     },
     {
       key: "sub1",
       icon: <UsergroupAddOutlined />,
-      label: "User",
+      label: "Tài Khoản",
       children: [
         {
           key: "6",
@@ -73,31 +76,39 @@ const LayoutAdmin: React.FC = () => {
     {
       key: "8",
       icon: <CommentOutlined />,
-      label: "Comment",
+      label: "Bình Luận",
       onClick: () => navigate("/admin/comment"),
     },
     {
       key: "9",
-      icon: <CommentOutlined />,
-      label: "Contact",
+      icon: <ContactsOutlined  />,
+      label: "Liên Hệ",
       onClick: () => navigate("/admin/contact"),
     },
     {
       key: "10",
-      icon: <AppleOutlined />,
-      label: "Voucher",
-      onClick: () => navigate("/admin/voucher"),
-    },
-    {
-      key: "11",
-      icon: <AppleOutlined />,
-      label: "Promotion",
+      icon: <GiftOutlined />,
+      label: "Khuyến Mãi",
       onClick: () => navigate("/admin/promotion"),
     },  
     {
+      key: "11",
+      icon: <GiftOutlined />,
+      label: "Danh Mục Bài Viết",
+      onClick: () => navigate("/admin/blog-category"),
+    },  
+    {
       key: "12",
+      icon: <RocketOutlined />,
+      label: "Nguồn Gốc",
+      onClick: () => navigate("/admin/origin"),
+    },  
+    
+    
+    {
+      key: "13",
       icon: <LogoutOutlined />, // Thay bằng icon phù hợp cho Logout
-      label: "Logout",
+      label: "Đăng Xuất",
       onClick: () => handlelogout(),
     },
   ];
@@ -106,8 +117,10 @@ const LayoutAdmin: React.FC = () => {
     <Layout style={{ minHeight: "100vh" }}>
       {/* Sidebar */}
       <Sider
+        theme="light"
         collapsible
         collapsed={collapsed}
+        color="inherit"
         onCollapse={(value) => setCollapsed(value)}
       >
         <div
@@ -115,14 +128,15 @@ const LayoutAdmin: React.FC = () => {
             height: 64,
             textAlign: "center",
             lineHeight: "64px",
-            color: "white",
+            color: "black",
             fontSize: 20,
+            borderBottom: "1px solid #f0f0f0",
           }}
         >
           Admin Panel
         </div>
         <Menu
-          theme="dark"
+          theme="light"
           defaultSelectedKeys={["1"]}
           mode="inline"
           items={items}
@@ -145,7 +159,7 @@ const LayoutAdmin: React.FC = () => {
         <Content style={{ margin: "0 16px" }}>
           <Breadcrumb
             style={{ margin: "16px 0" }}
-            items={[{ title: "Admin" }, { title: "Dashboard" }]}
+            items={[{ title: "Admin" }, { title: "" }]}
           />
           <div
             style={{
@@ -158,9 +172,6 @@ const LayoutAdmin: React.FC = () => {
             <Outlet />
           </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
       </Layout>
     </Layout>
   );

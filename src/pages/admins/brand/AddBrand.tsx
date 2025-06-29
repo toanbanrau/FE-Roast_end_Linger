@@ -2,9 +2,9 @@ import { Form, Input, Button, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createBrand } from "../../../services/brandService";
-import type { IBrandForm } from "../../../interfaces/brand";
 import { useNavigate } from "react-router-dom";
 import type { UploadFile } from "antd/es/upload/interface";
+import type { IBrandCreate } from "../../../interfaces/brand";
 
 const AddBrand: React.FC = () => {
   const [form] = Form.useForm();
@@ -26,7 +26,7 @@ const AddBrand: React.FC = () => {
     },
   });
 
-  const onFinish = (values: IBrandForm & { logo?: UploadFile[] }) => {
+  const onFinish = (values: IBrandCreate & { logo?: UploadFile[] }) => {
     console.log(values);
     
     const formData = new FormData();

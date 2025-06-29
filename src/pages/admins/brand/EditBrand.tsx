@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { getBrandById, updateBrand } from "../../../services/brandService";
 import type { IBrand } from "../../../interfaces/brand";
+import type { UploadFile } from "antd/es/upload/interface";
 
 const EditBrand: React.FC = () => {
   const [form] = Form.useForm();
@@ -14,7 +15,7 @@ const EditBrand: React.FC = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ["brands", id],
-    queryFn: () => getBrandById(id),
+    queryFn: () => getBrandById(Number(id)),
     enabled: !!id,
   });
 
@@ -48,7 +49,7 @@ const EditBrand: React.FC = () => {
     }
   }, [data, form]);
 
-  const onFinish = (values: IBrand) => {
+  const onFinish = (values: IBrand & { logo?: UploadFile[] }) => {
     const formData = new FormData();
     formData.append("brand_name", values.brand_name);
     formData.append("description", values.description || "");

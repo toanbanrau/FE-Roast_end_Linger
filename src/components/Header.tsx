@@ -5,21 +5,23 @@ import { useState } from "react"
 import { Coffee, ShoppingBag, Search, Menu, X, LogIn, UserPlus, User, ChevronDown } from "lucide-react"
 import { Link } from "react-router-dom"
 import HomeNav from "./HomeNav"
+import { useUserStore } from "../stores/useUserStore"
+import { useCartStore } from "../stores/useCartStore"
+import CartModal from "./CartModal"
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-
-  // In a real app, this would come from your auth context/state management
-  const isLoggedIn = false // Change this to test different states
-  const user = {
-    name: "Alexander Thompson",
-    email: "alex@example.com",
-    avatar: "/placeholder.svg?height=32&width=32",
-  }
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false)
+  const { user } = useUserStore()
+  const { cart } = useCartStore()
+  const cartItemCount = cart?.total_items || 0
+ 
+  
 
   return (
+    <>
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         {/* Left: Logo + Mobile Menu */}
@@ -64,7 +66,7 @@ export default function Header() {
 
           {/* Authentication - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
-            {isLoggedIn ? (
+            {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -94,32 +96,32 @@ export default function Header() {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
-                        My Account
+                        Thông Tin Tài Khoản
                       </Link>
                       <Link
                         to="/account/orders"
                         className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Order History
+                       Lịch Sử Mua Hàng
                       </Link>
                       <Link
                         to="/account/wishlist"
                         className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Wishlist
+                         Sản Phẩm Yêu Thích
                       </Link>
                       <Link
                         to="/account/settings"
                         className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Settings
+                        Cài Đặt
                       </Link>
                       <div className="border-t mt-2 pt-2">
                         <button className="block w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
-                          Sign Out
+                          Đăng Xuất
                         </button>
                       </div>
                     </div>
@@ -149,13 +151,18 @@ export default function Header() {
           </div>
 
           {/* Cart */}
-          <Link to="/cart" className="text-stone-700 hover:text-amber-800 relative p-1">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-800 text-[10px] font-medium text-white">
-              3
-            </span>
-            <span className="sr-only">Cart</span>
-          </Link>
+          <button
+              onClick={() => setIsCartModalOpen(true)}
+              className="text-stone-700 hover:text-amber-800 relative p-1 transition-colors"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-800 text-[10px] font-medium text-white">
+                  {cartItemCount}
+                </span>
+              )}
+              <span className="sr-only">Cart</span>
+            </button>
         </div>
       </div>
 
@@ -211,7 +218,7 @@ export default function Header() {
               </Link>
 
               {/* Mobile Account Links */}
-              {isLoggedIn && (
+              {user && (
                 <>
                   <div className="border-t my-4"></div>
                   <Link
@@ -241,7 +248,7 @@ export default function Header() {
 
             {/* Mobile Auth Section */}
             <div className="border-t p-4">
-              {isLoggedIn ? (
+              {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-stone-200">
@@ -285,5 +292,7 @@ export default function Header() {
         </div>
       )}
     </header>
+     <CartModal isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
+     </>
   )
 }

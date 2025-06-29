@@ -21,6 +21,21 @@ import OrdersPage from "./pages/clients/account/order/OderPage";
 import BlogPage from "./pages/clients/blog/BlogPage";
 import ContactPage from "./pages/clients/contact/ContactPage";
 import AboutPage from "./pages/clients/about/AboutPage";
+import ListBlogCategory from "./pages/admins/blog-category/ListBlogCategory";
+import AddBlogCategory from "./pages/admins/blog-category/AddBlogCategory";
+import EditBlogCategory from "./pages/admins/blog-category/EditBlogCategory";
+import Dashboard from "./pages/admins/dashboard/Dashboard";
+import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
+import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
+import EditProduct from "./pages/admins/product/EditProduct";
+import ListOrigin from "./pages/admins/origin/ListOrigin";
+import AddOrigin from "./pages/admins/origin/AddOrigin";
+import EditOrigin from "./pages/admins/origin/EditOrigin";
+import ProductDetailAdmin from "./pages/admins/product/ProductDetail";
+import OrderDetailPage from "./pages/clients/account/order/OrderDetailPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   const element = useRoutes([
@@ -49,6 +64,10 @@ function App() {
           element:<BlogPage/>
         },
         {
+           path:'blog/:id',
+           element:<div>BlogDetail</div>
+        },
+        {
           path: "contact",
           element: <ContactPage/>,
         },
@@ -65,12 +84,16 @@ function App() {
           element:<OrdersPage/>
         },
         {
+          path:'account/orders/:id',
+          element:<OrderDetailPage/>
+        },
+        {
           path:'account/wishlist',
-          element:<OrdersPage/>
+          element:<WishlistPage/>
         },
         {
           path: "checkout",
-          element: <div>Product detail</div>,
+          element: <CheckoutPage/>,
         },
         {
           path: "auth/login",
@@ -87,12 +110,16 @@ function App() {
       element: <LayoutAdmin />,
       children: [
         {
+          path:'',
+          element:<Dashboard/>
+        },
+        {
           path: "product",
           element: <ListProduct />,
         },
         {
           path: "product/:id",
-          element: <div>Product detail</div>,
+          element: <ProductDetailAdmin/>,
         },
         {
           path: "product/add",
@@ -100,7 +127,7 @@ function App() {
         },
         {
           path: "product/edit/:id",
-          element: <div>Product detail</div>,
+          element: <EditProduct/>,
         },
         //Route Brand
         {
@@ -160,11 +187,41 @@ function App() {
           path: "promotion/edit/:id",
           element: <EditPromotion/>,
         },
+        //Route blog-category
+        {
+          path:"blog-category",
+          element:<ListBlogCategory/>
+        },
+        {
+          path:"blog-category/add",
+          element:<AddBlogCategory/>
+        },
+        {
+          path:"blog-category/edit/:id",
+          element:<EditBlogCategory/>
+        },
+        {
+          path: "origin",
+          element: <ListOrigin />,
+        },
+        {
+          path: "origin/add",
+          element: <AddOrigin />,
+        },
+        {
+          path: "origin/edit/:id",
+          element: <EditOrigin />,
+        },
       ],
     },
   ]);
 
-  return element;
+  return (
+    <>
+      {element}
+      <ToastContainer />
+    </>
+  );
 }
 
 export default App;
