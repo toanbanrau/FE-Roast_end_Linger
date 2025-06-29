@@ -8,7 +8,7 @@ export interface LoginPayload {
 }
 export const login = async (data: LoginPayload) => {
   const response = await clientAxios.post("/auth/login", data);
-  return response.data;
+  return response.data.data;
 };
 
 // Đăng ký

@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react"
 import { ChevronRight, Lock } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
@@ -11,12 +9,17 @@ import { toast } from "react-toastify"
 import type { IOrderCreate, OrderItem } from "../../../interfaces/order"
 
 interface IFormCheckout {
-  customerName: string
-  customerEmail: string
-  shippingAddress: string
-  phoneNumber: string
+  customer_name: string
+  customer_email: string
+  delivery_address: string
+  customer_phone: string
   shippingMethod: string
-  paymentMethod: string
+  payment_method: string
+  city?: string
+  district?: string
+  ward?: string
+  notes?: string
+  promotion_code?: string
 }
 
 export default function CheckoutPage() {
@@ -35,32 +38,53 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (user) {
-      setValue("customerName", user.name)
-      setValue("customerEmail", user.email)
+      setValue("customer_name", user.name)
+      setValue("customer_email", user.email)
     }
   }, [user, setValue])
 
-  const cartItems = cart.items
 
-  const subtotal = cart.totalAmount
+  const cartItems = cart?.items || []
+
+  const subtotal = cart?.subtotal || 0
   const shippingFee = subtotal > 1000000 ? 0 : 30000 // Free ship for orders > 1,000,000 VND
   const tax = subtotal * 0.08 // 8% tax rate
   const total = subtotal + shippingFee + tax
+
+  if (!cart || cartItems.length === 0) {
+    return (
+      <div className="container px-4 py-12 md:px-6 md:py-16">
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-medium mb-4">Giỏ hàng trống</h2>
+          <p className="text-stone-600 mb-8">Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.</p>
+          <Link
+            to="/products"
+            className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
+          >
+            Xem sản phẩm
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const onSubmit = async (data: IFormCheckout) => {
     try {
       if (step === 3) {
         const orderItems: OrderItem[] = cartItems.map((item) => ({
-          productId: item.id,
+          product_id: item.product.id,
           quantity: item.quantity,
-          price: item.price,
+          price: item.unit_price,
         }))
 
         const orderData: IOrderCreate = {
-          ...data,
-          userId: user?.id,
-          totalAmount: total,
-          shippingFee: shippingFee,
+          customer_name: data.customer_name,
+          customer_email: data.customer_email,
+          customer_phone: data.customer_phone,
+          delivery_address: `${data.delivery_address}, ${data.ward}, ${data.district}, ${data.city}`,
+          payment_method: data.payment_method,
+          promotion_code: data.promotion_code,
+          notes: data.notes,
           items: orderItems,
         }
 
@@ -123,28 +147,28 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-medium">Thông Tin Liên Lạc</h2>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label htmlFor="customerEmail" className="block text-sm font-medium mb-1">
+                    <label htmlFor="customer_email" className="block text-sm font-medium mb-1">
                       Email
                     </label>
                     <input
-                      id="customerEmail"
+                      id="customer_email"
                       type="email"
-                      {...register("customerEmail", { required: "Email không được để trống" })}
+                      {...register("customer_email", { required: "Email không được để trống" })}
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                     />
-                    {errors.customerEmail && <p className="text-red-500 text-sm mt-1">{errors.customerEmail.message}</p>}
+                    {errors.customer_email && <p className="text-red-500 text-sm mt-1">{errors.customer_email.message}</p>}
                   </div>
                   <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium mb-1">
+                    <label htmlFor="customer_phone" className="block text-sm font-medium mb-1">
                       Số Điện Thoại
                     </label>
                     <input
-                      id="phoneNumber"
+                      id="customer_phone"
                       type="tel"
-                      {...register("phoneNumber", { required: "Số điện thoại không được để trống" })}
+                      {...register("customer_phone", { required: "Số điện thoại không được để trống" })}
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                     />
-                    {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber.message}</p>}
+                    {errors.customer_phone && <p className="text-red-500 text-sm mt-1">{errors.customer_phone.message}</p>}
                   </div>
                 </div>
               </div>
@@ -153,27 +177,59 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-medium">Địa Chỉ Giao Hàng</h2>
                 <div className=" gap-4">
                   <div>
-                    <label htmlFor="customerName" className="block text-sm font-medium mb-1">
+                    <label htmlFor="customer_name" className="block text-sm font-medium mb-1">
                       Họ Và Tên
                     </label>
                     <input
-                      id="customerName"
-                      {...register("customerName", { required: "Họ và tên không được để trống" })}
+                      id="customer_name"
+                      {...register("customer_name", { required: "Họ và tên không được để trống" })}
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                     />
-                    {errors.customerName && <p className="text-red-500 text-sm mt-1">{errors.customerName.message}</p>}
+                    {errors.customer_name && <p className="text-red-500 text-sm mt-1">{errors.customer_name.message}</p>}
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="shippingAddress" className="block text-sm font-medium mb-1">
+                  <label htmlFor="delivery_address" className="block text-sm font-medium mb-1">
                     Địa Chỉ
                   </label>
                   <input
-                    id="shippingAddress"
-                    {...register("shippingAddress", { required: "Địa chỉ không được để trống" })}
+                    id="delivery_address"
+                    {...register("delivery_address", { required: "Địa chỉ không được để trống" })}
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                   />
-                  {errors.shippingAddress && <p className="text-red-500 text-sm mt-1">{errors.shippingAddress.message}</p>}
+                  {errors.delivery_address && <p className="text-red-500 text-sm mt-1">{errors.delivery_address.message}</p>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium mb-1">
+                      Tỉnh/Thành phố
+                    </label>
+                    <input
+                      id="city"
+                      {...register("city")}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="district" className="block text-sm font-medium mb-1">
+                      Quận/Huyện
+                    </label>
+                    <input
+                      id="district"
+                      {...register("district")}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="ward" className="block text-sm font-medium mb-1">
+                      Phường/Xã
+                    </label>
+                    <input
+                      id="ward"
+                      {...register("ward")}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -224,7 +280,7 @@ export default function CheckoutPage() {
                         type="radio"
                         id="online-payment"
                         value="online"
-                        {...register("paymentMethod", { required: true })}
+                        {...register("payment_method", { required: true })}
                         className="text-amber-800 focus:ring-amber-800"
                       />
                       <label htmlFor="online-payment" className="font-medium">
@@ -239,7 +295,7 @@ export default function CheckoutPage() {
                         type="radio"
                         id="cod"
                         value="cod"
-                        {...register("paymentMethod", { required: true })}
+                        {...register("payment_method", { required: true })}
                         defaultChecked
                         className="text-amber-800 focus:ring-amber-800"
                       />
@@ -283,19 +339,19 @@ export default function CheckoutPage() {
                       <div key={item.id} className="p-4 flex items-center gap-4">
                         <div className="w-16 h-16 relative flex-shrink-0 bg-stone-50 rounded">
                           <img
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
+                            src={item.product.image || "/placeholder.svg"}
+                            alt={item.product.name}
                             className="object-contain p-2"
                           />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-medium">{item.name}</h4>
+                          <h4 className="font-medium">{item.product.name}</h4>
                           <div className="text-sm text-stone-500">
-                            {item.size}, {item.grind}
+                            {item.variant?.name}
                           </div>
-                          <div className="text-sm text-stone-500">Qty: {item.quantity}</div>
+                          <div className="text-sm text-stone-500">Số lượng: {item.quantity}</div>
                         </div>
-                        <div className="font-medium">{(item.price * item.quantity).toLocaleString('vi-VN')}₫</div>
+                        <div className="font-medium">{item.total_price.toLocaleString('vi-VN')}₫</div>
                       </div>
                     ))}
                   </div>
@@ -348,9 +404,9 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span>
-                      {item.quantity} × {item.name}
+                      {item.quantity} × {item.product.name}
                     </span>
-                    <span className="font-medium">{(item.price * item.quantity).toLocaleString('vi-VN')}₫</span>
+                    <span className="font-medium">{item.total_price.toLocaleString('vi-VN')}₫</span>
                   </div>
                 ))}
               </div>
@@ -377,9 +433,39 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            <div className="border-b pb-4">
+              <div className="flex items-center gap-2">
+                <input
+                  id="promotion_code"
+                  placeholder="Mã giảm giá"
+                  {...register("promotion_code")}
+                  className="flex-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 text-sm"
+                />
+                <button
+                  type="button"
+                  className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium text-sm"
+                >
+                  Áp dụng
+                </button>
+              </div>
+            </div>
+
             <div className="text-sm text-stone-600 flex items-center gap-2">
               <Lock className="h-4 w-4" />
               <span>Thanh toán an toàn</span>
+            </div>
+
+            <div className="border-t pt-4">
+              <label htmlFor="notes" className="block text-sm font-medium mb-1">
+                Ghi chú đơn hàng
+              </label>
+              <textarea
+                id="notes"
+                {...register("notes")}
+                rows={3}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn."
+              />
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import React from "react";
-import { Table, Tag, Button, Space, Popconfirm, message, Tooltip } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, FileAddOutlined } from "@ant-design/icons";
+import { Table, Tag, message,  } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllPromotions, deletePromotion } from "../../../services/promotionService";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,7 @@ import type { IPromotion } from "../../../interfaces/promotion";
 import EyeIcon from "../../../components/icons/EyeIcon";
 import EditIcon from "../../../components/icons/EditIcon";
 import TrashIcon from "../../../components/icons/TrashIcon";
+import toast from "react-hot-toast";
 
 const ListPromotion: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const ListPromotion: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deletePromotion,
     onSuccess: () => {
-      message.success("Xóa khuyến mãi thành công!");
+      toast.success("Xóa khuyến mãi thành công!");
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
     },
     onError: () => {
@@ -57,9 +57,7 @@ const ListPromotion: React.FC = () => {
   const columns = [
     {
       title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Tên khuyến mãi",

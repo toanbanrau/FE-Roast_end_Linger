@@ -1,15 +1,19 @@
-import { adminAxios } from "../configs/config";
+import { adminAxios, clientAxios } from "../configs/config";
 import type { IOrder, IOrderCreate } from "../interfaces/order";
 
 export const checkout = async (order: IOrderCreate): Promise<IOrder> => {
-    const response = await adminAxios.post('/orders', order);
+    const response = await clientAxios.post('/orders', order);
     return response.data;
 }
 
 export const getAllOrders = async (): Promise<IOrder[]> => {
-    const response = await adminAxios.get('/orders');
+    const response = await clientAxios.get('/orders');
     return response.data;
 }
+export const getMyOrders = async (): Promise<IOrder[]> => {
+    const response = await clientAxios.get('/orders');
+    return response.data.data.orders;
+  }
 
 export const getOrdersByUserId = async (userId: number): Promise<IOrder[]> => {
     const response = await adminAxios.get(`/orders/user/${userId}`);

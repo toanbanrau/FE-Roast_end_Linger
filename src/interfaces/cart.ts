@@ -12,7 +12,7 @@ export interface ICartVariant {
     id: number;
     name: string;
     sku: string;
-    image: string | null;
+    image: string;
     status: boolean;
 }
 
@@ -28,7 +28,7 @@ export interface ICartItem {
     id: number;
     cart_id: number;
     product: ICartProduct;
-    variant: ICartVariant | null;
+    variant: ICartVariant;
     full_product_info: string;
     quantity: number;
     unit_price: number;
@@ -43,7 +43,7 @@ export interface ICartItem {
 // Represents the entire shopping cart object
 export interface ICart {
     id: number;
-    user_id: number | null;
+    user_id: number;
     is_guest_cart: boolean;
     total_items: number;
     total_product_types: number;
@@ -55,7 +55,7 @@ export interface ICart {
     updated_at: string;
 }
 
-// Represents the payload for adding an item to the cart
+// Payload gửi lên khi thêm sản phẩm vào giỏ hàng
 export interface IAddProductToCartPayload {
     product_id: number;
     product_variant_id?: number;
@@ -76,9 +76,33 @@ export interface ICartSummary {
     formatted_subtotal: string;
 }
 
-// Represents the generic API response structure from the docs
-export interface ICartApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
+// Interface cho dữ liệu trả về từ API /api/cart
+export interface ICartResponse {
+  success: boolean;
+  message: string;
+  data: ICart;
+}
+
+// Response khi thêm sản phẩm vào giỏ hàng
+export interface IAddToCartResponse {
+  success: boolean;
+  message: string;
+  data: IAddToCartData;
+}
+
+export interface IAddToCartData {
+  cart_item: ICartItemAdd;
+  cart_summary: ICartSummary;
+}
+
+export interface ICartItemAdd {
+  id: number;
+  cart_id: number;
+  product: ICartProduct;
+  variant: ICartVariant;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  formatted_unit_price: string;
+  formatted_total_price: string;
 }

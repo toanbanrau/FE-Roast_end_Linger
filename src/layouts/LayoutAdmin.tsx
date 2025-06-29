@@ -10,6 +10,7 @@ import {
   GiftOutlined,
   TagsOutlined,
   ShoppingOutlined,
+  RocketOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
@@ -98,6 +99,14 @@ const LayoutAdmin: React.FC = () => {
     },  
     {
       key: "12",
+      icon: <RocketOutlined />,
+      label: "Nguồn Gốc",
+      onClick: () => navigate("/admin/origin"),
+    },  
+    
+    
+    {
+      key: "13",
       icon: <LogoutOutlined />, // Thay bằng icon phù hợp cho Logout
       label: "Đăng Xuất",
       onClick: () => handlelogout(),

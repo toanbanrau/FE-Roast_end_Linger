@@ -7,5 +7,5 @@ export interface IBrand {
   status?: number;
 }
 
-export type IBrandForm = Omit<IBrand, "id">;
+export type IBrandCreate = Omit<IBrand, "id">;
 

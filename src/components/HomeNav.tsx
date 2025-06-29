@@ -7,7 +7,7 @@ const HomeNav = () => {
       Trang Chủ
     </Link>
     <Link to="/products" className="text-sm font-medium transition-colors hover:text-amber-800">
-      Cửa Hàng
+      Sản Phẩm
     </Link>
     <Link to="/about" className="text-sm font-medium transition-colors hover:text-amber-800">
       Giới Thiệu

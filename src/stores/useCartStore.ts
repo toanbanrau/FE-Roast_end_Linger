@@ -1,83 +1,90 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Cart, CartItem } from '../interfaces/cart';
-import { toast } from 'react-toastify';
+import type { ICart, IAddProductToCartPayload } from '../interfaces/cart';
+import * as cartService from '../services/cartService';
 
 interface CartState {
-  cart: Cart;
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (itemId: number) => void;
-  updateQuantity: (itemId: number, quantity: number) => void;
-  clearCart: () => void;
+  cart: ICart | null;
+  loading: boolean;
+  getCart: () => Promise<void>;
+  addToCart: (payload: IAddProductToCartPayload) => Promise<void>;
+  updateQuantity: (itemId: number, quantity: number) => Promise<void>;
+  removeFromCart: (itemId: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  syncCart: () => Promise<void>;
 }
 
-const initialState: Cart = {
-  id: 0,
-  userId: 0,
-  items: [],
-  totalAmount: 0,
-};
-
-const calculateTotalAmount = (items: CartItem[]) => {
-    return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-}
+const initialState: ICart | null = null;
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: initialState,
-      addToCart: (item) => {
-        const { cart } = get();
-        const existingItem = cart.items.find((i) => i.id === item.id);
-        let updatedItems;
-        if (existingItem) {
-          updatedItems = cart.items.map((i) =>
-            i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-          );
-        } else {
-          updatedItems = [...cart.items, item];
+      loading: false,
+      syncCart: async () => {
+        try {
+          const cart = await cartService.getCart();
+          set({ cart });
+        } catch (error) {
+          console.error('Không thể đồng bộ giỏ hàng:', error);
         }
-
-        set({
-          cart: {
-            ...cart,
-            items: updatedItems,
-            totalAmount: calculateTotalAmount(updatedItems),
-          },
-        });
-        toast.success('Đã thêm sản phẩm vào giỏ hàng!');
       },
-      removeFromCart: (itemId) => {
-        const { cart } = get();
-        const updatedItems = cart.items.filter((item) => item.id !== itemId);
-        set({
-          cart: {
-            ...cart,
-            items: updatedItems,
-            totalAmount: calculateTotalAmount(updatedItems),
-          },
-        });
-        toast.success('Đã xóa sản phẩm khỏi giỏ hàng!');
-      },
-      updateQuantity: (itemId, quantity) => {
-        if (quantity < 1) {
-            get().removeFromCart(itemId);
-            return;
+      getCart: async () => {
+        set({ loading: true });
+        try {
+          const cart = await cartService.getCart();
+          set({ cart });
+        } finally {
+          set({ loading: false });
         }
-        const { cart } = get();
-        const updatedItems = cart.items.map((item) =>
-          item.id === itemId ? { ...item, quantity } : item
-        );
-        set({
-          cart: {
-            ...cart,
-            items: updatedItems,
-            totalAmount: calculateTotalAmount(updatedItems),
-          },
-        });
       },
-      clearCart: () => {
-        set({ cart: initialState });
+      addToCart: async (payload) => {
+        set({ loading: true });
+        try {
+          const res = await cartService.addToCart(payload);
+          if (!res.success) throw new Error(res.message || 'Thêm sản phẩm thất bại!');
+          await get().syncCart();
+        } catch (error) {
+          console.log(error);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      updateQuantity: async (itemId, quantity) => {
+        set({ loading: true });
+        try {
+          const res = await cartService.updateCartItem(itemId, { quantity });
+          if (!res.success) throw new Error(res.message || 'Cập nhật số lượng thất bại!');
+          await get().syncCart();
+        } catch (error) {
+          console.log(error);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      removeFromCart: async (itemId) => {
+        set({ loading: true });
+        try {
+          const res = await cartService.removeFromCart(itemId);
+          if (!res.success) throw new Error(res.message || 'Xóa sản phẩm thất bại!');
+          await get().syncCart();
+        } catch (error) {
+          console.log(error);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      clearCart: async () => {
+        set({ loading: true });
+        try {
+          const res = await cartService.clearCart();
+          if (!res.success) throw new Error(res.message || 'Xóa giỏ hàng thất bại!');
+          set({ cart: initialState });
+        } catch (error) {
+          console.log(error);
+        } finally {
+          set({ loading: false });
+        }
       },
     }),
     {
@@ -86,3 +93,9 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+useCartStore.subscribe((state) => {
+  if (!state.cart && !state.loading) {
+    state.syncCart();
+  }
+});

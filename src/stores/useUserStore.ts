@@ -28,7 +28,8 @@ export const useUserStore = create<UserState>()(
       login: async (payload) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await login(payload);
+          const data = await login(payload);
+          const { user, token } = data;
           localStorage.setItem('token', token);
           set({ user, isAuthenticated: true, loading: false });
         } catch (error) {
@@ -42,8 +43,7 @@ export const useUserStore = create<UserState>()(
       register: async (payload) => {
         set({ loading: true, error: null });
         try {
-          const { user, token } = await register(payload);
-          localStorage.setItem('token', token);
+          const { user } = await register(payload);
           set({ user, isAuthenticated: true, loading: false });
         } catch (error) {
           if (isAxiosError(error)) {

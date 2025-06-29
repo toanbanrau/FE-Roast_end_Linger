@@ -16,11 +16,20 @@ export const adminAxios = axios.create({
 
 // Instance cho Client API
 export const clientAxios = axios.create({
-  baseURL: `${BASE_URL}/api`, 
+  baseURL: `${BASE_URL}/api`,
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem(" token") || TEST_TOKEN}`,
+    Authorization: `Bearer ${localStorage.getItem("token") || TEST_TOKEN}`,
   },
+});
+
+// Luôn lấy token mới nhất cho mọi request
+clientAxios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Để tương thích ngược với code cũ

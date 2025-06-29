@@ -27,6 +27,15 @@ import EditBlogCategory from "./pages/admins/blog-category/EditBlogCategory";
 import Dashboard from "./pages/admins/dashboard/Dashboard";
 import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
 import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
+import EditProduct from "./pages/admins/product/EditProduct";
+import ListOrigin from "./pages/admins/origin/ListOrigin";
+import AddOrigin from "./pages/admins/origin/AddOrigin";
+import EditOrigin from "./pages/admins/origin/EditOrigin";
+import ProductDetailAdmin from "./pages/admins/product/ProductDetail";
+import OrderDetailPage from "./pages/clients/account/order/OrderDetailPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   const element = useRoutes([
@@ -55,6 +64,10 @@ function App() {
           element:<BlogPage/>
         },
         {
+           path:'blog/:id',
+           element:<div>BlogDetail</div>
+        },
+        {
           path: "contact",
           element: <ContactPage/>,
         },
@@ -71,8 +84,8 @@ function App() {
           element:<OrdersPage/>
         },
         {
-          path:'account/orders/',
-          element:<OrdersPage/>
+          path:'account/orders/:id',
+          element:<OrderDetailPage/>
         },
         {
           path:'account/wishlist',
@@ -106,7 +119,7 @@ function App() {
         },
         {
           path: "product/:id",
-          element: <div>Product detail</div>,
+          element: <ProductDetailAdmin/>,
         },
         {
           path: "product/add",
@@ -114,7 +127,7 @@ function App() {
         },
         {
           path: "product/edit/:id",
-          element: <div>Product detail</div>,
+          element: <EditProduct/>,
         },
         //Route Brand
         {
@@ -186,12 +199,29 @@ function App() {
         {
           path:"blog-category/edit/:id",
           element:<EditBlogCategory/>
-        }
+        },
+        {
+          path: "origin",
+          element: <ListOrigin />,
+        },
+        {
+          path: "origin/add",
+          element: <AddOrigin />,
+        },
+        {
+          path: "origin/edit/:id",
+          element: <EditOrigin />,
+        },
       ],
     },
   ]);
 
-  return element;
+  return (
+    <>
+      {element}
+      <ToastContainer />
+    </>
+  );
 }
 
 export default App;

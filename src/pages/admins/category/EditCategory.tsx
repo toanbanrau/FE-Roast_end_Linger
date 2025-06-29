@@ -11,6 +11,8 @@ import {
 import type { ICategory } from "../../../interfaces/category";
 import toast from "react-hot-toast";
 
+const { Option } = Select;
+
 const EditCategory = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -18,14 +20,14 @@ const EditCategory = () => {
   const { id } = useParams();
 
   // Lấy dữ liệu danh mục hiện tại
-  const { data: category, isLoading } = useQuery({
+  const { data: category, isLoading: isLoadingCategory } = useQuery({
     queryKey: ["categories", id],
     queryFn: () => getCategoryById(Number(id)),
     enabled: !!id,
   });
 
   // Lấy danh sách tất cả danh mục để chọn danh mục cha
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: getAllCategories,
   });
@@ -50,82 +52,80 @@ const EditCategory = () => {
     }
   }, [category, form]);
 
-  // Loại bỏ chính nó khỏi danh mục cha
-  const parentOptions =
-    categories
-      ?.filter((c) => c.id !== Number(id))
-      .map((c) => ({
-        label: c.category_name,
-        value: c.id,
-      })) || [];
-
   const onFinish = (values: ICategory) => {
     mutation.mutate(values);
   };
 
-  if (isLoading) return <Spin />;
+  if (isLoadingCategory || isLoadingCategories) return <Spin />;
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onFinish}
-      className="max-w-md mx-auto bg-white p-6 rounded shadow"
-    >
-      <Form.Item
-        label="Tên danh mục"
-        name="category_name"
-        rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
+    <div className="p-5 max-w-xl mx-auto">
+      <h2 className="mb-4 text-2xl font-bold">Chỉnh Sửa Danh Mục</h2>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{ status: 'active', sort_order: 1 }}
       >
-        <Input placeholder="Nhập tên danh mục" />
-      </Form.Item>
-
-      <Form.Item label="Mô tả" name="description">
-        <Input.TextArea rows={3} placeholder="Nhập mô tả (nếu có)" />
-      </Form.Item>
-
-      <Form.Item label="Slug" name="slug">
-        <Input placeholder="Nhập slug (nếu có)" />
-      </Form.Item>
-
-      <Form.Item label="Hình ảnh" name="image">
-        <Input placeholder="Nhập link hình ảnh (nếu có)" />
-      </Form.Item>
-
-      <Form.Item label="Danh mục cha" name="parent_category_id">
-        <Select
-          allowClear
-          placeholder="Chọn danh mục cha (nếu có)"
-          options={parentOptions}
-        />
-      </Form.Item>
-
-      <Form.Item label="Thứ tự sắp xếp" name="sort_order">
-        <InputNumber
-          min={0}
-          className="w-full"
-          placeholder="Nhập thứ tự sắp xếp"
-        />
-      </Form.Item>
-
-      <Form.Item label="Trạng thái" name="status" initialValue={1}>
-        <Select>
-          <Select.Option value={1}>Hiển thị</Select.Option>
-          <Select.Option value={0}>Ẩn</Select.Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item>
-        <Button
-          type="primary"
-          htmlType="submit"
-          loading={mutation.isPending}
-          className="w-full"
+        <Form.Item
+          name="category_name"
+          label="Tên danh mục"
+          rules={[{ required: true, message: 'Vui lòng nhập tên danh mục!' }]}
         >
-          Lưu thay đổi
-        </Button>
-      </Form.Item>
-    </Form>
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="Mô tả"
+          rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+        >
+          <Input.TextArea rows={3} />
+        </Form.Item>
+        <Form.Item
+          name="slug"
+          label="Slug"
+          rules={[{ required: true, message: 'Vui lòng nhập slug!' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="image"
+          label="Ảnh (URL)"
+          rules={[{ required: true, message: 'Vui lòng nhập link ảnh!' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item name="parent_category_id" label="Danh mục cha">
+          <Select allowClear placeholder="Chọn danh mục cha (nếu có)">
+            {categories?.filter((cat: ICategory) => cat.parent_category_id === null || cat.id !== Number(id)).map((cat: ICategory) => (
+              <Option key={cat.id} value={cat.id}>{cat.category_name}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          name="sort_order"
+          label="Thứ tự"
+          rules={[{ required: true, message: 'Vui lòng nhập thứ tự!' }]}
+        >
+          <InputNumber min={1} className="w-full" />
+        </Form.Item>
+        <Form.Item
+          name="status"
+          label="Trạng thái"
+          rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
+        >
+          <Select>
+            <Option value="active">Hiện</Option>
+            <Option value="inactive">Ẩn</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={mutation.isPending}>
+            Cập nhật danh mục
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 

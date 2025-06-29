@@ -4,8 +4,8 @@ import type { ICategory, ICategoryForm } from "../interfaces/category";
 
 // Lấy tất cả category
 export const getAllCategories = async (): Promise<ICategory[]> => {
-  const response = await adminAxios.get("/categories");
-  return response.data;
+  const response = await clientAxios.get("/categories");
+  return response.data.data;
 };
 
 // Lấy category theo id
@@ -34,7 +34,7 @@ export const deleteCategory = async (id: number): Promise<void> => {
 // === CLIENT FUNCTIONS ===
 
 // Lấy tất cả danh mục cho client
-export const getAllCategoriesClient = async (): Promise<ICategory[]> => {
-    const response = await clientAxios.get('/categories/all');
+export const getAllCategoriesClient = async (): Promise<{ data: ICategory[] }> => {
+    const response = await clientAxios.get('/categories');
     return response.data.data;
 };

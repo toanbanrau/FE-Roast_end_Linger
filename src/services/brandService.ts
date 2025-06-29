@@ -20,8 +20,8 @@ export const createBrand = async (formData: FormData): Promise<IBrand> => {
   return response.data.data || response.data; 
 };
 
-export const updateBrand = async (id: number, brand: Partial<IBrand>): Promise<IBrand> => {
-  const response = await adminAxios.post(`/brands/${id}`, brand,
+export const updateBrand = async (id: number, formData: FormData): Promise<IBrand> => {
+  const response = await adminAxios.post(`/brands/${id}`, formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
   return response.data;

@@ -6,14 +6,22 @@ import { Coffee, ShoppingBag, Search, Menu, X, LogIn, UserPlus, User, ChevronDow
 import { Link } from "react-router-dom"
 import HomeNav from "./HomeNav"
 import { useUserStore } from "../stores/useUserStore"
+import { useCartStore } from "../stores/useCartStore"
+import CartModal from "./CartModal"
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false)
   const { user } = useUserStore()
+  const { cart } = useCartStore()
+  const cartItemCount = cart?.total_items || 0
+ 
+  
 
   return (
+    <>
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         {/* Left: Logo + Mobile Menu */}
@@ -143,13 +151,18 @@ export default function Header() {
           </div>
 
           {/* Cart */}
-          <Link to="/cart" className="text-stone-700 hover:text-amber-800 relative p-1">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-800 text-[10px] font-medium text-white">
-              3
-            </span>
-            <span className="sr-only">Cart</span>
-          </Link>
+          <button
+              onClick={() => setIsCartModalOpen(true)}
+              className="text-stone-700 hover:text-amber-800 relative p-1 transition-colors"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-800 text-[10px] font-medium text-white">
+                  {cartItemCount}
+                </span>
+              )}
+              <span className="sr-only">Cart</span>
+            </button>
         </div>
       </div>
 
@@ -279,5 +292,7 @@ export default function Header() {
         </div>
       )}
     </header>
+     <CartModal isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
+     </>
   )
 }

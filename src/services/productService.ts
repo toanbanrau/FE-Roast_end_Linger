@@ -1,35 +1,32 @@
 import { adminAxios, clientAxios } from "../configs/config";
-import type { IProduct, IProductListResponse, IProductVariant } from "../interfaces/product";
+import type { IProduct, IProductCreate } from "../interfaces/product";
 import type {
-  IAdminProduct,
-  IAdminProductListResponse,
-  IAdminProductDetailResponse
 } from "../interfaces/product";
 
 // ================= ADMIN PRODUCT SERVICE =================
 
 // Lấy danh sách sản phẩm (có filter/search/pagination)
-export const getAdminProducts = async (): Promise<IAdminProductListResponse> => {
+export const getAdminProducts = async (): Promise<IProduct> => {
   const res = await adminAxios.get("/products");
-  return res.data;
+  return res.data.data;
 };
 
 // Lấy chi tiết sản phẩm
-export const getAdminProductDetail = async (id: number): Promise<IAdminProductDetailResponse> => {
+export const getAdminProductDetail = async (id: number): Promise<IProduct> => {
   const res = await adminAxios.get(`/products/${id}`);
-  return res.data;
+  return res.data.data;
 };
 
 // Tạo sản phẩm mới (multipart/form-data)
-export const createAdminProduct = async (formData: FormData): Promise<IAdminProduct> => {
-  const res = await adminAxios.post("/products", formData, {
+export const createAdminProduct = async (formData: FormData): Promise<IProductCreate> => {
+  const res = await adminAxios.post("/products/with-variants", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data.data;
 };
 
 // Cập nhật sản phẩm (multipart/form-data)
-export const updateAdminProduct = async (id: number, formData: FormData): Promise<IAdminProduct> => {
+export const updateAdminProduct = async (id: number, formData: FormData): Promise<IProductCreate> => {
   const res = await adminAxios.put(`/products/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -52,7 +49,7 @@ export const bulkUpdateAdminProductStatus = async (ids: number[], status: string
 };
 
 // Toggle status
-export const toggleAdminProductStatus = async (id: number): Promise<IAdminProduct> => {
+export const toggleAdminProductStatus = async (id: number) => {
   const res = await adminAxios.put(`/products/${id}/toggle-status`);
   return res.data.data;
 };
@@ -62,20 +59,31 @@ export const setAdminProductPrimaryImage = async (productId: number, imageId: nu
   await adminAxios.put(`/products/${productId}/images/${imageId}/set-primary`);
 };
 
+// Lấy danh sách nhóm thuộc tính và giá trị thuộc tính cho sản phẩm
+export const getAttributeCombinations = async () => {
+  const res = await adminAxios.get('/products/attribute-combinations');
+  return res.data.data;
+};
+
 // ================= CLIENT PRODUCT SERVICE =================
 
-
-export const getAllProductsClient = async (): Promise<IProductListResponse> => {
-  const res = await clientAxios.get("/products",);
+export const getAllProductsClient = async (queryParams?: URLSearchParams): Promise<{
+  data: IProduct[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
+  links: unknown;
+}> => {
+  const url = queryParams ? `/products?${queryParams.toString()}` : "/products";
+  const res = await clientAxios.get(url);
   return res.data;
 };
 
 export const getProductById = async (id: number): Promise<IProduct> => {
   const response = await clientAxios.get(`/products/${id}`);
-  return response.data.data;
-};
-
-export const getVariantsProductById = async (productId: number): Promise<IProductVariant[]> => {
-  const response = await clientAxios.get(`/products/${productId}/variants`);
   return response.data.data;
 };

@@ -6,7 +6,6 @@ import {
   deleteBlogCategory,
 } from "../../../services/blogCategoryService";
 import type { IAdminBlogCategory } from "../../../interfaces/category";
-import {  FileAddOutlined } from "@ant-design/icons";
 import EyeIcon from "../../../components/icons/EyeIcon";
 import EditIcon from "../../../components/icons/EditIcon";
 import TrashIcon from "../../../components/icons/TrashIcon";
@@ -34,8 +33,6 @@ const ListBlogCategory = () => {
   const columns = [
     {
       title: "STT",
-      dataIndex: "stt",
-      key: "stt",
       render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {

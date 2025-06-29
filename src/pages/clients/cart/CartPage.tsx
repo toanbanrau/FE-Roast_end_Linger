@@ -57,13 +57,13 @@ export default function CartPage() {
           <div className="flex justify-center mb-6">
             <ShoppingBag className="h-16 w-16 text-stone-300" />
           </div>
-          <h2 className="text-2xl font-medium mb-4">Your cart is empty</h2>
-          <p className="text-stone-600 mb-8">Looks like you haven't added any coffee to your cart yet.</p>
+          <h2 className="text-2xl font-medium mb-4">Giỏ hàng của bạn đang trống</h2>
+          <p className="text-stone-600 mb-8">Bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
           <Link
             to="/products"
             className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
           >
-            Browse Products
+            Xem sản phẩm
           </Link>
         </div>
       ) : (
@@ -73,8 +73,8 @@ export default function CartPage() {
               <table className="w-full">
                 <thead className="bg-stone-50 border-b">
                   <tr>
-                    <th className="text-left p-4 font-medium">Sản Phẩm</th>
-                    <th className="text-center p-4 font-medium">Số Lượng </th>
+                    <th className="text-left p-4 font-medium">Sản phẩm</th>
+                    <th className="text-center p-4 font-medium">Số lượng</th>
                     <th className="text-right p-4 font-medium">Giá</th>
                     <th className="p-4 w-10"></th>
                   </tr>
@@ -152,40 +152,40 @@ export default function CartPage() {
               <div className="flex-1">
                 <input
                   type="text"
-                  placeholder="Coupon code"
+                  placeholder="Mã giảm giá"
                   className="max-w-xs px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
               </div>
               <button className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium">
-                Apply Coupon
+                Áp dụng mã
               </button>
               <button className="ml-auto border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium">
-                Update Cart
+                Cập nhật giỏ hàng
               </button>
             </div>
           </div>
 
           <div className="lg:col-span-1">
             <div className="border rounded-lg p-6 bg-stone-50 space-y-6">
-              <h2 className="text-xl font-medium">Tóm Tắt Đơn Hàng</h2>
+              <h2 className="text-xl font-medium">Tóm tắt đơn hàng</h2>
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-stone-600">Tổng Tiền Sản Phẩm</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-stone-600">Tổng tiền sản phẩm</span>
+                  <span className="font-medium">{subtotal.toLocaleString()}₫</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-stone-600">Giá Vận Chuyển</span>
-                  <span className="font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span className="text-stone-600">Phí vận chuyển</span>
+                  <span className="font-medium">{shipping === 0 ? "Miễn phí" : `${shipping.toLocaleString()}₫`}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-600">Thuế</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">{tax.toLocaleString()}₫</span>
                 </div>
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium text-lg">
-                    <span>Tổng Tiền</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>Tổng cộng</span>
+                    <span>{total.toLocaleString()}₫</span>
                   </div>
                 </div>
               </div>
@@ -206,10 +206,10 @@ export default function CartPage() {
                     >
                       <path d="M20 6L9 17l-5-5"></path>
                     </svg>
-                    You've qualified for free shipping!
+                    Bạn đã đủ điều kiện miễn phí vận chuyển!
                   </p>
                 ) : (
-                  <p>Free shipping on orders over $50</p>
+                  <p>Miễn phí vận chuyển cho đơn hàng trên 50.000₫</p>
                 )}
               </div>
 
@@ -217,13 +217,13 @@ export default function CartPage() {
                 to="/checkout"
                 className="block w-full bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium text-center"
               >
-                Tiến Hành Thanh Toán
+                Tiến hành thanh toán
               </Link>
 
               <div className="pt-4 border-t">
-                <h3 className="text-sm font-medium mb-3">We Accept</h3>
+                <h3 className="text-sm font-medium mb-3">Chúng tôi chấp nhận</h3>
                 <div className="flex gap-2">
-                  {["Visa", "Mastercard", "Amex", "PayPal"].map((method) => (
+                  {['Visa', 'Mastercard', 'Amex', 'PayPal'].map((method) => (
                     <div key={method} className="bg-white border rounded px-2 py-1 text-xs">
                       {method}
                     </div>
@@ -233,21 +233,21 @@ export default function CartPage() {
             </div>
 
             <div className="mt-6 border rounded-lg p-6">
-              <h3 className="text-sm font-medium mb-3">Need Help?</h3>
+              <h3 className="text-sm font-medium mb-3">Cần hỗ trợ?</h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link to="/shipping" className="text-amber-800 hover:underline">
-                    Shipping Information
+                    Thông tin vận chuyển
                   </Link>
                 </li>
                 <li>
                   <Link to="/returns" className="text-amber-800 hover:underline">
-                    Returns & Exchanges
+                    Đổi trả & Hoàn tiền
                   </Link>
                 </li>
                 <li>
                   <Link to="/contact" className="text-amber-800 hover:underline">
-                    Contact Customer Service
+                    Liên hệ chăm sóc khách hàng
                   </Link>
                 </li>
               </ul>

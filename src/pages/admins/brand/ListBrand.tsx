@@ -5,7 +5,6 @@ import type { IBrand } from "../../../interfaces/brand";
 import { deleteBrand, getAllBrands } from "../../../services/brandService";
 import TrashIcon from "../../../components/icons/TrashIcon";
 import EditIcon from "../../../components/icons/EditIcon";
-import { FileAddOutlined } from "@ant-design/icons";
 import EyeIcon from "../../../components/icons/EyeIcon";
 
 const ListBrand = () => {
