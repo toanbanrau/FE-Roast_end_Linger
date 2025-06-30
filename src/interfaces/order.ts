@@ -20,10 +20,10 @@ interface DeliveryInfo {
 }
 
 interface OrderTotals {
-  subtotal: number;
-  shipping_fee: number;
-  discount_amount: number;
-  total_amount: number;
+  subtotal: string;
+  shipping_fee: string;
+  discount_amount: string;
+  total_amount: string;
   formatted_total: string;
 }
 
@@ -41,6 +41,75 @@ interface OrderDates {
   updated_at: string;
 }
 
+// Product interface for order items
+interface Product {
+  id: number;
+  name: string;
+  current_name: string;
+  slug: string;
+  image: string;
+}
+
+// Variant interface for order items
+interface Variant {
+  id: number;
+  name: string;
+  current_name: string;
+  sku: string;
+  image: string;
+}
+
+// Product snapshot interface
+interface ProductSnapshot {
+  product_id: number;
+  product_name: string;
+  product_description: string;
+  product_sku: string;
+  product_price: string;
+  variant_id: number;
+  variant_name: string;
+  variant_sku: string;
+  variant_price: number;
+}
+
+// Order item interface with full details
+interface OrderItemDetail {
+  id: number;
+  order_id: number;
+  product: Product;
+  variant: Variant;
+  full_product_info: string;
+  quantity: number;
+  unit_price: string;
+  total_price: string;
+  formatted_unit_price: string;
+  formatted_total_price: string;
+  product_snapshot: ProductSnapshot;
+  created_at: string;
+  updated_at: string;
+}
+
+// Order history interface
+interface OrderHistory {
+  id: number;
+  order_id: number;
+  old_status: {
+    id: number | null;
+    name: string | null;
+    color: string | null;
+  };
+  new_status: OrderStatus;
+  updated_by: {
+    id: number;
+    name: string;
+    full_name: string;
+  };
+  notes: string;
+  change_description: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Main IOrder interface updated to match the API response
 export interface IOrder {
   id: number;
@@ -55,7 +124,8 @@ export interface IOrder {
   is_guest_order: boolean;
   user_id: number;
   dates: OrderDates;
-  items?: OrderItem[]; // Making this optional as it's not in the list view
+  items: OrderItemDetail[];
+  histories: OrderHistory[];
 }
 
 // This interface is for creating an order, may need review later
