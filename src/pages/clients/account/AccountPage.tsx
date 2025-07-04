@@ -1,19 +1,17 @@
-import type React from "react";
-import { useState } from "react";
-import { Edit2 } from "lucide-react";
-import AccountNav from "../../../components/AccountNav";
-import { useUserStore } from "../../../stores/useUserStore";
+import type React from "react"
+import { useState } from "react"
+import { Edit2 } from "lucide-react"
+import AccountNav from "../../../components/AccountNav"
+import { useUserStore } from "../../../stores/useUserStore"
 
 export default function AccountPage() {
-  const [isEditing, setIsEditing] = useState(false);
-
+  const [isEditing, setIsEditing] = useState(false)
   const { user } = useUserStore()
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would update the user profile here
-    setIsEditing(false);
-  };
+    e.preventDefault()
+    setIsEditing(false)
+  }
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -29,16 +27,16 @@ export default function AccountPage() {
 
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-8">
-          {/* Profile Information */}
+          {/* Profile Info */}
           <div className="bg-white border rounded-lg overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-medium">Thông Tin Tài Khoản</h2>
+              <h2 className="text-xl font-medium">Thông tin cá nhân</h2>
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className="text-amber-800 hover:text-amber-900 flex items-center gap-1 text-sm font-medium"
               >
                 <Edit2 className="h-4 w-4" />
-                {isEditing ? "Hủy" : "Chỉnh Sửa"}
+                {isEditing ? "Hủy" : "Chỉnh sửa"}
               </button>
             </div>
             <div className="p-6">
@@ -53,17 +51,14 @@ export default function AccountPage() {
                       />
                     </div>
                     <button className="text-amber-800 hover:text-amber-900 text-sm font-medium">
-                      Change Photo
+                      Thay đổi ảnh
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Họ và Tên
+                      <label htmlFor="name" className="block text-sm font-medium mb-1">
+                        Họ và tên
                       </label>
                       <input
                         id="name"
@@ -72,11 +67,8 @@ export default function AccountPage() {
                       />
                     </div>
                     <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Email Address
+                      <label htmlFor="email" className="block text-sm font-medium mb-1">
+                        Địa chỉ Email
                       </label>
                       <input
                         id="email"
@@ -86,11 +78,8 @@ export default function AccountPage() {
                       />
                     </div>
                     <div>
-                      <label
-                        htmlFor="phone"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Phone Number
+                      <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                        Số điện thoại
                       </label>
                       <input
                         id="phone"
@@ -107,13 +96,13 @@ export default function AccountPage() {
                       onClick={() => setIsEditing(false)}
                       className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium"
                     >
-                      Cancel
+                      Hủy
                     </button>
                     <button
                       type="submit"
                       className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
                     >
-                      Save Changes
+                      Lưu thay đổi
                     </button>
                   </div>
                 </form>
@@ -131,19 +120,19 @@ export default function AccountPage() {
                   <div className="flex-grow space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-stone-500">
-                        Full Name
+                        Họ và tên
                       </h3>
                       <p>{user?.name}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-stone-500">
-                        Email Address
+                        Địa chỉ Email
                       </h3>
                       <p>{user?.email}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-stone-500">
-                        Phone Number
+                        Số điện thoại
                       </h3>
                       <p>{user?.phone}</p>
                     </div>
@@ -153,70 +142,32 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Addresses */}
+          {/* Address section - giữ nguyên để bạn tùy chỉnh thêm sau */}
           <div className="bg-white border rounded-lg overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-medium">Địa Chỉ</h2>
+              <h2 className="text-xl font-medium">Địa chỉ</h2>
               <button className="text-amber-800 hover:text-amber-900 text-sm font-medium">
-                Thêm Địa Chỉ Mới
+                Thêm địa chỉ mới
               </button>
             </div>
-            {/* <div className="divide-y">
-              {user?.address?.map((address) => (
-                <div key={address.id} className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{address.type}</h3>
-                      {address.default && (
-                        <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button className="text-amber-800 hover:text-amber-900 text-sm font-medium">
-                        Edit
-                      </button>
-                      {!address.default && (
-                        <button className="text-stone-500 hover:text-stone-700 text-sm">
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-stone-600">
-                    <p>{address.street}</p>
-                    {address.apartment && <p>{address.apartment}</p>}
-                    <p>
-                      {address.city}, {address.state} {address.zip}
-                    </p>
-                    <p>{address.country}</p>
-                  </div>
-                  {!address.default && (
-                    <button className="mt-3 text-amber-800 hover:text-amber-900 text-sm font-medium">
-                      Set as Default
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div> */}
           </div>
-          {/* Password */}
+
+          {/* Password section */}
           <div className="bg-white border rounded-lg overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-medium">Mật Khẩu</h2>
+              <h2 className="text-xl font-medium">Mật khẩu</h2>
               <button className="text-amber-800 hover:text-amber-900 text-sm font-medium">
-                Đổi Mật Khẩu
+                Đổi mật khẩu
               </button>
             </div>
             <div className="p-6">
               <p className="text-stone-600">
-                Your password was last changed on May 10, 2025.
+                Mật khẩu của bạn được thay đổi lần cuối vào ngày 10/05/2025.
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Product Details */}
+        {/* Chi tiết sản phẩm */}
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -182,20 +182,6 @@ export default function ProductDetailPage() {
               </span>
             </div>
             <h1 className="text-3xl font-serif font-bold tracking-tight">{product.product_name}</h1>
-            {/* Đánh giá và reviewCount có thể cần fetch thêm nếu backend trả về */}
-            {/* <div className="flex items-center gap-2 mt-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${i < Math.floor(product.rating) ? "text-amber-500 fill-amber-500" : "text-stone-300"}`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-stone-600">
-                {product.rating} ({product.reviewCount} reviews)
-              </span>
-            </div> */}
           </div>
 
           <div className="text-2xl font-semibold text-amber-800">
@@ -254,6 +240,7 @@ export default function ProductDetailPage() {
                   product_id: product.id,
                   quantity,
                   ...(selectedVariant ? { product_variant_id: selectedVariant.id } : {})
+
                 });
               }}
               disabled={product.stock_quantity < 1 || addCartMutation.isPending}
@@ -264,7 +251,7 @@ export default function ProductDetailPage() {
 
           <div className="flex items-center gap-2 text-sm text-stone-600 pt-4 border-t">
             <Truck className="h-4 w-4 text-amber-800" />
-            <span>Free shipping on orders over $50</span>
+            <span>Miễn phí giao hàng cho đơn hàng trên $50</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">
@@ -272,14 +259,6 @@ export default function ProductDetailPage() {
               <h3 className="text-sm font-medium">Nguồn Gốc</h3>
               <p className="text-stone-600">{product.origin?.origin_name}</p>
             </div>
-            {/* <div>
-              <h3 className="text-sm font-medium">Process</h3>
-              <p className="text-stone-600">{product.process}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium">Altitude</h3>
-              <p className="text-stone-600">{product.altitude}</p>
-            </div> */}
             <div>
               <h3 className="text-sm font-medium">Mức Độ Rang</h3>
               <p className="text-stone-600">{product.roast_level}</p>
@@ -289,7 +268,6 @@ export default function ProductDetailPage() {
           <div className="pt-4 border-t">
             <h3 className="text-sm font-medium mb-2">Hương Vị</h3>
             <div className="flex flex-wrap gap-2">
-              {/* Nếu flavor_profile là chuỗi, có thể tách ra mảng nếu cần */}
               {product.flavor_profile && product.flavor_profile.split(",").map((note, index) => (
                 <span key={index} className="text-xs bg-stone-100 text-stone-800 px-3 py-1 rounded-full">
                   {note.trim()}
@@ -304,15 +282,15 @@ export default function ProductDetailPage() {
       <div className="mt-16">
         <div className="border-b">
           <div className="flex overflow-x-auto">
-            <button className="px-4 py-3 text-amber-800 border-b-2 border-amber-800 font-medium">Description</button>
+            <button className="px-4 py-3 text-amber-800 border-b-2 border-amber-800 font-medium">Mô Tả</button>
             <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Details
+              Chi Tiết
             </button>
             <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Brewing Guide
+               Hướng Dẫn Pha Chế
             </button>
             <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Reviews (124)
+              Đánh Giá (124)
             </button>
           </div>
         </div>
@@ -320,67 +298,28 @@ export default function ProductDetailPage() {
         <div className="pt-6">
           <div className="prose max-w-none">
             <p>
-              Our Ethiopian Yirgacheffe is a truly exceptional single-origin coffee, celebrated for its distinctive
-              floral and citrus notes with a silky smooth finish. Grown in the highlands of Ethiopia, the birthplace of
-              coffee, these beans are carefully harvested and processed to preserve their unique characteristics.
+              Ethiopian Yirgacheffe của chúng tôi là một loại cà phê đơn nguyên thực sự xuất sắc, nổi bật với các
+              ghi chú hoa nhài và cam chanh cùng với vị ngọt mượt mà. Được trồng ở vùng cao nguyên Ethiopia, nơi
+              khởi nguồn của cà phê, những hạt cà phê này được thu hoạch và chế biến cẩn thận để giữ nguyên đặc
+              tính độc đáo của chúng.
             </p>
             <p>
-              The Yirgacheffe region is known for producing some of the world's most sought-after coffees, and ours is
-              no exception. The high altitude, rich soil, and ideal climate create perfect conditions for growing coffee
-              with complex flavor profiles.
+              Vùng Yirgacheffe nổi tiếng với những loại cà phê được săn lùng nhiều nhất trên thế giới, và sản
+              phẩm của chúng tôi cũng không phải ngoại lệ. Độ cao cao, đất đai màu mỡ và khí hậu lý tưởng tạo ra
+              những điều kiện hoàn hảo để trồng cà phê với hương vị phức tạp.
             </p>
             <p>
-              We roast these beans to a medium level to highlight their natural brightness while developing their
-              sweetness. The result is a cup with jasmine and bergamot aromatics, vibrant lemon acidity, and a
-              honey-like sweetness that lingers on the palate.
+              Chúng tôi rang các hạt cà phê này ở mức độ vừa để làm nổi bật độ sáng tự nhiên của chúng trong
+              khi phát triển vị ngọt. Kết quả là một tách cà phê với hương hoa nhài và bergamot, độ chua chanh
+              sôi nổi, và vị ngọt như mật ong lưu lại trên vòm miệng.
             </p>
             <p>
-              Whether you're brewing with a pour-over, French press, or espresso machine, this coffee will delight with
-              its complexity and balance. It's perfect for those who appreciate the nuanced flavors of a truly
-              exceptional single-origin coffee.
+              Dù bạn pha chế bằng phương pháp pour-over, French press hay máy pha cà phê, bạn sẽ luôn cảm nhận
+              được sự hoàn hảo trong từng ngụm cà phê.
             </p>
           </div>
         </div>
       </div>
-
-      {/* Related Products */}
-      {/* <div className="mt-20">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-8">You May Also Like</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {relatedProducts.length === 0 ? (
-            <div className="col-span-4 text-center text-stone-500">No related products</div>
-          ) : (
-            relatedProducts.map((product) => (
-              <Link
-                to={`/products/${product.id}`}
-                key={product.id}
-                className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={product.primary_image?.image_url || "/placeholder.svg"}
-                    alt={product.product_name}
-                    width={300}
-                    height={300}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <div className="mb-2">
-                    <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
-                      {product.category?.category_name}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-medium text-stone-900">{product.product_name}</h3>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-amber-800">{product.base_price}₫</span>
-                  </div>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
-      </div> */}
     </div>
-  )
+  );
 }

@@ -2,150 +2,134 @@ import { Link } from "react-router-dom"
 import { Calendar, Clock, Facebook, Linkedin, Tag, Twitter } from "lucide-react"
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  // In a real app, you would fetch this data based on the slug
   const post = {
     slug: params.slug,
-    title: "The Art of Coffee Brewing: Techniques for the Perfect Cup",
+    title: "Nghệ Thuật Pha Cà Phê: Kỹ Thuật Để Có Ly Cà Phê Hoàn Hảo",
     content: `
-      <p>Coffee brewing is both an art and a science. The perfect cup requires attention to detail, quality ingredients, and the right technique. In this comprehensive guide, we'll explore various brewing methods and share expert tips to help you elevate your coffee experience at home.</p>
+      <p>Pha cà phê là sự kết hợp giữa nghệ thuật và khoa học. Một ly cà phê hoàn hảo đòi hỏi sự tỉ mỉ, nguyên liệu chất lượng và kỹ thuật đúng chuẩn. Trong hướng dẫn toàn diện này, chúng ta sẽ khám phá các phương pháp pha khác nhau và chia sẻ mẹo từ chuyên gia để giúp bạn nâng tầm trải nghiệm cà phê tại nhà.</p>
       
-      <h2>Understanding Coffee Basics</h2>
-      
-      <p>Before diving into specific brewing methods, it's important to understand the key factors that influence coffee flavor:</p>
-      
+      <h2>Hiểu Rõ Những Điều Cơ Bản Về Cà Phê</h2>
+      <p>Trước khi tìm hiểu phương pháp pha, bạn cần nắm rõ các yếu tố ảnh hưởng đến hương vị cà phê:</p>
       <ul>
-        <li><strong>Coffee Beans:</strong> Always start with fresh, high-quality beans. The origin, processing method, and roast level all impact flavor.</li>
-        <li><strong>Grind Size:</strong> Different brewing methods require different grind sizes. Too fine or too coarse can lead to under or over-extraction.</li>
-        <li><strong>Water Quality:</strong> Coffee is 98% water, so use filtered water free from strong odors or flavors.</li>
-        <li><strong>Water Temperature:</strong> The ideal brewing temperature is between 195°F and 205°F (90°C to 96°C).</li>
-        <li><strong>Brewing Time:</strong> Each method has an optimal brewing time to extract the best flavors without bitterness.</li>
+        <li><strong>Hạt Cà Phê:</strong> Luôn dùng hạt tươi và chất lượng. Xuất xứ, cách chế biến và mức độ rang ảnh hưởng lớn đến hương vị.</li>
+        <li><strong>Độ Mịn Của Hạt Xay:</strong> Mỗi phương pháp pha yêu cầu độ xay khác nhau. Xay quá mịn hoặc quá thô đều gây chiết xuất không đồng đều.</li>
+        <li><strong>Chất Lượng Nước:</strong> Cà phê chiếm 98% là nước, nên hãy dùng nước lọc không mùi lạ.</li>
+        <li><strong>Nhiệt Độ Nước:</strong> Nhiệt độ lý tưởng từ 90°C đến 96°C.</li>
+        <li><strong>Thời Gian Pha:</strong> Mỗi phương pháp có thời gian pha tối ưu riêng để tránh vị đắng.</li>
       </ul>
-      
-      <h2>Pour-Over Method</h2>
-      
-      <p>The pour-over method offers exceptional clarity and highlights the nuanced flavors of single-origin coffees.</p>
-      
-      <h3>What You'll Need:</h3>
-      
+
+      <h2>Phương Pháp Pour-Over</h2>
+      <p>Phương pháp pour-over giúp hương vị rõ nét, lý tưởng cho cà phê đơn nguồn (single-origin).</p>
+
+      <h3>Dụng Cụ Cần Có:</h3>
       <ul>
-        <li>Pour-over dripper (Hario V60, Chemex, or Kalita Wave)</li>
-        <li>Appropriate filters</li>
-        <li>Freshly roasted coffee beans</li>
-        <li>Burr grinder</li>
-        <li>Gooseneck kettle</li>
-        <li>Scale</li>
-        <li>Timer</li>
+        <li>Phễu pha (Hario V60, Chemex hoặc Kalita Wave)</li>
+        <li>Giấy lọc phù hợp</li>
+        <li>Hạt cà phê rang mới</li>
+        <li>Máy xay burr</li>
+        <li>Ấm rót cổ ngỗng</li>
+        <li>Cân điện tử</li>
+        <li>Đồng hồ bấm giờ</li>
       </ul>
-      
-      <h3>Step-by-Step Process:</h3>
-      
+
+      <h3>Các Bước Thực Hiện:</h3>
       <ol>
-        <li>Bring water to a boil, then let it cool for 30 seconds (to approximately 200°F/93°C).</li>
-        <li>Grind coffee to medium-fine consistency (similar to sand).</li>
-        <li>Place filter in dripper and rinse with hot water to remove paper taste and preheat equipment.</li>
-        <li>Add ground coffee to the filter and create a small divot in the center.</li>
-        <li>Start timer and pour just enough water (about twice the weight of the coffee) to saturate the grounds. This is called the "bloom" phase.</li>
-        <li>After 30-45 seconds, slowly pour water in a spiral motion, maintaining a consistent flow rate.</li>
-        <li>Aim for a total brew time of 2:30-3:30 minutes for a V60, or 4-5 minutes for a Chemex.</li>
+        <li>Đun nước sôi, để nguội khoảng 30 giây (khoảng 93°C).</li>
+        <li>Xay cà phê ở mức vừa mịn (như cát).</li>
+        <li>Rửa giấy lọc bằng nước nóng để loại bỏ mùi giấy và làm nóng thiết bị.</li>
+        <li>Cho cà phê vào phễu và tạo hõm nhỏ ở giữa.</li>
+        <li>Bắt đầu đổ nước để “nở” cà phê (gấp đôi lượng cà phê) trong 30–45 giây.</li>
+        <li>Tiếp tục rót nước theo hình xoắn ốc, đều tay.</li>
+        <li>Thời gian pha tổng từ 2:30–3:30 phút (V60) hoặc 4–5 phút (Chemex).</li>
       </ol>
-      
-      <h2>French Press Method</h2>
-      
-      <p>The French Press produces a full-bodied cup with rich mouthfeel, perfect for highlighting the depth and richness of darker roasts.</p>
-      
-      <h3>What You'll Need:</h3>
-      
+
+      <h2>Phương Pháp French Press</h2>
+      <p>French Press cho hương vị đậm đà, thích hợp với cà phê rang đậm.</p>
+
+      <h3>Dụng Cụ Cần Có:</h3>
       <ul>
-        <li>French Press</li>
-        <li>Freshly roasted coffee beans</li>
-        <li>Burr grinder</li>
-        <li>Kettle</li>
-        <li>Timer</li>
+        <li>Bình French Press</li>
+        <li>Hạt cà phê rang mới</li>
+        <li>Máy xay burr</li>
+        <li>Ấm nước</li>
+        <li>Đồng hồ bấm giờ</li>
       </ul>
-      
-      <h3>Step-by-Step Process:</h3>
-      
+
+      <h3>Các Bước Thực Hiện:</h3>
       <ol>
-        <li>Heat water to 200°F/93°C.</li>
-        <li>Grind coffee to a coarse consistency (similar to sea salt).</li>
-        <li>Add coffee to the French Press.</li>
-        <li>Pour hot water over the grounds, saturating them completely.</li>
-        <li>Stir gently to ensure all grounds are wet.</li>
-        <li>Place the plunger on top but don't press down. Let brew for 4 minutes.</li>
-        <li>Slowly press the plunger down.</li>
-        <li>Pour immediately to prevent over-extraction.</li>
+        <li>Đun nước đến 93°C.</li>
+        <li>Xay cà phê ở mức thô (như muối biển).</li>
+        <li>Cho cà phê vào bình.</li>
+        <li>Rót nước nóng lên cà phê, khuấy nhẹ.</li>
+        <li>Đậy nắp, không ấn xuống, để ủ 4 phút.</li>
+        <li>Nhấn nhẹ piston xuống từ từ.</li>
+        <li>Rót ra ngay để tránh chiết xuất quá mức.</li>
       </ol>
-      
-      <h2>Espresso Method</h2>
-      
-      <p>Espresso is the foundation for many coffee drinks and requires precision and practice to master.</p>
-      
-      <h3>What You'll Need:</h3>
-      
+
+      <h2>Phương Pháp Espresso</h2>
+      <p>Espresso là nền tảng cho nhiều loại cà phê khác, yêu cầu độ chính xác cao.</p>
+
+      <h3>Dụng Cụ Cần Có:</h3>
       <ul>
-        <li>Espresso machine</li>
-        <li>Freshly roasted espresso beans</li>
-        <li>Burr grinder capable of fine espresso grind</li>
-        <li>Tamper</li>
-        <li>Scale (optional but recommended)</li>
-        <li>Timer</li>
+        <li>Máy pha espresso</li>
+        <li>Hạt espresso rang mới</li>
+        <li>Máy xay burr chuyên dụng espresso</li>
+        <li>Đồ nén (tamper)</li>
+        <li>Cân (khuyến khích)</li>
+        <li>Đồng hồ bấm giờ</li>
       </ul>
-      
-      <h3>Step-by-Step Process:</h3>
-      
+
+      <h3>Các Bước Thực Hiện:</h3>
       <ol>
-        <li>Turn on your espresso machine and allow it to heat up completely.</li>
-        <li>Grind coffee to a fine consistency.</li>
-        <li>Dose 18-20g of coffee into the portafilter.</li>
-        <li>Distribute the grounds evenly and tamp with firm, even pressure.</li>
-        <li>Lock the portafilter into the group head and start extraction immediately.</li>
-        <li>Aim for a 25-30 second extraction time for a 1:2 ratio (e.g., 18g coffee to 36g espresso).</li>
-        <li>The perfect shot should have a golden-brown crema and a balanced flavor.</li>
+        <li>Bật máy và chờ đủ nhiệt độ.</li>
+        <li>Xay cà phê thật mịn.</li>
+        <li>Lấy 18–20g cà phê vào tay pha.</li>
+        <li>Dàn đều và nén chặt tay.</li>
+        <li>Đặt tay pha vào máy và bắt đầu pha ngay.</li>
+        <li>Chiết xuất khoảng 25–30 giây với tỷ lệ 1:2 (ví dụ 18g cà phê → 36g espresso).</li>
+        <li>Shot espresso chuẩn có crema vàng nâu và vị cân bằng.</li>
       </ol>
-      
-      <h2>Common Brewing Mistakes to Avoid</h2>
-      
+
+      <h2>Những Lỗi Phổ Biến Khi Pha Cà Phê</h2>
       <ul>
-        <li><strong>Using old coffee:</strong> Coffee is at its best 1-2 weeks after roasting.</li>
-        <li><strong>Inconsistent grind size:</strong> Invest in a quality burr grinder for uniform particle size.</li>
-        <li><strong>Incorrect water temperature:</strong> Too hot can cause bitterness, too cool can lead to under-extraction.</li>
-        <li><strong>Improper coffee-to-water ratio:</strong> A general guideline is 1:16 (coffee to water) for most brewing methods.</li>
-        <li><strong>Neglecting equipment cleaning:</strong> Coffee oils can build up and impart rancid flavors.</li>
+        <li><strong>Dùng cà phê cũ:</strong> Hạt tươi nhất là trong 1–2 tuần sau khi rang.</li>
+        <li><strong>Độ xay không đều:</strong> Nên dùng máy xay burr để đảm bảo kích thước hạt đồng đều.</li>
+        <li><strong>Nhiệt độ nước sai:</strong> Nóng quá gây đắng, nguội quá gây nhạt.</li>
+        <li><strong>Tỷ lệ cà phê - nước không đúng:</strong> Tỷ lệ tham khảo là 1:16 cho hầu hết phương pháp.</li>
+        <li><strong>Dụng cụ bẩn:</strong> Dầu cà phê tích tụ làm ảnh hưởng mùi vị.</li>
       </ul>
-      
-      <h2>Conclusion</h2>
-      
-      <p>Brewing exceptional coffee at home is a rewarding journey that combines science, art, and a bit of patience. By understanding the principles behind different brewing methods and practicing your technique, you'll be able to create café-quality coffee tailored to your personal taste preferences.</p>
-      
-      <p>Remember that experimentation is part of the process. Don't be afraid to adjust variables like grind size, coffee-to-water ratio, or brewing time to find your perfect cup. With practice and attention to detail, you'll be brewing coffee that rivals your favorite café in no time.</p>
+
+      <h2>Kết Luận</h2>
+      <p>Pha cà phê ngon tại nhà là hành trình thú vị kết hợp giữa khoa học, nghệ thuật và sự kiên nhẫn. Khi hiểu rõ nguyên lý và luyện tập, bạn có thể tạo ra ly cà phê ngon không kém gì quán chuyên nghiệp.</p>
+      <p>Đừng ngại thử nghiệm và điều chỉnh các yếu tố như độ xay, tỷ lệ cà phê - nước, hoặc thời gian pha để tìm ra ly cà phê "chân ái" của mình. Chúc bạn thành công!</p>
     `,
     image: "/placeholder.svg?height=600&width=1200",
-    date: "May 15, 2025",
-    readTime: "8 min read",
-    category: "Brewing Guides",
+    date: "15 Tháng 5, 2025",
+    readTime: "Đọc trong 8 phút",
+    category: "Hướng Dẫn Pha Chế",
     author: {
       name: "James Wilson",
-      title: "Head Barista",
+      title: "Barista Trưởng",
       image: "/placeholder.svg?height=100&width=100",
     },
     relatedPosts: [
       {
         slug: "single-origin-vs-blends",
-        title: "Single Origin vs. Blends: Understanding the Differences",
+        title: "Cà Phê Đơn Nguồn và Phối Trộn: Khác Biệt Thế Nào?",
         image: "/placeholder.svg?height=200&width=300",
-        category: "Coffee Education",
+        category: "Giáo Dục Cà Phê",
       },
       {
         slug: "coffee-equipment-guide",
-        title: "Essential Coffee Equipment for Home Baristas",
+        title: "Thiết Bị Cần Thiết Cho Barista Tại Nhà",
         image: "/placeholder.svg?height=200&width=300",
-        category: "Equipment",
+        category: "Thiết Bị",
       },
       {
         slug: "coffee-tasting-guide",
-        title: "A Beginner's Guide to Coffee Tasting",
+        title: "Hướng Dẫn Nếm Cà Phê Cho Người Mới Bắt Đầu",
         image: "/placeholder.svg?height=200&width=300",
-        category: "Coffee Education",
+        category: "Giáo Dục Cà Phê",
       },
     ],
   }

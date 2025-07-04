@@ -4,51 +4,49 @@ import { Link } from "react-router-dom";
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
+      {/* Phần chính (Hero Section) */}
       <section className="relative h-[90vh] flex items-center">
         <img
           src="https://img.freepik.com/premium-psd/banner-template-coffee-sale-social-media-post_268949-63.jpg?semt=ais_items_boosted&w=740"
-          alt="Luxury coffee beans"
+          alt="Hạt cà phê cao cấp"
           className="object-cover w-full h-full absolute inset-0  brightness-50"
         />
         <div className="container relative z-10 px-4 md:px-6">
           <div className="max-w-3xl space-y-6">
             <h1 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
-              Experience the Finest Coffee Craftsmanship
+              Trải Nghiệm Nghệ Thuật Cà Phê Đỉnh Cao
             </h1>
             <p className="text-xl text-gray-200 md:text-2xl">
-              Indulge in our premium selection of ethically sourced, artisanally
-              roasted coffee beans.
+              Thưởng thức bộ sưu tập cà phê cao cấp, rang thủ công, có nguồn gốc đạo đức.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 to="/products"
                 className="inline-flex items-center justify-center rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
               >
-                Shop Collection <ShoppingBag className="ml-2 h-5 w-5" />
+                Xem Sản Phẩm <ShoppingBag className="ml-2 h-5 w-5" />
               </Link>
               <Link
                 to="/about"
                 className="inline-flex items-center justify-center rounded-md border border-white bg-transparent px-4 py-2 text-sm font-medium text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
-                Our Story <ChevronRight className="ml-2 h-5 w-5" />
+                Câu Chuyện Của Chúng Tôi <ChevronRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Bộ sưu tập nổi bật */}
       <section className="py-20 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
-              Featured Collections
+              Bộ Sưu Tập Nổi Bật
             </h2>
             <div className="w-20 h-1 bg-amber-800 my-6"></div>
             <p className="text-lg text-stone-600 max-w-2xl">
-              Discover our handpicked selection of the world's most exceptional
-              coffee beans.
+              Khám phá những hạt cà phê đặc biệt nhất được chúng tôi tuyển chọn kỹ lưỡng từ khắp nơi trên thế giới.
             </p>
           </div>
 
@@ -58,21 +56,19 @@ export default function HomePage() {
                 name: "Ethiopian Yirgacheffe",
                 price: "$24.95",
                 image: "/placeholder.svg?height=400&width=400",
-                description:
-                  "Floral and citrus notes with a silky smooth finish",
+                description: "Hương hoa và cam chanh, hậu vị mượt mà",
               },
               {
                 name: "Colombian Supremo",
                 price: "$22.95",
                 image: "/placeholder.svg?height=400&width=400",
-                description:
-                  "Rich caramel sweetness with a hint of toasted nuts",
+                description: "Ngọt dịu như caramel với chút hương hạt rang",
               },
               {
                 name: "Sumatra Mandheling",
                 price: "$26.95",
                 image: "/placeholder.svg?height=400&width=400",
-                description: "Earthy, full-bodied with notes of dark chocolate",
+                description: "Đậm đà, đất và socola đen",
               },
             ].map((product, index) => (
               <div
@@ -96,7 +92,7 @@ export default function HomePage() {
                       {product.price}
                     </span>
                     <button className="text-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium">
-                      Add to Cart
+                      Thêm Vào Giỏ
                     </button>
                   </div>
                 </div>
@@ -109,56 +105,51 @@ export default function HomePage() {
               to="/products"
               className="text-amber-800 hover:text-amber-900 text-lg font-medium inline-flex items-center"
             >
-              View All Collections <ArrowRight className="ml-2 h-4 w-4" />
+              Xem Tất Cả <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Our Story */}
+      {/* Câu chuyện của chúng tôi */}
       <section className="py-20 bg-stone-900 text-white">
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative h-[500px] rounded-xl overflow-hidden">
               <img
                 src="https://cdn.s99.vn/ss2/prod/product/d30c161f3acc792af11ed594c8942030_1699843641.jpg?at=1701809332"
-                alt="Coffee plantation"
+                alt="Trang trại cà phê"
                 className="object-cover"
               />
             </div>
             <div className="space-y-6">
               <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
-                Our Passion for Excellence
+                Niềm Đam Mê Hoàn Hảo
               </h2>
               <div className="w-20 h-1 bg-amber-600"></div>
               <p className="text-lg text-stone-300">
-                For over three decades, we have traveled the world in search of
-                the finest coffee beans, building relationships with farmers who
-                share our commitment to quality and sustainability.
+                Trong hơn 30 năm, chúng tôi đã đi khắp thế giới để tìm kiếm những hạt cà phê chất lượng nhất, kết nối với nông dân cùng chia sẻ giá trị bền vững.
               </p>
               <p className="text-lg text-stone-300">
-                Each batch is carefully selected, roasted to perfection, and
-                delivered at the peak of freshness. Our master roasters bring
-                decades of expertise to create a coffee experience like no
-                other.
+                Mỗi mẻ cà phê được chọn lọc kỹ càng, rang chuẩn xác và giao đến bạn ở độ tươi ngon nhất. Những người thợ rang của chúng tôi mang đến trải nghiệm cà phê đẳng cấp.
               </p>
               <Link
                 to="/about"
                 className="inline-flex items-center justify-center rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 mt-4"
               >
-                Learn More About Our Journey
+                Khám Phá Hành Trình Của Chúng Tôi
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Nhận xét khách hàng */}
       <section className="py-20 bg-stone-100">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
-              What Our Clients Say
+              Khách Hàng Nói Gì
             </h2>
             <div className="w-20 h-1 bg-amber-800 my-6"></div>
           </div>
@@ -167,21 +158,21 @@ export default function HomePage() {
             {[
               {
                 quote:
-                  "The most exquisite coffee I've ever tasted. Each cup is a journey of flavors.",
+                  "Ly cà phê tuyệt vời nhất tôi từng thưởng thức. Mỗi tách là một hành trình hương vị.",
                 author: "Emily Richardson",
-                title: "Coffee Enthusiast",
+                title: "Người Yêu Cà Phê",
               },
               {
                 quote:
-                  "Their attention to detail and commitment to quality is unmatched in the industry.",
+                  "Sự tỉ mỉ và cam kết chất lượng của họ là không ai sánh kịp trong ngành.",
                 author: "Michael Chen",
-                title: "Food Critic",
+                title: "Nhà Phê Bình Ẩm Thực",
               },
               {
                 quote:
-                  "From bean to cup, they've mastered every step of the coffee experience.",
+                  "Từ hạt đến ly, họ đã tinh chỉnh mọi công đoạn của hành trình cà phê.",
                 author: "Sophia Martinez",
-                title: "Café Owner",
+                title: "Chủ Quán Cà Phê",
               },
             ].map((testimonial, index) => (
               <div key={index} className="bg-white p-8 rounded-xl shadow-md">
@@ -216,25 +207,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter */}
+      {/* Đăng ký nhận tin */}
       <section className="py-16 bg-amber-800 text-white">
         <div className="container px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
-              Join Our Coffee Club
+              Gia Nhập Câu Lạc Bộ Cà Phê
             </h2>
             <p className="text-lg text-amber-100">
-              Subscribe to receive exclusive offers, brewing tips, and early
-              access to limited edition releases.
+              Đăng ký để nhận ưu đãi độc quyền, mẹo pha chế và thông tin về sản phẩm giới hạn.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Your email address"
+                placeholder="Nhập email của bạn"
                 className="px-4 py-3 rounded-md text-stone-900 w-full focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
               <button className="bg-stone-900 hover:bg-stone-800 text-white whitespace-nowrap px-4 py-3 rounded-md font-medium">
-                Subscribe
+                Đăng Ký
               </button>
             </div>
           </div>
