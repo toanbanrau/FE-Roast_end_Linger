@@ -13,8 +13,7 @@ export default function Footer() {
               <span className="text-xl font-serif font-bold tracking-tight text-white">Élite Coffee</span>
             </Link>
             <p className="text-sm">
-              Crafting exceptional coffee experiences since 1992. From bean to cup, we're dedicated to quality and
-              sustainability.
+              Tạo nên những trải nghiệm cà phê tuyệt vời từ năm 1992 — từ hạt đến tách, chúng tôi cam kết về chất lượng và sự bền vững
             </p>
             <div className="flex gap-4 mt-6">
               <Link to="#" className="text-stone-400 hover:text-amber-600">
@@ -33,73 +32,73 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-white mb-6">Shop</h3>
+            <h3 className="text-lg font-medium text-white mb-6">Cửa Hàng</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/products" className="text-sm hover:text-amber-600 transition-colors">
-                  All Products
+                  Sản Phẩm 
                 </Link>
               </li>
               <li>
                 <Link to="/products/single-origin" className="text-sm hover:text-amber-600 transition-colors">
-                  Single Origin
+                  Cà phê nguyên bản
                 </Link>
               </li>
               <li>
                 <Link to="/products/blends" className="text-sm hover:text-amber-600 transition-colors">
-                  Signature Blends
+                  Dòng pha trộn đặc trưng
                 </Link>
               </li>
               <li>
                 <Link to="/products/equipment" className="text-sm hover:text-amber-600 transition-colors">
-                  Brewing Equipment
+                  Dụng cụ pha cà phê
                 </Link>
               </li>
               <li>
                 <Link to="/products/gifts" className="text-sm hover:text-amber-600 transition-colors">
-                  Gift Sets
+                  Bộ quà tặng
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-white mb-6">Company</h3>
+            <h3 className="text-lg font-medium text-white mb-6">Công ty</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/about" className="text-sm hover:text-amber-600 transition-colors">
-                  Our Story
+                  Hành trình của chúng tôi
                 </Link>
               </li>
               <li>
                 <Link to="/sustainability" className="text-sm hover:text-amber-600 transition-colors">
-                  Sustainability
+                  Phát triển bền vững
                 </Link>
               </li>
               <li>
                 <Link to="/blog" className="text-sm hover:text-amber-600 transition-colors">
-                  Blog
+                  Bài viết & Tin tức
                 </Link>
               </li>
               <li>
                 <Link to="/careers" className="text-sm hover:text-amber-600 transition-colors">
-                  Careers
+                  Trở thành một phần của chúng tôi
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-sm hover:text-amber-600 transition-colors">
-                  Contact Us
+                  Liên hệ
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-white mb-6">Customer Service</h3>
+            <h3 className="text-lg font-medium text-white mb-6">Dịch vụ khách hàng</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/shipping" className="text-sm hover:text-amber-600 transition-colors">
-                  Shipping & Returns
+                  Vận chuyển & Đổi trả
                 </Link>
               </li>
               <li>
@@ -109,17 +108,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link to="/terms" className="text-sm hover:text-amber-600 transition-colors">
-                  Terms & Conditions
+                  Điều khoản & Điều kiện
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-sm hover:text-amber-600 transition-colors">
-                  Privacy Policy
+                  Chính sách bảo mật
                 </Link>
               </li>
               <li>
                 <Link to="/subscription" className="text-sm hover:text-amber-600 transition-colors">
-                  Subscription Info
+                  Thông tin đăng ký
                 </Link>
               </li>
             </ul>
@@ -127,7 +126,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-stone-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-xs text-stone-500">&copy; {new Date().getFullYear()} Élite Coffee. All rights reserved.</p>
+          <p className="text-xs text-stone-500">&copy; {new Date().getFullYear()} Roast & Linger. All rights reserved.</p>
           <div className="mt-4 md:mt-0 flex gap-4">
             <Link to="/terms" className="text-xs text-stone-500 hover:text-amber-600">
               Terms

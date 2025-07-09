@@ -60,7 +60,7 @@ export default function Header() {
           ) : (
             <button className="text-stone-700 hover:text-amber-800 p-1" onClick={() => setIsSearchOpen(true)}>
               <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
+              <span className="sr-only">Tìm kiếm</span>
             </button>
           )}
 
@@ -137,14 +137,14 @@ export default function Header() {
                   className="flex items-center gap-1 text-stone-700 hover:text-amber-800 text-sm font-medium px-2 py-1"
                 >
                   <LogIn className="h-4 w-4" />
-                  Sign In
+                  Đăng Nhập
                 </Link>
                 <Link
                   to="/auth/register"
                   className="flex items-center gap-1 bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-md text-sm font-medium"
                 >
                   <UserPlus className="h-4 w-4" />
-                  Sign Up
+                  Đăng Ký
                 </Link>
               </>
             )}
