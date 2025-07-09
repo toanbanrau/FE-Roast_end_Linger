@@ -9,27 +9,26 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would handle form submission here
     setFormSubmitted(true)
   }
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Contact Us</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Liên Hệ Với Chúng Tôi</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {formSubmitted ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <h2 className="text-xl font-medium text-green-800 mb-2">Thank You!</h2>
+              <h2 className="text-xl font-medium text-green-800 mb-2">Cảm Ơn!</h2>
               <p className="text-green-700 mb-4">
-                Your message has been sent successfully. We'll get back to you as soon as possible.
+                Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.
               </p>
               <button
                 className="border border-green-300 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium mt-2"
                 onClick={() => setFormSubmitted(false)}
               >
-                Send Another Message
+                Gửi Tin Nhắn Khác
               </button>
             </div>
           ) : (
@@ -37,7 +36,7 @@ export default function ContactPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="firstName" className="block text-sm font-medium">
-                    First Name
+                    Tên
                   </label>
                   <input
                     id="firstName"
@@ -47,7 +46,7 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="lastName" className="block text-sm font-medium">
-                    Last Name
+                    Họ
                   </label>
                   <input
                     id="lastName"
@@ -71,7 +70,7 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="phone" className="block text-sm font-medium">
-                    Phone (optional)
+                    Số điện thoại (không bắt buộc)
                   </label>
                   <input
                     id="phone"
@@ -83,7 +82,7 @@ export default function ContactPage() {
 
               <div className="space-y-2">
                 <label htmlFor="subject" className="block text-sm font-medium">
-                  Subject
+                  Chủ đề
                 </label>
                 <select
                   id="subject"
@@ -91,19 +90,19 @@ export default function ContactPage() {
                   required
                 >
                   <option value="" disabled selected>
-                    Select a subject
+                    Chọn chủ đề
                   </option>
-                  <option value="general">General Inquiry</option>
-                  <option value="order">Order Question</option>
-                  <option value="wholesale">Wholesale Information</option>
-                  <option value="feedback">Product Feedback</option>
-                  <option value="other">Other</option>
+                  <option value="general">Câu hỏi chung</option>
+                  <option value="order">Vấn đề đơn hàng</option>
+                  <option value="wholesale">Hợp tác phân phối</option>
+                  <option value="feedback">Phản hồi sản phẩm</option>
+                  <option value="other">Khác</option>
                 </select>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="message" className="block text-sm font-medium">
-                  Message
+                  Tin nhắn
                 </label>
                 <textarea
                   id="message"
@@ -117,30 +116,31 @@ export default function ContactPage() {
                 type="submit"
                 className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
               >
-                Send Message
+                Gửi Tin Nhắn
               </button>
             </form>
           )}
         </div>
 
+        {/* Thông tin liên hệ */}
         <div className="space-y-8">
           <div className="bg-stone-50 p-6 rounded-lg">
-            <h2 className="text-xl font-medium mb-4">Contact Information</h2>
+            <h2 className="text-xl font-medium mb-4">Thông Tin Liên Hệ</h2>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-amber-800 mt-1" />
                 <div>
-                  <p className="font-medium">Élite Coffee Headquarters</p>
+                  <p className="font-medium">Trụ Sở Chính Élite Coffee</p>
                   <p className="text-stone-600">123 Coffee Lane</p>
                   <p className="text-stone-600">Seattle, WA 98101</p>
-                  <p className="text-stone-600">United States</p>
+                  <p className="text-stone-600">Hoa Kỳ</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-amber-800" />
                 <div>
-                  <p className="font-medium">Phone</p>
+                  <p className="font-medium">Số điện thoại</p>
                   <p className="text-stone-600">(555) 123-4567</p>
                 </div>
               </div>
@@ -155,80 +155,82 @@ export default function ContactPage() {
             </div>
           </div>
 
+          {/* Giờ làm việc */}
           <div className="bg-stone-50 p-6 rounded-lg">
-            <h2 className="text-xl font-medium mb-4">Hours of Operation</h2>
+            <h2 className="text-xl font-medium mb-4">Giờ Làm Việc</h2>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span>Monday - Friday</span>
-                <span>9:00 AM - 6:00 PM</span>
+                <span>Thứ Hai - Thứ Sáu</span>
+                <span>9:00 - 18:00</span>
               </div>
               <div className="flex justify-between">
-                <span>Saturday</span>
-                <span>10:00 AM - 4:00 PM</span>
+                <span>Thứ Bảy</span>
+                <span>10:00 - 16:00</span>
               </div>
               <div className="flex justify-between">
-                <span>Sunday</span>
-                <span>Closed</span>
+                <span>Chủ Nhật</span>
+                <span>Nghỉ</span>
               </div>
             </div>
           </div>
 
+          {/* Liên hệ hợp tác */}
           <div className="bg-stone-50 p-6 rounded-lg">
-            <h2 className="text-xl font-medium mb-4">Wholesale Inquiries</h2>
+            <h2 className="text-xl font-medium mb-4">Liên Hệ Phân Phối</h2>
             <p className="text-stone-600 mb-4">
-              Interested in serving Élite Coffee at your café or restaurant? We offer special pricing and support for
-              wholesale partners.
+              Bạn muốn phục vụ Élite Coffee tại quán hoặc nhà hàng? Chúng tôi có giá ưu đãi và hỗ trợ riêng cho đối tác phân phối.
             </p>
             <Link
               to="/wholesale"
               className="block text-center border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium w-full"
             >
-              Learn More
+              Tìm Hiểu Thêm
             </Link>
           </div>
         </div>
       </div>
 
+      {/* Cửa hàng chính */}
       <div className="mt-12">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Visit Our Flagship Store</h2>
+        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Thăm Cửa Hàng Chính Của Chúng Tôi</h2>
         <div className="aspect-video bg-stone-200 rounded-lg">
-          {/* In a real app, you would embed a Google Map here */}
           <div className="h-full w-full flex items-center justify-center">
-            <p className="text-stone-600">Map Placeholder</p>
+            <p className="text-stone-600">Bản đồ sẽ hiển thị ở đây</p>
           </div>
         </div>
       </div>
 
+      {/* Các chi nhánh */}
       <div className="mt-12">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Our Locations</h2>
+        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Các Chi Nhánh</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             {
-              name: "Downtown Seattle",
+              name: "Trung tâm Seattle",
               address: "123 Coffee Lane, Seattle, WA 98101",
               phone: "(555) 123-4567",
-              hours: "Mon-Fri: 7AM-7PM, Sat-Sun: 8AM-6PM",
+              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
               image: "/placeholder.svg?height=200&width=300",
             },
             {
               name: "Capitol Hill",
               address: "456 Roast Avenue, Seattle, WA 98102",
               phone: "(555) 234-5678",
-              hours: "Mon-Fri: 7AM-7PM, Sat-Sun: 8AM-6PM",
+              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
               image: "/placeholder.svg?height=200&width=300",
             },
             {
               name: "Bellevue",
               address: "789 Bean Boulevard, Bellevue, WA 98004",
               phone: "(555) 345-6789",
-              hours: "Mon-Fri: 7AM-7PM, Sat-Sun: 8AM-6PM",
+              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
               image: "/placeholder.svg?height=200&width=300",
             },
           ].map((location, index) => (
             <div key={index} className="border rounded-lg overflow-hidden">
               <div className="relative h-48">
                 <img
-                  src={location.image || "/placeholder.svg"}
+                  src={location.image}
                   alt={location.name}
                   className="w-full h-full object-cover"
                 />
@@ -242,7 +244,7 @@ export default function ContactPage() {
                   to={`/locations/${location.name.toLowerCase().replace(/\s+/g, "-")}`}
                   className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-3 inline-block"
                 >
-                  View Details
+                  Xem Chi Tiết
                 </Link>
               </div>
             </div>
@@ -250,33 +252,34 @@ export default function ContactPage() {
         </div>
       </div>
 
+      {/* Câu hỏi thường gặp */}
       <div className="mt-12 bg-stone-50 p-8 rounded-lg">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-serif font-bold tracking-tight mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-serif font-bold tracking-tight mb-4">Câu Hỏi Thường Gặp</h2>
           <p className="text-stone-600 mb-8">
-            Find quick answers to common questions. If you can't find what you're looking for, please contact us.
+            Tìm câu trả lời nhanh cho các thắc mắc phổ biến. Nếu không tìm thấy, hãy liên hệ với chúng tôi.
           </p>
           <div className="space-y-4 text-left">
             {[
               {
-                question: "What are your shipping rates?",
+                question: "Phí vận chuyển như thế nào?",
                 answer:
-                  "We offer free shipping on all orders over $50 within the continental US. For orders under $50, a flat rate of $5.95 applies.",
+                  "Miễn phí vận chuyển với đơn hàng trên $50 trong nội địa Hoa Kỳ. Dưới $50 sẽ tính phí cố định $5.95.",
               },
               {
-                question: "How fresh is your coffee?",
+                question: "Cà phê có tươi mới không?",
                 answer:
-                  "All our coffee is roasted to order and shipped within 24-48 hours of roasting to ensure maximum freshness.",
+                  "Tất cả cà phê được rang theo đơn và gửi đi trong vòng 24-48 giờ để đảm bảo độ tươi tối đa.",
               },
               {
-                question: "Do you offer international shipping?",
+                question: "Có vận chuyển quốc tế không?",
                 answer:
-                  "Yes, we ship to select international destinations. Shipping rates vary by location. Please contact us for more information.",
+                  "Có, chúng tôi vận chuyển đến một số quốc gia nhất định. Vui lòng liên hệ để biết thêm chi tiết.",
               },
               {
-                question: "What is your return policy?",
+                question: "Chính sách đổi trả thế nào?",
                 answer:
-                  "We want you to be completely satisfied with your purchase. If you're not happy with your coffee, please contact us within 14 days of delivery.",
+                  "Nếu bạn không hài lòng với sản phẩm, hãy liên hệ trong vòng 14 ngày để được hỗ trợ đổi/trả.",
               },
             ].map((faq, index) => (
               <div key={index} className="border-b pb-4 last:border-b-0">
@@ -289,7 +292,7 @@ export default function ContactPage() {
             to="/faq"
             className="inline-flex items-center justify-center rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 mt-8"
           >
-            View All FAQs
+            Xem Tất Cả Câu Hỏi
           </Link>
         </div>
       </div>
