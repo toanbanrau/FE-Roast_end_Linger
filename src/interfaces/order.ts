@@ -110,6 +110,35 @@ interface OrderHistory {
   updated_at: string;
 }
 
+// Payment info interfaces for bank transfer
+interface BankInfo {
+  name: string;
+  account_number: string;
+  account_name: string;
+  branch: string;
+}
+
+interface QRCodeInfo {
+  viet_qr_url: string;
+  instructions: {
+    step_1: string;
+    step_2: string;
+    step_3: string;
+    step_4: string;
+    step_5: string;
+  };
+}
+
+interface PaymentInfo {
+  method: string;
+  bank_info: BankInfo;
+  transfer_content: string;
+  amount: string;
+  formatted_amount: string;
+  qr_code_enabled: boolean;
+  qr_code: QRCodeInfo;
+}
+
 // Main IOrder interface updated to match the API response
 export interface IOrder {
   id: number;
@@ -126,6 +155,7 @@ export interface IOrder {
   dates: OrderDates;
   items: OrderItemDetail[];
   histories: OrderHistory[];
+  payment_info?: PaymentInfo; // Optional for bank transfer orders
 }
 
 // This interface is for creating an order, may need review later

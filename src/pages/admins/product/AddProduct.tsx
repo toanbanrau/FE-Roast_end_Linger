@@ -14,10 +14,14 @@ import {
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { UploadOutlined, MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import type { RcFile, UploadFile } from 'antd/es/upload/interface';
-import { getAttributeCombinations } from '../../../services/productService';
-import { useEffect, useState } from 'react';
+import {
+  UploadOutlined,
+  PlusOutlined,
+  MinusCircleOutlined,
+} from "@ant-design/icons";
+import type { RcFile, UploadFile } from "antd/es/upload/interface";
+import { useState, useEffect } from "react";
+import { getAttributeCombinations } from "../../../services/productService";
 
 import { createAdminProduct } from "../../../services/productService";
 import { getAllCategories } from "../../../services/categoryService";
@@ -31,7 +35,7 @@ import type { IBrand } from "../../../interfaces/brand";
 const { TextArea } = Input;
 const { Option } = Select;
 
-const COFFEE_TYPES = ['arabica', 'robusta', 'blend'];
+const COFFEE_TYPES = ["arabica", "robusta", "blend"];
 
 interface AttributeValue {
   id: number;
@@ -44,6 +48,8 @@ interface AttributeGroup {
   attribute_name: string;
   values: AttributeValue[];
 }
+
+// Removed PredefinedVariant interface - not needed
 
 type UploadChangeParam = {
   file: UploadFile;
@@ -58,9 +64,9 @@ const normFile = (e: UploadChangeParam | UploadFile[]) => {
 };
 
 const beforeUpload = (file: RcFile) => {
-  const isImage = file.type.startsWith('image/');
+  const isImage = file.type.startsWith("image/");
   if (!isImage) {
-    message.error('Bạn chỉ có thể tải lên file ảnh!');
+    message.error("Bạn chỉ có thể tải lên file ảnh!");
   }
   return false;
 };
@@ -70,18 +76,27 @@ const AddProduct = () => {
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
 
-  const hasVariants = Form.useWatch('has_variants', form);
+  const hasVariants = Form.useWatch("has_variants", form);
 
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({ queryKey: ['categories'], queryFn: getAllCategories });
-  const { data: brands, isLoading: isLoadingBrands } = useQuery({ queryKey: ['brands'], queryFn: getAllBrands });
-  const { data: origins, isLoading: isLoadingOrigins } = useQuery({ queryKey: ['origins'], queryFn: getAllOrigins });
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getAllCategories,
+  });
+  const { data: brands, isLoading: isLoadingBrands } = useQuery({
+    queryKey: ["brands"],
+    queryFn: getAllBrands,
+  });
+  const { data: origins, isLoading: isLoadingOrigins } = useQuery({
+    queryKey: ["origins"],
+    queryFn: getAllOrigins,
+  });
 
   const mutation = useMutation({
     mutationFn: (formData: FormData) => createAdminProduct(formData),
     onSuccess: () => {
       message.success("Thêm sản phẩm thành công!");
       navigate("/admin/product");
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: () => {
       message.error("Có lỗi xảy ra khi thêm sản phẩm!");
@@ -90,113 +105,259 @@ const AddProduct = () => {
 
   const [attributeGroups, setAttributeGroups] = useState<AttributeGroup[]>([]);
   const [loadingAttributes, setLoadingAttributes] = useState(true);
-  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
+  // State để track thuộc tính được chọn cho biến thể
+  const [selectedAttributeTypes, setSelectedAttributeTypes] = useState<
+    string[]
+  >([]);
+
+  // Function để tạo SKU unique
+  const generateUniqueSKU = (skuParts: string[], index: number) => {
+    const timestamp = Date.now().toString().slice(-6); // Lấy 6 số cuối của timestamp
+    const randomNum = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
+    return `${skuParts.join("-")}-${timestamp}-${randomNum}`;
+  };
+
+  // Function để tự động tạo tổ hợp variants từ thuộc tính đã chọn
+  const generateVariantCombinations = () => {
+    if (selectedAttributeTypes.length === 0) return [];
+
+    const selectedGroups = attributeGroups.filter((group) =>
+      selectedAttributeTypes.includes(group.attribute_name)
+    );
+
+    // Tạo cartesian product của các attribute values
+    const combinations: any[] = [];
+
+    function cartesianProduct(arrays: any[][], current: any[] = []) {
+      if (current.length === arrays.length) {
+        combinations.push([...current]);
+        return;
+      }
+
+      const currentArray = arrays[current.length];
+      for (const item of currentArray) {
+        cartesianProduct(arrays, [...current, item]);
+      }
+    }
+
+    const valueArrays = selectedGroups.map((group) => group.values);
+    cartesianProduct(valueArrays);
+
+    // Chuyển đổi thành format variant
+    return combinations.map((combination, index) => {
+      const variantName = combination.map((val) => val.value).join(" - ");
+      const skuParts = combination.map((val) => {
+        // Tạo SKU ngắn gọn
+        if (val.value.includes("g")) return val.value.replace("g", "G");
+        if (val.value.includes("Bean")) return "WB";
+        if (val.value.includes("Ground")) return "GR";
+        if (val.value.includes("Espresso")) return "ES";
+        if (val.value.includes("French Press")) return "FP";
+        if (val.value.includes("Pour Over")) return "PO";
+        if (val.value.includes("Light")) return "LR";
+        if (val.value.includes("Medium-Light")) return "ML";
+        if (val.value.includes("Medium-Dark")) return "MD";
+        if (val.value.includes("Medium")) return "MR";
+        if (val.value.includes("Dark")) return "DR";
+        if (val.value.includes("French")) return "FR";
+        return val.value.substring(0, 2).toUpperCase();
+      });
+
+      return {
+        variant_name: variantName,
+        sku_code: generateUniqueSKU(skuParts, index),
+        price: 150000, // Giá mặc định
+        stock_quantity: 0,
+        status: true,
+        // Thêm attribute values cho form
+        ...selectedGroups.reduce((acc, group, groupIndex) => {
+          acc[group.attribute_name] = combination[groupIndex].id;
+          return acc;
+        }, {} as any),
+      };
+    });
+  };
+
+  // Removed predefined variants - now using dynamic generation
 
   useEffect(() => {
-    getAttributeCombinations().then(data => {
-      setAttributeGroups(data);
-      setLoadingAttributes(false);
-    }).catch(() => setLoadingAttributes(false));
+    getAttributeCombinations()
+      .then((data) => {
+        setAttributeGroups(data);
+        setLoadingAttributes(false);
+      })
+      .catch(() => setLoadingAttributes(false));
   }, []);
 
-  const filteredAttributeGroups = attributeGroups.filter(group => 
-    selectedAttributes.includes(group.attribute_name)
-  );
+  // Removed auto-generation logic - using manual Form.List instead
 
   const onFinish = async (values: Record<string, unknown>) => {
     const formData = new FormData();
+
+    // Thêm các trường cơ bản vào FormData
+    const basicFields = [
+      "product_name",
+      "description",
+      "short_description",
+      "coffee_type",
+      "category_id",
+      "brand_id",
+      "origin_id",
+      "roast_level",
+      "flavor_profile",
+      "strength_score",
+      "meta_title",
+      "meta_description",
+      "status",
+      "is_featured",
+      "has_variants",
+    ];
+
+    basicFields.forEach((field) => {
+      if (values[field] !== undefined && values[field] !== null) {
+        if (typeof values[field] === "boolean") {
+          formData.append(field, values[field] ? "1" : "0");
+        } else {
+          formData.append(field, String(values[field]));
+        }
+      }
+    });
+
+    // Xử lý base_price và stock_quantity
+    if (!values.has_variants) {
+      // Khi không có variants: gửi base_price và stock_quantity bình thường
+      if (values.base_price) {
+        formData.append("base_price", String(values.base_price));
+      }
+      if (values.stock_quantity) {
+        formData.append("stock_quantity", String(values.stock_quantity));
+      }
+    }
+    // Khi có variants: KHÔNG gửi base_price (để backend tự set null)
 
     // Xử lý ảnh chính và album ảnh phụ
     const images: {
       image_file: File;
       alt_text: string;
-      sort_order: number;
       is_primary: boolean;
     }[] = [];
+
     // Ảnh chính
-    if (values.primary_image && Array.isArray(values.primary_image) && values.primary_image.length > 0) {
+    if (
+      values.primary_image &&
+      Array.isArray(values.primary_image) &&
+      values.primary_image.length > 0
+    ) {
       images.push({
         image_file: values.primary_image[0].originFileObj as File,
-        alt_text: (values.primary_alt_text as string) || '',
-        sort_order: Number(values.primary_sort_order) || 1,
-        is_primary: true
+        alt_text: (values.primary_alt_text as string) || "Ảnh chính",
+        is_primary: true,
       });
     }
+
     // Album ảnh phụ
     if (values.album_images && Array.isArray(values.album_images)) {
-      (values.album_images as unknown[]).forEach((imgRaw, idx: number) => {
-        const img = imgRaw as { image: UploadFile[]; alt_text?: string; sort_order?: number };
+      (values.album_images as unknown[]).forEach((imgRaw) => {
+        const img = imgRaw as {
+          image: UploadFile[];
+          alt_text?: string;
+        };
         if (img.image && Array.isArray(img.image) && img.image.length > 0) {
           images.push({
             image_file: img.image[0].originFileObj as File,
-            alt_text: img.alt_text || '',
-            sort_order: Number(img.sort_order) || (idx + 2),
-            is_primary: false
+            alt_text: img.alt_text || "Ảnh phụ",
+            is_primary: false,
           });
         }
       });
     }
-    // Đưa images vào formData
+
+    // Đã xử lý tất cả dữ liệu ở trên, không cần loop Object.entries nữa
+
+    // Xử lý variants nếu có
+    if (
+      values.has_variants &&
+      values.variants &&
+      Array.isArray(values.variants)
+    ) {
+      (values.variants as any[]).forEach((variant, idx) => {
+        // Lấy attribute values từ các trường form
+        const attrValues: number[] = [];
+        attributeGroups.forEach((group) => {
+          const attrValue = variant[group.attribute_name];
+          if (attrValue) {
+            attrValues.push(attrValue);
+          }
+        });
+
+        // Thêm thông tin variant vào FormData
+        formData.append(
+          `variants[${idx}][variant_name]`,
+          variant.variant_name || ""
+        );
+        formData.append(`variants[${idx}][sku_code]`, variant.sku_code || "");
+        formData.append(`variants[${idx}][price]`, String(variant.price || 0));
+        formData.append(
+          `variants[${idx}][stock_quantity]`,
+          String(variant.stock_quantity || 0)
+        );
+        formData.append(`variants[${idx}][status]`, variant.status ? "1" : "0");
+
+        // Thêm attribute_values
+        attrValues.forEach((attrVal, attrIdx) => {
+          formData.append(
+            `variants[${idx}][attribute_values][${attrIdx}]`,
+            String(attrVal)
+          );
+        });
+      });
+    }
+
+    // Thêm ảnh chính và ảnh phụ vào FormData
     images.forEach((img, idx) => {
       formData.append(`images[${idx}][image_file]`, img.image_file);
       formData.append(`images[${idx}][alt_text]`, img.alt_text);
-      formData.append(`images[${idx}][sort_order]`, String(img.sort_order));
-      formData.append(`images[${idx}][is_primary]`, img.is_primary ? '1' : '0');
+      formData.append(`images[${idx}][is_primary]`, img.is_primary ? "1" : "0");
     });
 
-    // Xử lý các trường cơ bản khác
-    Object.entries(values).forEach(([key, value]) => {
-      if (
-        key === 'primary_image' ||
-        key === 'primary_alt_text' ||
-        key === 'primary_sort_order' ||
-        key === 'album_images' ||
-        key === 'images'
-      ) {
-        // Đã xử lý ở trên
-        return;
-      }
-      if (key === 'variants' && Array.isArray(value) && values.has_variants) {
-        value.forEach((variant, idx) => {
-          // Lấy các id thuộc tính từ 3 trường
-          const attrIds = attributeGroups.map(group => variant[group.attribute_name]).filter(Boolean);
-          attrIds.forEach((attrVal, attrIdx) => {
-            formData.append(`variants[${idx}][attribute_values][${attrIdx}]`, String(attrVal));
-          });
-          Object.entries(variant).forEach(([variantKey, variantValue]) => {
-            if (variantValue !== undefined && variantValue !== null) {
-              if (variantKey === 'image' && Array.isArray(variantValue) && variantValue.length > 0) {
-                formData.append(`variants[${idx}][image_file]`, variantValue[0].originFileObj as File);
-              } else if (
-                variantKey === 'sku_code' ||
-                variantKey === 'variant_name' ||
-                variantKey === 'price' ||
-                variantKey === 'stock_quantity'
-              ) {
-                formData.append(`variants[${idx}][${variantKey}]`, String(variantValue));
-              } else if (variantKey === 'status') {
-                formData.append(`variants[${idx}][status]`, variantValue ? '1' : '0');
-              }
-            }
-          });
-        });
-      } else if (typeof value !== 'undefined' && value !== null && key !== 'variants') {
-        // Luôn gửi các trường khác (kể cả base_price)
-        if (typeof value === 'boolean') {
-          formData.append(key, value ? '1' : '0');
-        } else {
-          formData.append(key, String(value));
+    // Thêm ảnh cho từng variant nếu có (đã xử lý trong loop trên)
+    if (
+      values.has_variants &&
+      values.variants &&
+      Array.isArray(values.variants)
+    ) {
+      (values.variants as any[]).forEach((variant, idx) => {
+        if (
+          variant.image &&
+          Array.isArray(variant.image) &&
+          variant.image.length > 0
+        ) {
+          formData.append(
+            `variants[${idx}][image_file]`,
+            variant.image[0].originFileObj as File
+          );
         }
-      }
-    });
-    // Log dữ liệu FormData gửi đi
-    for (const pair of formData.entries()) {
-      console.log(pair[0] + ':', pair[1]);
+      });
     }
+
+    // Log dữ liệu FormData gửi đi
+    console.log("FormData entries:");
+    for (const pair of formData.entries()) {
+      console.log(pair[0] + ":", pair[1]);
+    }
+
     mutation.mutate(formData);
   };
-  
-  if (isLoadingCategories || isLoadingBrands || isLoadingOrigins || loadingAttributes) return <Spin />;
+
+  if (
+    isLoadingCategories ||
+    isLoadingBrands ||
+    isLoadingOrigins ||
+    loadingAttributes
+  )
+    return <Spin />;
 
   return (
     <div className="p-5">
@@ -207,12 +368,12 @@ const AddProduct = () => {
         onFinish={onFinish}
         encType="multipart/form-data"
         className="max-w-[1200px]"
-        initialValues={{ 
-          has_variants: false, 
-          is_featured: false, 
-          status: 'active',
-          variants: [{}],
-          strength_score: 5
+        initialValues={{
+          has_variants: false,
+          is_featured: false,
+          status: "active",
+          strength_score: 5,
+          variants: [],
         }}
       >
         <Row gutter={24}>
@@ -222,7 +383,9 @@ const AddProduct = () => {
               <Form.Item
                 name="product_name"
                 label="Tên sản phẩm"
-                rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên sản phẩm" },
+                ]}
               >
                 <Input placeholder="VD: Cà phê Arabica Ethiopia Premium" />
               </Form.Item>
@@ -230,31 +393,43 @@ const AddProduct = () => {
               <Form.Item
                 name="description"
                 label="Mô tả chi tiết"
-                rules={[{ required: true, message: "Vui lòng nhập mô tả chi tiết" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập mô tả chi tiết" },
+                ]}
               >
-                <TextArea rows={6} placeholder="Mô tả chi tiết về sản phẩm..." />
+                <TextArea
+                  rows={6}
+                  placeholder="Mô tả chi tiết về sản phẩm..."
+                />
               </Form.Item>
 
               <Form.Item
                 name="short_description"
                 label="Mô tả ngắn"
-                rules={[{ required: true, message: "Vui lòng nhập mô tả ngắn" }]}
+                rules={[
+                  { required: true, message: "Vui lòng nhập mô tả ngắn" },
+                ]}
               >
-                <TextArea rows={3} placeholder="Tóm tắt ngắn gọn về sản phẩm..." />
+                <TextArea
+                  rows={3}
+                  placeholder="Tóm tắt ngắn gọn về sản phẩm..."
+                />
               </Form.Item>
 
               <Form.Item
                 name="base_price"
                 label="Giá cơ bản"
                 rules={[
-                  { required: true, message: "Vui lòng nhập giá cơ bản!" }
+                  { required: true, message: "Vui lòng nhập giá cơ bản!" },
                 ]}
               >
                 <InputNumber
                   className="w-full"
                   min={0}
                   placeholder="Nhập giá cơ bản"
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
                 />
               </Form.Item>
             </Card>
@@ -265,7 +440,9 @@ const AddProduct = () => {
               <Form.Item
                 name="primary_image"
                 label="Ảnh chính"
-                rules={[{ required: true, message: 'Vui lòng chọn ảnh chính!' }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn ảnh chính!" },
+                ]}
                 getValueFromEvent={normFile}
                 valuePropName="fileList"
               >
@@ -284,7 +461,11 @@ const AddProduct = () => {
               <Form.Item name="primary_alt_text" label="Mô tả ảnh chính">
                 <Input placeholder="Mô tả ảnh chính sản phẩm" />
               </Form.Item>
-              <Form.Item name="primary_sort_order" label="Thứ tự ảnh chính" initialValue={1}>
+              <Form.Item
+                name="primary_sort_order"
+                label="Thứ tự ảnh chính"
+                initialValue={1}
+              >
                 <InputNumber min={1} className="w-full" />
               </Form.Item>
 
@@ -298,11 +479,13 @@ const AddProduct = () => {
                           <Col span={8}>
                             <Form.Item
                               {...restField}
-                              name={[name, 'image']}
+                              name={[name, "image"]}
                               label="Ảnh phụ"
                               valuePropName="fileList"
                               getValueFromEvent={normFile}
-                              rules={[{ required: true, message: 'Chọn ảnh phụ!' }]}
+                              rules={[
+                                { required: true, message: "Chọn ảnh phụ!" },
+                              ]}
                             >
                               <Upload
                                 listType="picture-card"
@@ -312,7 +495,9 @@ const AddProduct = () => {
                               >
                                 <div>
                                   <UploadOutlined />
-                                  <div style={{ marginTop: 8 }}>Tải ảnh phụ</div>
+                                  <div style={{ marginTop: 8 }}>
+                                    Tải ảnh phụ
+                                  </div>
                                 </div>
                               </Upload>
                             </Form.Item>
@@ -320,7 +505,7 @@ const AddProduct = () => {
                           <Col span={8}>
                             <Form.Item
                               {...restField}
-                              name={[name, 'alt_text']}
+                              name={[name, "alt_text"]}
                               label="Mô tả"
                             >
                               <Input placeholder="Mô tả ảnh phụ" />
@@ -329,7 +514,7 @@ const AddProduct = () => {
                           <Col span={4}>
                             <Form.Item
                               {...restField}
-                              name={[name, 'sort_order']}
+                              name={[name, "sort_order"]}
                               label="Thứ tự"
                               initialValue={key + 2}
                             >
@@ -337,7 +522,11 @@ const AddProduct = () => {
                             </Form.Item>
                           </Col>
                           <Col span={4}>
-                            <Button danger type="text" onClick={() => remove(name)}>
+                            <Button
+                              danger
+                              type="text"
+                              onClick={() => remove(name)}
+                            >
                               Xóa
                             </Button>
                           </Col>
@@ -345,7 +534,12 @@ const AddProduct = () => {
                       </Card>
                     ))}
                     <Form.Item>
-                      <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        block
+                        icon={<PlusOutlined />}
+                      >
                         Thêm ảnh phụ
                       </Button>
                     </Form.Item>
@@ -355,181 +549,395 @@ const AddProduct = () => {
             </Card>
 
             {/* Biến thể sản phẩm */}
-            <Card 
-              title="Biến thể sản phẩm" 
+            <Card
+              title="Biến thể sản phẩm"
               className="mb-4"
               extra={
                 <Form.Item name="has_variants" valuePropName="checked" noStyle>
-                  <Switch checkedChildren="Có biến thể" unCheckedChildren="Không biến thể" />
+                  <Switch
+                    checkedChildren="Có biến thể"
+                    unCheckedChildren="Không biến thể"
+                  />
                 </Form.Item>
               }
             >
-              {/* Chọn thuộc tính cho sản phẩm */}
-              {hasVariants && (
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium mb-3">Chọn thuộc tính cho sản phẩm này:</h4>
-                  <div className="space-y-2">
-                    {attributeGroups.map((group) => (
-                      <label key={group.attribute_name} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedAttributes.includes(group.attribute_name)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedAttributes([...selectedAttributes, group.attribute_name]);
-                            } else {
-                              setSelectedAttributes(selectedAttributes.filter(attr => attr !== group.attribute_name));
-                            }
-                          }}
-                          className="rounded"
-                        />
-                        <span className="font-medium">{group.attribute_name}</span>
-                        <span className="text-sm text-gray-600">
-                          ({group.values.map(v => v.value).join(', ')})
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {selectedAttributes.length === 0 && (
-                    <div className="text-sm text-orange-600 mt-2">
-                      ⚠️ Vui lòng chọn ít nhất 1 thuộc tính để tạo biến thể
+              {hasVariants ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center space-x-2 text-green-800">
+                      <span className="text-lg">✨</span>
+                      <span className="font-medium">
+                        Tạo biến thể tùy chỉnh:
+                      </span>
                     </div>
-                  )}
-                </div>
-              )}
+                    <p className="text-green-700 text-sm mt-1">
+                      Thêm từng biến thể một cách linh hoạt. Bạn có thể tự chọn
+                      thuộc tính và nhập giá cho mỗi biến thể.
+                    </p>
+                  </div>
 
-              {hasVariants && (
-                <Form.List name="variants">
-                  {(fields, { add, remove }) => (
-                    <>
-                      {fields.map(({ key, name, ...restField }) => (
-                        <Card key={key} className="mb-4" size="small">
-                          <Row gutter={16}>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'variant_name']}
-                                label="Tên biến thể"
-                                rules={[{ required: true, message: 'Tên biến thể là bắt buộc' }]}
-                              >
-                                <Input placeholder="Tên biến thể (VD: 250g, 500g)" />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'sku_code']}
-                                label="Mã SKU"
-                                rules={[{ required: true, message: 'Mã SKU là bắt buộc' }]}
-                              >
-                                <Input placeholder="Nhập mã SKU" />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'price']}
-                                label="Giá"
-                                rules={[{ required: true, message: 'Giá là bắt buộc' }]}
-                              >
-                                <InputNumber
-                                  className="w-full"
-                                  min={0}
-                                  placeholder="Nhập giá"
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'stock_quantity']}
-                                label="Số lượng trong kho"
-                                rules={[{ required: true, message: 'Số lượng là bắt buộc' }]}
-                              >
-                                <InputNumber
-                                  className="w-full"
-                                  min={0}
-                                  placeholder="Số lượng trong kho"
-                                />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'status']}
-                                label="Trạng thái"
-                                valuePropName="checked"
-                                initialValue={true}
-                                rules={[{ required: true, message: 'Trạng thái biến thể là bắt buộc' }]}
-                              >
-                                <Switch checkedChildren="Đang bán" unCheckedChildren="Ngừng bán" />
-                              </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, 'image']}
-                                label="Ảnh biến thể"
-                                valuePropName="fileList"
-                                getValueFromEvent={normFile}
-                                rules={[{ required: true, message: 'Vui lòng chọn ảnh cho biến thể!' }]}
-                              >
-                                <Upload
-                                  listType="picture-card"
-                                  accept="image/*"
-                                  beforeUpload={beforeUpload}
-                                  maxCount={1}
-                                >
-                                  <div>
-                                    <UploadOutlined />
-                                    <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
-                                  </div>
-                                </Upload>
-                              </Form.Item>
-                            </Col>
-                            {filteredAttributeGroups.map((group) => (
-                              <Col span={8} key={group.attribute_name}>
+                  {/* Chọn thuộc tính cho biến thể */}
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <h4 className="font-medium mb-3 text-purple-900">
+                      🔧 Chọn thuộc tính làm biến thể:
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                      {attributeGroups.map((group) => (
+                        <label
+                          key={group.attribute_name}
+                          className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-purple-25 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 text-purple-600 rounded"
+                            checked={selectedAttributeTypes.includes(
+                              group.attribute_name
+                            )}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAttributeTypes([
+                                  ...selectedAttributeTypes,
+                                  group.attribute_name,
+                                ]);
+                              } else {
+                                setSelectedAttributeTypes(
+                                  selectedAttributeTypes.filter(
+                                    (attr) => attr !== group.attribute_name
+                                  )
+                                );
+                              }
+                            }}
+                          />
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {group.attribute_name}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {group.values.length} tùy chọn
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <div className="text-sm text-purple-800">
+                        <span className="font-medium">💡 Mẹo:</span> Chọn thuộc
+                        tính nào sẽ được sử dụng để tạo biến thể.
+                        <br />
+                        <span className="font-medium">⚠️ Lưu ý:</span> Sau khi
+                        thêm biến thể, không thể bỏ chọn thuộc tính đã chọn.
+                      </div>
+                    </div>
+
+                    {/* Nút tạo tổ hợp tự động */}
+                    {selectedAttributeTypes.length >= 2 && (
+                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium text-green-800 mb-1">
+                              🚀 Tạo tổ hợp tự động
+                            </h4>
+                            <p className="text-sm text-green-700">
+                              Tạo tất cả{" "}
+                              {selectedAttributeTypes.reduce(
+                                (total, attrName) => {
+                                  const group = attributeGroups.find(
+                                    (g) => g.attribute_name === attrName
+                                  );
+                                  return total * (group?.values.length || 1);
+                                },
+                                1
+                              )}{" "}
+                              tổ hợp có thể từ{" "}
+                              {selectedAttributeTypes.join(" + ")}
+                            </p>
+                          </div>
+                          <Button
+                            type="primary"
+                            size="large"
+                            onClick={() => {
+                              const combinations =
+                                generateVariantCombinations();
+                              const currentVariants =
+                                form.getFieldValue("variants") || [];
+                              form.setFieldsValue({
+                                variants: [...currentVariants, ...combinations],
+                              });
+                              message.success(
+                                `Đã tạo ${combinations.length} biến thể tự động với SKU unique!`
+                              );
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Tạo tổ hợp (
+                            {selectedAttributeTypes.reduce(
+                              (total, attrName) => {
+                                const group = attributeGroups.find(
+                                  (g) => g.attribute_name === attrName
+                                );
+                                return total * (group?.values.length || 1);
+                              },
+                              1
+                            )}{" "}
+                            biến thể)
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Form List để thêm variants */}
+                  <Form.List name="variants">
+                    {(fields, { add, remove }) => (
+                      <>
+                        {fields.map(({ key, name, ...restField }) => (
+                          <Card key={key} className="mb-4" size="small">
+                            <Row gutter={16}>
+                              <Col span={12}>
                                 <Form.Item
                                   {...restField}
-                                  name={[name, group.attribute_name]}
-                                  label={group.attribute_name}
-                                  rules={[{ required: true, message: `Chọn ${group.attribute_name.toLowerCase()}!` }]}
+                                  name={[name, "variant_name"]}
+                                  label="Tên biến thể"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Tên biến thể là bắt buộc",
+                                    },
+                                  ]}
                                 >
-                                  <Select placeholder={`Chọn ${group.attribute_name.toLowerCase()}`}>
-                                    {group.values.map((opt) => (
-                                      <Option key={opt.id} value={opt.id}>{opt.value}</Option>
-                                    ))}
-                                  </Select>
+                                  <Input placeholder="VD: 250g - Ground - Medium Roast" />
                                 </Form.Item>
                               </Col>
-                            ))}
-                          </Row>
-                          <Button 
-                            type="text" 
-                            danger
-                            onClick={() => remove(name)}
-                            icon={<MinusCircleOutlined />}
-                            className="absolute top-2 right-2"
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "sku_code"]}
+                                  label="Mã SKU"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Mã SKU là bắt buộc",
+                                    },
+                                  ]}
+                                >
+                                  <Input placeholder="VD: ARA-250G-GR-MR" />
+                                </Form.Item>
+                              </Col>
+
+                              <Col span={8}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "price"]}
+                                  label="Giá (VNĐ)"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Giá là bắt buộc",
+                                    },
+                                    {
+                                      type: "number",
+                                      min: 1000,
+                                      message: "Giá phải lớn hơn 1,000 VNĐ",
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber
+                                    className="w-full"
+                                    min={0}
+                                    placeholder="Nhập giá..."
+                                    formatter={(value) =>
+                                      `${value}`.replace(
+                                        /\B(?=(\d{3})+(?!\d))/g,
+                                        ","
+                                      )
+                                    }
+                                  />
+                                </Form.Item>
+                              </Col>
+
+                              <Col span={8}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "stock_quantity"]}
+                                  label="Số lượng tồn kho"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Số lượng là bắt buộc",
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber
+                                    className="w-full"
+                                    min={0}
+                                    placeholder="Số lượng..."
+                                  />
+                                </Form.Item>
+                              </Col>
+
+                              <Col span={8}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "status"]}
+                                  label="Trạng thái"
+                                  valuePropName="checked"
+                                  initialValue={true}
+                                >
+                                  <Switch
+                                    checkedChildren="Đang bán"
+                                    unCheckedChildren="Ngừng bán"
+                                  />
+                                </Form.Item>
+                              </Col>
+
+                              <Col span={24}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "image"]}
+                                  label="Ảnh biến thể (tùy chọn)"
+                                  valuePropName="fileList"
+                                  getValueFromEvent={normFile}
+                                >
+                                  <Upload
+                                    listType="picture-card"
+                                    accept="image/*"
+                                    beforeUpload={beforeUpload}
+                                    maxCount={1}
+                                  >
+                                    <div>
+                                      <UploadOutlined />
+                                      <div style={{ marginTop: 8 }}>
+                                        Tải ảnh lên
+                                      </div>
+                                    </div>
+                                  </Upload>
+                                </Form.Item>
+                              </Col>
+
+                              {/* Thuộc tính sản phẩm - chỉ hiển thị thuộc tính đã chọn */}
+                              {selectedAttributeTypes.length > 0 && (
+                                <Col span={24}>
+                                  <h5 className="font-medium mb-3 text-gray-900">
+                                    Chọn thuộc tính cho biến thể này:
+                                  </h5>
+                                  <Row gutter={16}>
+                                    {attributeGroups
+                                      .filter((group) =>
+                                        selectedAttributeTypes.includes(
+                                          group.attribute_name
+                                        )
+                                      )
+                                      .map((group) => (
+                                        <Col
+                                          span={8}
+                                          key={group.attribute_name}
+                                        >
+                                          <Form.Item
+                                            {...restField}
+                                            name={[name, group.attribute_name]}
+                                            label={group.attribute_name}
+                                            rules={[
+                                              {
+                                                required: true,
+                                                message: `Chọn ${group.attribute_name.toLowerCase()}!`,
+                                              },
+                                            ]}
+                                          >
+                                            <Select
+                                              placeholder={`Chọn ${group.attribute_name.toLowerCase()}`}
+                                            >
+                                              {group.values.map((opt) => (
+                                                <Option
+                                                  key={opt.id}
+                                                  value={opt.id}
+                                                >
+                                                  {opt.value}
+                                                </Option>
+                                              ))}
+                                            </Select>
+                                          </Form.Item>
+                                        </Col>
+                                      ))}
+                                  </Row>
+                                </Col>
+                              )}
+
+                              {selectedAttributeTypes.length === 0 && (
+                                <Col span={24}>
+                                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                    <div className="text-sm text-orange-800">
+                                      <span className="font-medium">
+                                        ⚠️ Lưu ý:
+                                      </span>{" "}
+                                      Vui lòng chọn ít nhất 1 thuộc tính ở phần
+                                      "Chọn thuộc tính làm biến thể" bên trên để
+                                      có thể cấu hình biến thể này.
+                                    </div>
+                                  </div>
+                                </Col>
+                              )}
+                            </Row>
+
+                            <Button
+                              type="text"
+                              danger
+                              onClick={() => remove(name)}
+                              icon={<MinusCircleOutlined />}
+                              className="absolute top-2 right-2"
+                            >
+                              Xóa biến thể
+                            </Button>
+                          </Card>
+                        ))}
+
+                        <Form.Item>
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            block
+                            icon={<PlusOutlined />}
                           >
-                            Xóa
+                            Thêm biến thể mới
                           </Button>
-                        </Card>
-                      ))}
-                      <Form.Item>
-                        <Button
-                          type="dashed"
-                          onClick={() => add()}
-                          block
-                          icon={<PlusOutlined />}
-                          disabled={selectedAttributes.length === 0}
-                        >
-                          Thêm biến thể
-                        </Button>
-                      </Form.Item>
-                    </>
-                  )}
-                </Form.List>
+                        </Form.Item>
+                      </>
+                    )}
+                  </Form.List>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600">
+                      Sản phẩm này sẽ không có biến thể. Vui lòng nhập số lượng
+                      tồn kho.
+                    </p>
+                  </div>
+
+                  <Form.Item
+                    name="stock_quantity"
+                    label="Số lượng tồn kho"
+                    rules={[
+                      {
+                        required: !hasVariants,
+                        message: "Vui lòng nhập số lượng tồn kho!",
+                      },
+                      {
+                        type: "number",
+                        min: 0,
+                        message: "Số lượng phải lớn hơn hoặc bằng 0!",
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      className="w-full"
+                      min={0}
+                      placeholder="Nhập số lượng tồn kho"
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                    />
+                  </Form.Item>
+                </div>
               )}
             </Card>
           </Col>
@@ -540,7 +948,7 @@ const AddProduct = () => {
               <Form.Item
                 name="category_id"
                 label="Danh mục"
-                rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
+                rules={[{ required: true, message: "Vui lòng chọn danh mục!" }]}
               >
                 <Select placeholder="Chọn danh mục">
                   {categories?.map((cat: ICategory) => (
@@ -554,7 +962,9 @@ const AddProduct = () => {
               <Form.Item
                 name="brand_id"
                 label="Thương hiệu"
-                rules={[{ required: true, message: 'Vui lòng chọn thương hiệu!' }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn thương hiệu!" },
+                ]}
               >
                 <Select placeholder="Chọn thương hiệu">
                   {brands?.map((brand: IBrand) => (
@@ -568,7 +978,7 @@ const AddProduct = () => {
               <Form.Item
                 name="origin_id"
                 label="Xuất xứ"
-                rules={[{ required: true, message: 'Vui lòng chọn xuất xứ!' }]}
+                rules={[{ required: true, message: "Vui lòng chọn xuất xứ!" }]}
               >
                 <Select placeholder="Chọn xuất xứ">
                   {origins?.map((origin: IProductOrigin) => (
@@ -588,7 +998,7 @@ const AddProduct = () => {
                 rules={[{ required: true }]}
               >
                 <Select placeholder="Chọn loại cà phê">
-                  {COFFEE_TYPES.map(type => (
+                  {COFFEE_TYPES.map((type) => (
                     <Option key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </Option>
@@ -661,7 +1071,12 @@ const AddProduct = () => {
             </Card>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={mutation.isPending} block>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={mutation.isPending}
+                block
+              >
                 Thêm sản phẩm
               </Button>
             </Form.Item>

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { IUser, UserLogin, UserRegister } from '../interfaces/user';
 import { login, register, getProfile, logout } from '../services/authService';
 import { isAxiosError } from 'axios';
+import toast from 'react-hot-toast';
 
 interface UserState {
   user: IUser | null;

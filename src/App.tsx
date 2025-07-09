@@ -35,7 +35,12 @@ import ProductDetailAdmin from "./pages/admins/product/ProductDetail";
 import OrderDetailPage from "./pages/clients/account/order/OrderDetailPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import ListShippingMethod from "./pages/admins/shiping-method/ListShippingMethod";
+import ListAttribute from "./pages/admins/attribute/ListAttribute";
+import AddAttribute from "./pages/admins/attribute/AddAttribute";
+import EditAttribute from "./pages/admins/attribute/EditAttribute";
+import AttributeDetail from "./pages/admins/attribute/AttributeDetail";
+import AttributeValues from "./pages/admins/attribute/AttributeValues";
 
 function App() {
   const element = useRoutes([
@@ -56,20 +61,20 @@ function App() {
           element: <ProductDetailPage />,
         },
         {
-          path:'about',
-          element:<AboutPage/>
+          path: "about",
+          element: <AboutPage />,
         },
         {
-          path:'blog',
-          element:<BlogPage/>
+          path: "blog",
+          element: <BlogPage />,
         },
         {
-           path:'blog/:id',
-           element:<div>BlogDetail</div>
+          path: "blog/:id",
+          element: <div>BlogDetail</div>,
         },
         {
           path: "contact",
-          element: <ContactPage/>,
+          element: <ContactPage />,
         },
         {
           path: "cart",
@@ -80,20 +85,20 @@ function App() {
           element: <AccountPage />,
         },
         {
-          path:'account/orders',
-          element:<OrdersPage/>
+          path: "account/orders",
+          element: <OrdersPage />,
         },
         {
-          path:'account/orders/:id',
-          element:<OrderDetailPage/>
+          path: "account/orders/:id",
+          element: <OrderDetailPage />,
         },
         {
-          path:'account/wishlist',
-          element:<WishlistPage/>
+          path: "account/wishlist",
+          element: <WishlistPage />,
         },
         {
           path: "checkout",
-          element: <CheckoutPage/>,
+          element: <CheckoutPage />,
         },
         {
           path: "auth/login",
@@ -110,8 +115,8 @@ function App() {
       element: <LayoutAdmin />,
       children: [
         {
-          path:'',
-          element:<Dashboard/>
+          path: "",
+          element: <Dashboard />,
         },
         {
           path: "product",
@@ -119,7 +124,7 @@ function App() {
         },
         {
           path: "product/:id",
-          element: <ProductDetailAdmin/>,
+          element: <ProductDetailAdmin />,
         },
         {
           path: "product/add",
@@ -127,7 +132,7 @@ function App() {
         },
         {
           path: "product/edit/:id",
-          element: <EditProduct/>,
+          element: <EditProduct />,
         },
         //Route Brand
         {
@@ -185,20 +190,20 @@ function App() {
         },
         {
           path: "promotion/edit/:id",
-          element: <EditPromotion/>,
+          element: <EditPromotion />,
         },
         //Route blog-category
         {
-          path:"blog-category",
-          element:<ListBlogCategory/>
+          path: "blog-category",
+          element: <ListBlogCategory />,
         },
         {
-          path:"blog-category/add",
-          element:<AddBlogCategory/>
+          path: "blog-category/add",
+          element: <AddBlogCategory />,
         },
         {
-          path:"blog-category/edit/:id",
-          element:<EditBlogCategory/>
+          path: "blog-category/edit/:id",
+          element: <EditBlogCategory />,
         },
         {
           path: "origin",
@@ -212,6 +217,51 @@ function App() {
           path: "origin/edit/:id",
           element: <EditOrigin />,
         },
+        {
+          path: "shipping-method",
+          element: <ListShippingMethod />,
+        },
+        // Route Attribute
+        {
+          path: "attribute",
+          element: <ListAttribute />,
+        },
+        {
+          path: "attribute/add",
+          element: <AddAttribute />,
+        },
+        {
+          path: "attribute/edit/:id",
+          element: <EditAttribute />,
+        },
+        {
+          path: "attribute/:id",
+          element: <AttributeDetail />,
+        },
+        {
+          path: "attribute/:id/values",
+          element: <AttributeValues />,
+        },
+        // {
+        //   path: "shipping-method/add",
+        //   element: <AddShippingMethod />,
+        // },
+        // {
+        //   path: "shipping-method/edit/:id",
+        //   element: <EditShippingMethod />,
+        // },
+        // {
+        //   path: "blog-post",
+        //   element: <ListBlogPost />,
+        // },
+        // {
+        //   path: "blog-post/add",
+        //   element: <AddBlogPost />,
+        // },
+        // {
+        //   path: "blog-post/edit/:id",
+        //   element: <ListBlogPost />,
+        // },
       ],
     },
   ]);
