@@ -11,6 +11,7 @@ import {
   TagsOutlined,
   ShoppingOutlined,
   RocketOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
@@ -40,7 +41,7 @@ const LayoutAdmin: React.FC = () => {
     },
     {
       key: "3",
-      icon: <ShoppingOutlined/>,
+      icon: <ShoppingOutlined />,
       label: "Đơn Hàng",
       onClick: () => navigate("/admin/order"),
     },
@@ -81,7 +82,7 @@ const LayoutAdmin: React.FC = () => {
     },
     {
       key: "9",
-      icon: <ContactsOutlined  />,
+      icon: <ContactsOutlined />,
       label: "Liên Hệ",
       onClick: () => navigate("/admin/contact"),
     },
@@ -90,23 +91,40 @@ const LayoutAdmin: React.FC = () => {
       icon: <GiftOutlined />,
       label: "Khuyến Mãi",
       onClick: () => navigate("/admin/promotion"),
-    },  
+    },
     {
       key: "11",
       icon: <GiftOutlined />,
       label: "Danh Mục Bài Viết",
       onClick: () => navigate("/admin/blog-category"),
-    },  
+    },
     {
       key: "12",
       icon: <RocketOutlined />,
       label: "Nguồn Gốc",
       onClick: () => navigate("/admin/origin"),
-    },  
-    
-    
+    },
     {
       key: "13",
+      icon: <RocketOutlined />,
+      label: "Phương Thức Vận Chuyển",
+      onClick: () => navigate("/admin/shipping-method"),
+    },
+    {
+      key: "15",
+      icon: <RocketOutlined />,
+      label: "Bài Viết",
+      onClick: () => navigate("/admin/blog-post"),
+    },
+    {
+      key: "16",
+      icon: <SettingOutlined />,
+      label: "Thuộc Tính Sản Phẩm",
+      onClick: () => navigate("/admin/attribute"),
+    },
+
+    {
+      key: "14",
       icon: <LogoutOutlined />, // Thay bằng icon phù hợp cho Logout
       label: "Đăng Xuất",
       onClick: () => handlelogout(),

@@ -1,4 +1,4 @@
-"use client"
+
 
 import { useState } from "react"
 
@@ -14,7 +14,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isCartModalOpen, setIsCartModalOpen] = useState(false)
-  const { user } = useUserStore()
+  const { user,logout } = useUserStore()
   const { cart } = useCartStore()
   const cartItemCount = cart?.total_items || 0
  
@@ -120,7 +120,7 @@ export default function Header() {
                         Cài Đặt
                       </Link>
                       <div className="border-t mt-2 pt-2">
-                        <button className="block w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
+                        <button onClick={logout} className="block w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
                           Đăng Xuất
                         </button>
                       </div>

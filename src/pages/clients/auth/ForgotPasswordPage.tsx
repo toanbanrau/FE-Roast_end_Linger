@@ -1,4 +1,4 @@
-
+"use client"
 
 import type React from "react"
 
@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import { useUserStore } from "../../../stores/useUserStore"
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -22,8 +22,8 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: () => {
-      toast.success("Đăng Nhập Thành Công");
       navigate('/')
+      
     },
     onError: (error) => {
        alert(error)
