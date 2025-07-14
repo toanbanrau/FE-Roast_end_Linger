@@ -42,7 +42,7 @@ interface OrderDates {
 }
 
 // Product interface for order items
-interface Product {
+export interface Product {
   id: number;
   name: string;
   current_name: string;
@@ -51,7 +51,7 @@ interface Product {
 }
 
 // Variant interface for order items
-interface Variant {
+export interface Variant {
   id: number;
   name: string;
   current_name: string;
@@ -73,11 +73,11 @@ interface ProductSnapshot {
 }
 
 // Order item interface with full details
-interface OrderItemDetail {
+export interface OrderItemDetail {
   id: number;
   order_id: number;
   product: Product;
-  variant: Variant;
+  variant: Variant | null; // Variant có thể null cho sản phẩm không có biến thể
   full_product_info: string;
   quantity: number;
   unit_price: string;
@@ -90,7 +90,7 @@ interface OrderItemDetail {
 }
 
 // Order history interface
-interface OrderHistory {
+export interface OrderHistory {
   id: number;
   order_id: number;
   old_status: {
@@ -110,14 +110,42 @@ interface OrderHistory {
   updated_at: string;
 }
 
-// Payment info interfaces for bank transfer
-interface BankInfo {
-  name: string;
+// SEPAY Payment Info Interfaces
+interface SepayBankInfo {
+  bank_name: string;
+  bank_code: string;
   account_number: string;
   account_name: string;
-  branch: string;
+  // Legacy support
+  name?: string;
+  branch?: string;
 }
 
+interface SepayInstructions {
+  step_1: string;
+  step_2: string;
+  step_3: string;
+  step_4: string;
+}
+
+interface SepayTransaction {
+  id: string;
+  transaction_date: string;
+  amount_in: number;
+  transaction_content: string;
+  reference_number: string;
+  bank_brand_name: string;
+  account_number: string;
+}
+
+interface SepayCheck {
+  checked_at: string;
+  api_response_time_ms: number;
+  transactions_found: number;
+  matching_transaction: SepayTransaction | null;
+}
+
+// Legacy QR Code Info Interface (for backward compatibility)
 interface QRCodeInfo {
   viet_qr_url: string;
   instructions: {
@@ -129,14 +157,29 @@ interface QRCodeInfo {
   };
 }
 
+// Enhanced Payment Info Interface (supports both legacy and SEPAY)
 interface PaymentInfo {
+  // SEPAY fields
+  payment_id?: number;
   method: string;
-  bank_info: BankInfo;
-  transfer_content: string;
-  amount: string;
+  payment_gateway?: string;
+  amount: number | string;
   formatted_amount: string;
-  qr_code_enabled: boolean;
-  qr_code: QRCodeInfo;
+  transaction_id?: string;
+  tracking_content?: string;
+  qr_code?: string | QRCodeInfo;
+  bank_info: SepayBankInfo;
+  auto_confirm?: boolean;
+  expires_at?: string;
+  instructions?: SepayInstructions;
+  sepay_check?: SepayCheck;
+  sepay_transaction?: SepayTransaction;
+  completed_at?: string;
+  detection_method?: string;
+
+  // Legacy fields (for backward compatibility)
+  transfer_content?: string;
+  qr_code_enabled?: boolean;
 }
 
 // Main IOrder interface updated to match the API response

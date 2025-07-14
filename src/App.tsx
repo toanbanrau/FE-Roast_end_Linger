@@ -24,6 +24,13 @@ import AboutPage from "./pages/clients/about/AboutPage";
 import ListBlogCategory from "./pages/admins/blog-category/ListBlogCategory";
 import AddBlogCategory from "./pages/admins/blog-category/AddBlogCategory";
 import EditBlogCategory from "./pages/admins/blog-category/EditBlogCategory";
+import ListBlogPost from "./pages/admins/blog-post/ListBlogPost";
+import AddBlogPost from "./pages/admins/blog-post/AddBlogPost";
+import EditBlogPost from "./pages/admins/blog-post/EditBlogPost";
+import ViewBlogPost from "./pages/admins/blog-post/ViewBlogPost";
+import ListContact from "./pages/admins/contact/ListContact";
+import AddContact from "./pages/admins/contact/AddContact";
+import ViewContact from "./pages/admins/contact/ViewContact";
 import Dashboard from "./pages/admins/dashboard/Dashboard";
 import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
 import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
@@ -33,6 +40,8 @@ import AddOrigin from "./pages/admins/origin/AddOrigin";
 import EditOrigin from "./pages/admins/origin/EditOrigin";
 import ProductDetailAdmin from "./pages/admins/product/ProductDetail";
 import OrderDetailPage from "./pages/clients/account/order/OrderDetailPage";
+import ListOrder from "./pages/admins/order/ListOrder";
+import OrderDetail from "./pages/admins/order/OrderDetail";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ListShippingMethod from "./pages/admins/shiping-method/ListShippingMethod";
@@ -150,11 +159,11 @@ function App() {
         //Route Order
         {
           path: "order",
-          element: <div>Brand</div>,
+          element: <ListOrder />,
         },
         {
           path: "order/:id",
-          element: <div>Brand</div>,
+          element: <OrderDetail />,
         },
         //Route Category
         {
@@ -250,18 +259,35 @@ function App() {
         //   path: "shipping-method/edit/:id",
         //   element: <EditShippingMethod />,
         // },
-        // {
-        //   path: "blog-post",
-        //   element: <ListBlogPost />,
-        // },
-        // {
-        //   path: "blog-post/add",
-        //   element: <AddBlogPost />,
-        // },
-        // {
-        //   path: "blog-post/edit/:id",
-        //   element: <ListBlogPost />,
-        // },
+        {
+          path: "blog-post",
+          element: <ListBlogPost />,
+        },
+        {
+          path: "blog-post/add",
+          element: <AddBlogPost />,
+        },
+        {
+          path: "blog-post/:id",
+          element: <ViewBlogPost />,
+        },
+        {
+          path: "blog-post/edit/:id",
+          element: <EditBlogPost />,
+        },
+        //Route Contact
+        {
+          path: "contact",
+          element: <ListContact />,
+        },
+        {
+          path: "contact/add",
+          element: <AddContact />,
+        },
+        {
+          path: "contact/:id",
+          element: <ViewContact />,
+        },
       ],
     },
   ]);

@@ -1,13 +1,13 @@
-import { ArrowLeft, Download, Truck, Package, CheckCircle } from "lucide-react"
-import { Link, useParams } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
-import AccountNav from "../../../../components/AccountNav"
-import { getMyOrderById } from "../../../../services/checkoutService"
-import type { IOrder } from "../../../../interfaces/order"
+import { ArrowLeft, Download, Truck, Package, CheckCircle } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import AccountNav from "../../../../components/AccountNav";
+import { getMyOrderById } from "../../../../services/checkoutService";
+import type { IOrder } from "../../../../interfaces/order";
 
 export default function OrderDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  
+  const { id } = useParams<{ id: string }>();
+
   const {
     data: order,
     isLoading,
@@ -16,7 +16,7 @@ export default function OrderDetailPage() {
     queryKey: ["order", id],
     queryFn: () => getMyOrderById(Number(id)),
     enabled: !!id,
-  })
+  });
 
   // Format date function
   const formatDate = (dateString: string) => {
@@ -24,23 +24,23 @@ export default function OrderDetailPage() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    })
-  }
+    });
+  };
 
   // Format time function
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString("vi-VN", {
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   if (isLoading) {
     return (
       <div className="container px-4 py-12 md:px-6 md:py-16">
         <div className="text-center">Đang tải thông tin đơn hàng...</div>
       </div>
-    )
+    );
   }
 
   if (isError || !order) {
@@ -48,16 +48,21 @@ export default function OrderDetailPage() {
       <div className="container px-4 py-12 md:px-6 md:py-16">
         <div className="text-center">Không thể tải thông tin đơn hàng.</div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="flex items-center gap-2 mb-8">
-        <Link to="/account/orders" className="text-amber-800 hover:text-amber-900">
+        <Link
+          to="/account/orders"
+          className="text-amber-800 hover:text-amber-900"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Đơn hàng {order.order_number}</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">
+          Đơn hàng {order.order_number}
+        </h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -85,7 +90,9 @@ export default function OrderDetailPage() {
                       {order.status.name}
                     </span>
                   </div>
-                  <p className="text-sm text-stone-500">Đặt ngày {formatDate(order.dates.created_at)}</p>
+                  <p className="text-sm text-stone-500">
+                    Đặt ngày {formatDate(order.dates.created_at)}
+                  </p>
                 </div>
                 <div>
                   <Link
@@ -135,10 +142,13 @@ export default function OrderDetailPage() {
                     <div className="pt-1">
                       <h3 className="font-medium">{history.new_status.name}</h3>
                       <p className="text-sm text-stone-500">
-                        {formatDate(history.created_at)} lúc {formatTime(history.created_at)}
+                        {formatDate(history.created_at)} lúc{" "}
+                        {formatTime(history.created_at)}
                       </p>
                       {history.notes && (
-                        <p className="text-sm text-stone-400 mt-1">{history.notes}</p>
+                        <p className="text-sm text-stone-400 mt-1">
+                          {history.notes}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -150,8 +160,15 @@ export default function OrderDetailPage() {
                   <div className="flex items-start gap-3">
                     <Truck className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-blue-800">Đơn hàng của bạn đang được giao</h3>
-                      <p className="text-sm text-blue-700 mb-2">Dự kiến giao: {order.dates.delivery_date ? formatDate(order.dates.delivery_date) : "Chưa có thông tin"}</p>
+                      <h3 className="font-medium text-blue-800">
+                        Đơn hàng của bạn đang được giao
+                      </h3>
+                      <p className="text-sm text-blue-700 mb-2">
+                        Dự kiến giao:{" "}
+                        {order.dates.delivery_date
+                          ? formatDate(order.dates.delivery_date)
+                          : "Chưa có thông tin"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -162,8 +179,15 @@ export default function OrderDetailPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-green-800">Đơn hàng đã được giao thành công</h3>
-                      <p className="text-sm text-green-700">Giao ngày {order.dates.completed_date ? formatDate(order.dates.completed_date) : "Chưa có thông tin"}</p>
+                      <h3 className="font-medium text-green-800">
+                        Đơn hàng đã được giao thành công
+                      </h3>
+                      <p className="text-sm text-green-700">
+                        Giao ngày{" "}
+                        {order.dates.completed_date
+                          ? formatDate(order.dates.completed_date)
+                          : "Chưa có thông tin"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -180,25 +204,32 @@ export default function OrderDetailPage() {
               {order.items.map((item) => (
                 <div key={item.id} className="p-6 flex items-center">
                   <div className="relative w-16 h-16 flex-shrink-0 bg-stone-50 rounded">
-                    <img 
-                      src={item.product.image || "/placeholder.svg"} 
-                      alt={item.product.name} 
-                      className="object-contain p-2" 
+                    <img
+                      src={item.product.image || "/placeholder.svg"}
+                      alt={item.product.name}
+                      className="object-contain p-2"
                     />
                   </div>
                   <div className="ml-4 flex-grow">
-                    <Link to={`/products/${item.product.slug}`} className="font-medium hover:text-amber-800">
+                    <Link
+                      to={`/products/${item.product.slug}`}
+                      className="font-medium hover:text-amber-800"
+                    >
                       {item.full_product_info}
                     </Link>
-                    <div className="text-sm text-stone-500 mt-1">
-                      SKU: {item.variant.sku}
-                    </div>
+                    {item.variant && (
+                      <div className="text-sm text-stone-500 mt-1">
+                        SKU: {item.variant.sku}
+                      </div>
+                    )}
                     <div className="text-sm text-stone-500">
                       Số lượng: {item.quantity} × {item.formatted_unit_price}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{item.formatted_total_price}</div>
+                    <div className="font-medium">
+                      {item.formatted_total_price}
+                    </div>
                     <Link
                       to={`/products/${item.product.slug}/review`}
                       className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-1 inline-block"
@@ -240,21 +271,42 @@ export default function OrderDetailPage() {
               <div className="p-6">
                 <div className="mb-4">
                   <h3 className="font-medium mb-1">Phương thức thanh toán</h3>
-                  <p>{order.payment_method === "cod" ? "Thanh toán khi nhận hàng" : order.payment_method}</p>
+                  <p>
+                    {order.payment_method === "cod"
+                      ? "Thanh toán khi nhận hàng"
+                      : order.payment_method}
+                  </p>
                 </div>
                 <div className="space-y-2 border-t pt-4">
                   <div className="flex justify-between">
                     <span className="text-stone-600">Tạm tính</span>
-                    <span>{parseFloat(order.order_totals.subtotal).toLocaleString('vi-VN')}đ</span>
+                    <span>
+                      {parseFloat(order.order_totals.subtotal).toLocaleString(
+                        "vi-VN"
+                      )}
+                      đ
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-stone-600">Phí giao hàng</span>
-                    <span>{parseFloat(order.order_totals.shipping_fee) === 0 ? "Miễn phí" : `${parseFloat(order.order_totals.shipping_fee).toLocaleString('vi-VN')}đ`}</span>
+                    <span>
+                      {parseFloat(order.order_totals.shipping_fee) === 0
+                        ? "Miễn phí"
+                        : `${parseFloat(
+                            order.order_totals.shipping_fee
+                          ).toLocaleString("vi-VN")}đ`}
+                    </span>
                   </div>
                   {parseFloat(order.order_totals.discount_amount) > 0 && (
                     <div className="flex justify-between">
                       <span className="text-stone-600">Giảm giá</span>
-                      <span>-{parseFloat(order.order_totals.discount_amount).toLocaleString('vi-VN')}đ</span>
+                      <span>
+                        -
+                        {parseFloat(
+                          order.order_totals.discount_amount
+                        ).toLocaleString("vi-VN")}
+                        đ
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between font-medium text-lg pt-2 border-t">
@@ -268,7 +320,9 @@ export default function OrderDetailPage() {
 
           {/* Need Help */}
           <div className="bg-stone-50 p-6 rounded-lg">
-            <h2 className="text-lg font-medium mb-4">Cần hỗ trợ với đơn hàng?</h2>
+            <h2 className="text-lg font-medium mb-4">
+              Cần hỗ trợ với đơn hàng?
+            </h2>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 to="/contact"
@@ -293,5 +347,5 @@ export default function OrderDetailPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

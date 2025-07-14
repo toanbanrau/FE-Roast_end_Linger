@@ -224,41 +224,56 @@ export default function ProductsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product: IProduct) => (
-              <Link
-                to={`/product/${product.id}`}
-                key={product.id}
-                className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={product.primary_image?.image_url || "/placeholder.svg"}
-                    alt={product.primary_image?.alt_text || product.product_name}
-                    width={400}
-                    height={400}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="mb-2">
-                    <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
-                      {product.category?.category_name || ""}
-                    </span>
+            {products.map((product: IProduct) => {
+              let variantPrice: number | null = null;
+              if (product.has_variants && Array.isArray(product.variants) && product.variants.length > 0) {
+                const found = product.variants.find(v => v.price && !isNaN(Number(v.price)) && Number(v.price) > 0);
+                if (found) variantPrice = Number(found.price);
+              }
+              return (
+                <Link
+                  to={`/product/${product.id}`}
+                  key={product.id}
+                  className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
+                >
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={product.primary_image?.image_url || "/placeholder.svg"}
+                      alt={product.primary_image?.alt_text || product.product_name}
+                      width={400}
+                      height={400}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
                   </div>
-                  <h3 className="text-xl font-medium text-stone-900">{product.product_name}</h3>
-                  <p className="mt-2 text-stone-600 text-sm">{product.short_description}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-amber-800">{Number(product.base_price).toLocaleString()}₫</span>
-                    <button 
-                      type="button"
-                      className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1 rounded-md text-sm font-medium"
-                    >
-                      Xem Chi Tiết
-                    </button>
+                  <div className="p-6">
+                    <div className="mb-2">
+                      <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
+                        {product.category?.category_name || ""}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-medium text-stone-900">{product.product_name}</h3>
+                    <p className="mt-2 text-stone-600 text-sm">{product.short_description}</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      {product.has_variants && variantPrice !== null ? (
+                        <span className="text-lg font-semibold text-amber-800">
+                          {variantPrice.toLocaleString()}₫
+                        </span>
+                      ) : (
+                        <span className="text-lg font-semibold text-amber-800">
+                          {Number(product.base_price).toLocaleString()}₫
+                        </span>
+                      )}
+                      <button 
+                        type="button"
+                        className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1 rounded-md text-sm font-medium"
+                      >
+                        Xem Chi Tiết
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Pagination */}

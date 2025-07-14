@@ -71,9 +71,15 @@ const AddBlogPost = () => {
       <Form.Item
         label="Nội dung"
         name="content"
-        rules={[{ required: true, message: "Vui lòng nhập nội dung bài viết!" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập nội dung bài viết!" },
+          { min: 10, message: "Nội dung phải có ít nhất 10 ký tự!" },
+        ]}
       >
-        <TextArea rows={10} placeholder="Nhập nội dung bài viết" />
+        <TextArea
+          rows={10}
+          placeholder="Nhập nội dung bài viết (ít nhất 10 ký tự)"
+        />
       </Form.Item>
 
       <Form.Item
@@ -98,11 +104,7 @@ const AddBlogPost = () => {
         <TextArea rows={3} placeholder="Nhập meta description" />
       </Form.Item>
 
-      <Form.Item
-        label="Trạng thái"
-        name="status"
-        initialValue="published"
-      >
+      <Form.Item label="Trạng thái" name="status" initialValue="published">
         <Select>
           <Option value="published">Đã xuất bản</Option>
           <Option value="draft">Bản nháp</Option>

@@ -27,7 +27,7 @@ export default function ListProduct() {
       key: "image",
       render: (_: unknown, record: IProduct) => (
         <Image
-          src={record.primary_image?.image || "/placeholder.svg"}
+          src={record.primary_image?.image_url || "/placeholder.svg"}
           alt={record.primary_image?.alt_text || record.product_name}
           width={60}
           height={60}
