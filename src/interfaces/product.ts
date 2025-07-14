@@ -77,6 +77,9 @@ export interface IProduct {
     country: string;
   };
   images?: IProductImage[];
+  variants?: IProductVariant[];
+  min_variant_price?: string;
+  max_variant_price?: string;
 }
 
 // Interface cho dữ liệu tạo sản phẩm (form add, multipart/form-data)

@@ -4,7 +4,19 @@ import type { IAdminBlogPost, IAdminBlogPostForm } from "../interfaces/blog";
 // Lấy tất cả bài viết blog
 export const getAllBlogPosts = async (): Promise<IAdminBlogPost[]> => {
   const response = await adminAxios.get("/blog-posts");
-  return response.data.data.data || response.data;
+  console.log("Blog posts API response:", response.data);
+
+  // Xử lý response structure
+  if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
+    return response.data.data.data;
+  } else if (response.data?.data && Array.isArray(response.data.data)) {
+    return response.data.data;
+  } else if (Array.isArray(response.data)) {
+    return response.data;
+  } else {
+    console.warn("Unexpected API response structure:", response.data);
+    return [];
+  }
 };
 
 // Lấy bài viết blog theo id

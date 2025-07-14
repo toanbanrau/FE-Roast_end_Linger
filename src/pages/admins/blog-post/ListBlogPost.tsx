@@ -14,10 +14,13 @@ const ListBlogPost = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["blog-posts"],
     queryFn: getAllBlogPosts,
   });
+
+  // Đảm bảo data luôn là array
+  const blogPosts = Array.isArray(data) ? data : [];
 
   const mutation = useMutation({
     mutationFn: deleteBlogPost,
@@ -85,17 +88,13 @@ const ListBlogPost = () => {
     <div>
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-bold">Quản lý bài viết blog</h1>
-        <Button
-          type="primary"
-          onClick={() => navigate("/admin/blog-post/add")}
-        >
+        <Button type="primary" onClick={() => navigate("/admin/blog-post/add")}>
           Thêm bài viết mới
         </Button>
       </div>
-
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={blogPosts}
         rowKey="id"
         loading={isLoading}
         pagination={{ pageSize: 10 }}
