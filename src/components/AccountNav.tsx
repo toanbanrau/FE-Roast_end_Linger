@@ -5,11 +5,18 @@ import {
   Settings,
   Heart,
   LogOut,
+  MapPin,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface AccountNavProps {
-  active: "profile" | "orders" | "subscriptions" | "wishlist" | "settings";
+  active:
+    | "profile"
+    | "orders"
+    | "subscriptions"
+    | "wishlist"
+    | "settings"
+    | "addresses";
 }
 
 export default function AccountNav({ active }: AccountNavProps) {
@@ -25,6 +32,12 @@ export default function AccountNav({ active }: AccountNavProps) {
       to: "/account/orders",
       icon: <Package className="h-5 w-5" />,
       value: "orders",
+    },
+    {
+      label: "Địa Chỉ",
+      to: "/account/addresses",
+      icon: <MapPin className="h-5 w-5" />,
+      value: "addresses",
     },
     {
       label: "Subscriptions",

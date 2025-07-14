@@ -34,6 +34,7 @@ import ViewContact from "./pages/admins/contact/ViewContact";
 import Dashboard from "./pages/admins/dashboard/Dashboard";
 import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
 import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
+import AddressPage from "./pages/clients/account/address/AddressPage";
 import EditProduct from "./pages/admins/product/EditProduct";
 import ListOrigin from "./pages/admins/origin/ListOrigin";
 import AddOrigin from "./pages/admins/origin/AddOrigin";
@@ -104,6 +105,10 @@ function App() {
         {
           path: "account/wishlist",
           element: <WishlistPage />,
+        },
+        {
+          path: "account/addresses",
+          element: <AddressPage />,
         },
         {
           path: "checkout",
