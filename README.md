@@ -1,613 +1,749 @@
+# 🏠 Address Management API
+
+> Comprehensive user address management system with GPS support
+
+## Base URL
+
+```
+/api/user/addresses
+```
+
+---
+
+## 📋 Endpoints Overview
+
+| Method | Endpoint                               | Auth | Description         |
+| ------ | -------------------------------------- | ---- | ------------------- |
+| GET    | `/api/user/addresses`                  | Yes  | List user addresses |
+| POST   | `/api/user/addresses`                  | Yes  | Add new address     |
+| GET    | `/api/user/addresses/{id}`             | Yes  | Get address details |
+| PUT    | `/api/user/addresses/{id}`             | Yes  | Update address      |
+| DELETE | `/api/user/addresses/{id}`             | Yes  | Delete address      |
+| POST   | `/api/user/addresses/{id}/set-default` | Yes  | Set default address |
+
+---
+
+## 📋 List User Addresses
+
+**GET** `/api/user/addresses`
+
+### Headers
+
+```json
 {
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Query Parameters
+
+| Parameter | Type   | Description    | Example  |
+| --------- | ------ | -------------- | -------- |
+| type      | string | Filter by type | `home`   |
+| city      | string | Filter by city | `Hà Nội` |
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Addresses retrieved successfully",
     "data": [
         {
-            "id": 95,
-            "product_name": "kkkkkkkkkkkk",
-            "description": "sakdaskdk",
-            "short_description": "sadask",
-            "base_price": null,
-            "formatted_price": "0 VNĐ",
-            "slug": "kkkkkkkkkkkk",
-            "coffee_type": "robusta",
-            "roast_level": "medium",
-            "flavor_profile": "saddsa",
-            "strength_score": "5.0",
-            "meta_title": "21321",
-            "meta_description": "321321321",
-            "stock_quantity": 231,
-            "total_stock": 231,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 134,
-            "sold_count": 25,
-            "category": {
-                "id": 2,
-                "category_name": "Blend Coffee"
-            },
-            "brand": {
-                "id": 5,
-                "brand_name": "Cộng Cà Phê"
-            },
-            "origin": {
-                "id": 2,
-                "origin_name": "Kenya"
-            },
-            "primary_image": {
-                "id": 374,
-                "image_url": "http://127.0.0.1:8000/storage/products/95/1751560682_6866b1ea99959.png",
-                "image_url_raw": "/storage/products/95/1751560682_6866b1ea99959.png",
-                "image_name": "1751560682_6866b1ea99959.png",
-                "local_path": "products/95/1751560682_6866b1ea99959.png",
-                "image_exists": true,
-                "alt_text": "21313232121",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T09:38:02.000000Z",
-                "updated_at": "2025-07-03T09:38:02.000000Z"
-            },
-            "created_at": "2025-07-03T09:38:02.000000Z",
-            "updated_at": "2025-07-10T08:23:54.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 94,
-            "product_name": "123123",
-            "description": "saddas",
-            "short_description": "dsadas",
-            "base_price": null,
-            "formatted_price": "0 VNĐ",
-            "slug": "123123",
-            "coffee_type": "robusta",
-            "roast_level": "medium",
-            "flavor_profile": "213321",
-            "strength_score": "5.0",
-            "meta_title": "ádas",
-            "meta_description": "dsadsasda",
-            "stock_quantity": 0,
-            "total_stock": 0,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": false,
-            "view_count": 26,
-            "sold_count": 0,
-            "category": {
-                "id": 2,
-                "category_name": "Blend Coffee"
-            },
-            "brand": {
-                "id": 3,
-                "brand_name": "Phúc Long Coffee & Tea"
-            },
-            "origin": {
-                "id": 3,
-                "origin_name": "Guatemala"
-            },
-            "primary_image": {
-                "id": 373,
-                "image_url": "http://127.0.0.1:8000/storage/products/94/1751560352_6866b0a0bbe5a.png",
-                "image_url_raw": "/storage/products/94/1751560352_6866b0a0bbe5a.png",
-                "image_name": "1751560352_6866b0a0bbe5a.png",
-                "local_path": "products/94/1751560352_6866b0a0bbe5a.png",
-                "image_exists": true,
-                "alt_text": "Ảnh chính",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T09:32:32.000000Z",
-                "updated_at": "2025-07-03T09:32:32.000000Z"
-            },
-            "created_at": "2025-07-03T09:32:32.000000Z",
-            "updated_at": "2025-07-10T05:02:47.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 93,
-            "product_name": "sdadas",
-            "description": "đâs",
-            "short_description": "dasad",
-            "base_price": "123.00",
-            "formatted_price": "123 VNĐ",
-            "slug": "sdadas",
-            "coffee_type": "robusta",
-            "roast_level": "medium",
-            "flavor_profile": "213231",
-            "strength_score": "5.0",
-            "meta_title": "21312",
-            "meta_description": "231231",
-            "stock_quantity": 213321,
-            "total_stock": 0,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": false,
-            "view_count": 27,
-            "sold_count": 0,
-            "category": {
-                "id": 2,
-                "category_name": "Blend Coffee"
-            },
-            "brand": {
-                "id": 2,
-                "brand_name": "Highlands Coffee"
-            },
-            "origin": {
-                "id": 2,
-                "origin_name": "Kenya"
-            },
-            "primary_image": {
-                "id": 372,
-                "image_url": "http://127.0.0.1:8000/storage/products/93/1751558359_6866a8d72f857.png",
-                "image_url_raw": "/storage/products/93/1751558359_6866a8d72f857.png",
-                "image_name": "1751558359_6866a8d72f857.png",
-                "local_path": "products/93/1751558359_6866a8d72f857.png",
-                "image_exists": true,
-                "alt_text": "sdasda",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T08:59:19.000000Z",
-                "updated_at": "2025-07-03T08:59:19.000000Z"
-            },
-            "created_at": "2025-07-03T08:59:19.000000Z",
-            "updated_at": "2025-07-10T07:55:46.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 92,
-            "product_name": "hfghhj",
-            "description": "jkhjkj",
-            "short_description": "hgjghjhghj",
-            "base_price": null,
-            "formatted_price": "0 VNĐ",
-            "slug": "hfghhj",
-            "coffee_type": "arabica",
-            "roast_level": "dark",
-            "flavor_profile": "Nhạt",
-            "strength_score": "5.0",
-            "meta_title": "2",
-            "meta_description": "213",
-            "stock_quantity": 213,
-            "total_stock": 213,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 13,
-            "sold_count": 0,
-            "category": {
-                "id": 1,
-                "category_name": "Single Origin Coffee"
-            },
-            "brand": {
-                "id": 2,
-                "brand_name": "Highlands Coffee"
-            },
-            "origin": {
-                "id": 2,
-                "origin_name": "Kenya"
-            },
-            "primary_image": {
-                "id": 371,
-                "image_url": "http://127.0.0.1:8000/storage/products/92/1751557370_6866a4faa4d1a.png",
-                "image_url_raw": "/storage/products/92/1751557370_6866a4faa4d1a.png",
-                "image_name": "1751557370_6866a4faa4d1a.png",
-                "local_path": "products/92/1751557370_6866a4faa4d1a.png",
-                "image_exists": true,
-                "alt_text": "Ảnh chính",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T08:42:50.000000Z",
-                "updated_at": "2025-07-03T08:42:50.000000Z"
-            },
-            "created_at": "2025-07-03T08:42:50.000000Z",
-            "updated_at": "2025-07-10T04:08:02.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 91,
-            "product_name": "Cà Phê Arabica Premium Test Final",
-            "description": "Cà phê Arabica cao cấp với ảnh riêng cho từng biến thể",
-            "short_description": null,
-            "base_price": null,
-            "formatted_price": "0 VNĐ",
-            "slug": "ca-phe-arabica-premium-test-final",
-            "coffee_type": "arabica",
-            "roast_level": null,
-            "flavor_profile": null,
-            "strength_score": null,
-            "meta_title": null,
-            "meta_description": null,
-            "stock_quantity": 80,
-            "total_stock": 80,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 2,
-            "sold_count": 0,
-            "category": {
-                "id": 1,
-                "category_name": "Single Origin Coffee"
-            },
-            "brand": null,
-            "origin": null,
-            "primary_image": {
-                "id": 370,
-                "image_url": "http://127.0.0.1:8000/storage/products/91/1751555887_68669f2fb744e.jpg",
-                "image_url_raw": "/storage/products/91/1751555887_68669f2fb744e.jpg",
-                "image_name": "1751555887_68669f2fb744e.jpg",
-                "local_path": "products/91/1751555887_68669f2fb744e.jpg",
-                "image_exists": true,
-                "alt_text": "Ảnh chính",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T08:18:08.000000Z",
-                "updated_at": "2025-07-03T08:18:08.000000Z"
-            },
-            "created_at": "2025-07-03T08:18:07.000000Z",
-            "updated_at": "2025-07-10T04:08:07.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 75,
-            "product_name": "Cà phê Kona Hawaii Đặc biệt",
-            "description": "Veniam possimus eaque sed ipsum magni ut quas dicta. Quia voluptas sunt praesentium ad recusandae aliquam ad. Architecto atque odio maiores aut. Accusamus at maxime consequatur.\n\nQuia consequatur adipisci iure impedit deleniti at deleniti. Consequatur quae ab molestiae eius. Consequuntur tempora necessitatibus voluptate. Qui et culpa inventore quia.\n\nMolestiae reprehenderit reprehenderit in veritatis error quae. Quis aut dignissimos dolorum voluptate alias. Possimus quasi voluptatem in molestiae dolorem impedit animi. Cumque nisi in pariatur voluptas dolorum.",
-            "short_description": "Dolorum eveniet quo esse repellat est asperiores accusamus consequuntur libero molestiae non voluptatem deleniti libero illo assumenda quam.",
-            "base_price": "31479.00",
-            "formatted_price": "31.479 VNĐ",
-            "slug": "ca-phe-kona-hawaii-dac-biet-3067",
-            "coffee_type": "blend",
-            "roast_level": "light",
-            "flavor_profile": "Chua thanh, hương cam quýt",
-            "strength_score": "3.1",
-            "meta_title": "Atque quae iusto optio nisi quasi consequatur dolorem.",
-            "meta_description": null,
-            "stock_quantity": 481,
-            "total_stock": 116,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 4091,
-            "sold_count": 267,
-            "category": {
-                "id": 4,
-                "category_name": "Organic Coffee"
-            },
-            "brand": {
-                "id": 13,
-                "brand_name": "Blue Bottle Coffee"
-            },
-            "origin": null,
-            "primary_image": {
-                "id": 306,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-cup-1.jpg",
-                "image_name": "coffee-cup-1.jpg",
-                "local_path": "products/sample/coffee-cup-1.jpg",
-                "image_exists": false,
-                "alt_text": null,
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-09T08:15:03.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 74,
-            "product_name": "Cà phê Arabica Ethiopia Single Origin",
-            "description": "Iusto enim error mollitia temporibus eos. Beatae necessitatibus sit voluptates mollitia tempora aut neque. Laborum rerum blanditiis aliquam aut voluptas ipsam illo. Fugiat ipsum quibusdam et qui.\n\nAperiam dolorum enim explicabo est incidunt. Perspiciatis nostrum distinctio sit quibusdam. Ducimus ut et veritatis aut optio doloremque blanditiis illo. Dicta dolorem vitae est ipsam porro.\n\nQui odio ex consequatur inventore ex quibusdam qui. Excepturi minus vel aliquam et minima. Dicta quia sed recusandae culpa ratione voluptates.",
-            "short_description": "Ea voluptas nostrum odio voluptas consequatur optio qui doloremque id amet ex delectus ratione hic provident voluptatem eum qui quia eum qui.",
-            "base_price": "35485.00",
-            "formatted_price": "35.485 VNĐ",
-            "slug": "ca-phe-arabica-ethiopia-single-origin-7435",
-            "coffee_type": "arabica",
-            "roast_level": "dark",
-            "flavor_profile": null,
-            "strength_score": "9.2",
-            "meta_title": "Debitis voluptatem architecto commodi enim temporibus nihil ut.",
-            "meta_description": "Dolor molestias et modi ratione architecto officiis blanditiis aut et vel officia qui tempore a.",
-            "stock_quantity": 71,
-            "total_stock": 93,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": true,
-            "is_in_stock": true,
-            "view_count": 679,
-            "sold_count": 180,
-            "category": {
-                "id": 2,
-                "category_name": "Blend Coffee"
-            },
-            "brand": null,
-            "origin": {
-                "id": 5,
-                "origin_name": "Peru"
-            },
-            "primary_image": {
-                "id": 302,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-package-1.jpg",
-                "image_name": "coffee-package-1.jpg",
-                "local_path": "products/sample/coffee-package-1.jpg",
-                "image_exists": false,
-                "alt_text": null,
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 73,
-            "product_name": "Cà phê Blue Mountain Fair Trade",
-            "description": "Eos voluptatem iste est et. Sit dolorum itaque nemo. Quam aut et autem. Nisi voluptatem deleniti facere nisi.\n\nDebitis excepturi magnam commodi quo omnis accusamus molestias. Beatae amet qui repellat. Laboriosam ipsa debitis voluptas iusto quisquam ex corrupti. Quas eveniet incidunt doloribus rerum facere nobis. Aut quo dolorem cumque voluptatem.\n\nDolor perferendis qui tempora dolorum architecto. Ratione similique quibusdam placeat eligendi est blanditiis. Deleniti mollitia a qui voluptates voluptates. Enim omnis molestias neque in voluptas aut. Labore ut ad ratione est illum in iusto.",
-            "short_description": "Soluta dolore facere accusantium at temporibus ut tempore nihil dolorem distinctio eos qui.",
-            "base_price": "72151.00",
-            "formatted_price": "72.151 VNĐ",
-            "slug": "ca-phe-blue-mountain-fair-trade-8735",
-            "coffee_type": "blend",
-            "roast_level": "extra_dark",
-            "flavor_profile": "Ngọt tự nhiên, hương hoa quả",
-            "strength_score": "5.6",
-            "meta_title": null,
-            "meta_description": null,
-            "stock_quantity": 750,
-            "total_stock": 332,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 2177,
-            "sold_count": 63,
-            "category": {
-                "id": 4,
-                "category_name": "Organic Coffee"
-            },
-            "brand": {
-                "id": 11,
-                "brand_name": "King Coffee"
-            },
-            "origin": null,
-            "primary_image": {
-                "id": 300,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-beans-1.jpg",
-                "image_name": "coffee-beans-1.jpg",
-                "local_path": "products/sample/coffee-beans-1.jpg",
-                "image_exists": false,
-                "alt_text": null,
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 72,
-            "product_name": "Cà phê Arabica Ethiopia Single Origin",
-            "description": "Quia sint consequatur modi officia. Repudiandae soluta aliquam ut consequatur voluptatem fuga et. Et autem incidunt ab rerum fuga pariatur.\n\nQuia consequuntur quaerat porro labore aperiam at voluptates. Natus consequatur quas quidem et consectetur consequatur consequatur. Omnis in sit ut quis perspiciatis sit quod. Qui magni sequi quis ratione aut voluptas.\n\nVoluptate voluptatem et asperiores laborum eos. Ducimus omnis corrupti optio non dolorem quos. Occaecati sit dolorem ut nobis similique deserunt.",
-            "short_description": "Quis ea nobis aut quis eaque aliquam nemo maxime optio beatae voluptas rerum eum ex in voluptas quo eos in.",
-            "base_price": "75795.00",
-            "formatted_price": "75.795 VNĐ",
-            "slug": "ca-phe-arabica-ethiopia-single-origin-3456",
-            "coffee_type": "robusta",
-            "roast_level": "dark",
-            "flavor_profile": null,
-            "strength_score": null,
-            "meta_title": null,
-            "meta_description": null,
-            "stock_quantity": 38,
-            "total_stock": 399,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 2889,
-            "sold_count": 294,
-            "category": {
-                "id": 2,
-                "category_name": "Blend Coffee"
-            },
-            "brand": {
-                "id": 11,
-                "brand_name": "King Coffee"
-            },
-            "origin": {
-                "id": 3,
-                "origin_name": "Guatemala"
-            },
-            "primary_image": {
-                "id": 296,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-package-2.jpg",
-                "image_name": "coffee-package-2.jpg",
-                "local_path": "products/sample/coffee-package-2.jpg",
-                "image_exists": false,
-                "alt_text": "Hạt cà phê rang xay",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 71,
-            "product_name": "Cà phê Blend Premium Đặc biệt",
-            "description": "Dolorum dolor ut natus non aut deserunt sed nihil. Amet autem velit et iste. Doloribus omnis nihil esse nihil. Odio odio ut eaque delectus similique.\n\nEst accusamus cum quam quia aut. Veritatis soluta consequuntur ipsa aut. Consequatur veniam dolor iusto. Voluptates impedit aspernatur ducimus magnam porro dolore omnis iure. Fuga distinctio animi veritatis aut itaque tempore.\n\nDolor corrupti tempora assumenda enim eius. Deleniti deleniti distinctio rerum nihil quaerat. Voluptatum molestiae ipsa accusamus error. Aut aliquid recusandae dolorem ex ut et cum debitis.",
-            "short_description": "Harum nam rerum tempore consectetur voluptatem vel harum quo ipsa sit velit voluptas optio hic repellendus laboriosam magni voluptatem accusamus.",
-            "base_price": "149578.00",
-            "formatted_price": "149.578 VNĐ",
-            "slug": "ca-phe-blend-premium-dac-biet-5097",
-            "coffee_type": "blend",
-            "roast_level": "light",
-            "flavor_profile": null,
-            "strength_score": "7.8",
-            "meta_title": "Animi cum repellat ullam ut labore voluptatibus ratione quam.",
-            "meta_description": "Dolore voluptates deserunt nesciunt facere cumque molestiae itaque adipisci officia quaerat perspiciatis eos optio totam et voluptatum natus iste nam minus omnis totam placeat incidunt rerum explicabo aspernatur.",
-            "stock_quantity": 398,
-            "total_stock": 214,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 216,
-            "sold_count": 109,
-            "category": {
-                "id": 4,
-                "category_name": "Organic Coffee"
-            },
-            "brand": {
-                "id": 8,
-                "brand_name": "Illy"
-            },
-            "origin": {
-                "id": 2,
-                "origin_name": "Kenya"
-            },
-            "primary_image": {
-                "id": 294,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-beans-2.jpg",
-                "image_name": "coffee-beans-2.jpg",
-                "local_path": "products/sample/coffee-beans-2.jpg",
-                "image_exists": false,
-                "alt_text": "Cà phê chất lượng cao",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 70,
-            "product_name": "Cà phê Moka Java Fair Trade",
-            "description": "Voluptatum rerum nihil dignissimos vitae sed est. Enim sunt temporibus expedita doloribus alias ea. Distinctio impedit velit nihil rerum esse ipsa.\n\nModi architecto voluptatum inventore quo. Quasi voluptatum aut ab est. Debitis pariatur ut maiores ipsum qui rerum ut ut. Veniam provident hic occaecati numquam maxime molestiae dolorum. Nemo tempore et qui rerum quia corporis aut nisi.\n\nAd voluptatum dicta temporibus assumenda illo. Nemo officiis dolores qui ex est at. Omnis voluptatum ad incidunt voluptatem sit consequatur. Suscipit sunt reprehenderit tempore est ut aspernatur numquam ut.",
-            "short_description": "Magni molestias illum autem sit non nulla laborum quidem nihil inventore ullam.",
-            "base_price": "55005.00",
-            "formatted_price": "55.005 VNĐ",
-            "slug": "ca-phe-moka-java-fair-trade-4199",
-            "coffee_type": "robusta",
-            "roast_level": null,
-            "flavor_profile": "Đậm đà, hương caramel",
-            "strength_score": "4.6",
-            "meta_title": null,
-            "meta_description": "Vitae voluptatibus nobis reiciendis iure debitis repellendus aspernatur quia sunt qui quia recusandae et qui dignissimos inventore officia minus ex facilis.",
-            "stock_quantity": 771,
-            "total_stock": 426,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 2433,
-            "sold_count": 224,
-            "category": {
-                "id": 4,
-                "category_name": "Organic Coffee"
-            },
-            "brand": {
-                "id": 3,
-                "brand_name": "Phúc Long Coffee & Tea"
-            },
-            "origin": null,
-            "primary_image": {
-                "id": 292,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-roasted-2.jpg",
-                "image_name": "coffee-roasted-2.jpg",
-                "local_path": "products/sample/coffee-roasted-2.jpg",
-                "image_exists": false,
-                "alt_text": "Cà phê nguyên chất",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
-        },
-        {
-            "id": 69,
-            "product_name": "Cà phê Moka Java Premium",
-            "description": "Hic molestiae suscipit doloremque perspiciatis ratione officia et nihil. Deserunt maxime in assumenda blanditiis id illum eum. Aliquam deleniti praesentium velit possimus. Quasi totam temporibus qui et est laudantium provident. Repellat aliquam voluptas natus magni placeat quam nisi repudiandae.\n\nEt tenetur nobis et dignissimos necessitatibus. Molestiae rerum ut quia. Earum eius minima laudantium sed aspernatur porro eveniet.\n\nRerum laboriosam blanditiis nihil eos dolorem dolores. Quisquam nesciunt impedit adipisci soluta. Nisi ratione pariatur quia et laudantium.",
-            "short_description": "Provident fugit ea nulla est commodi labore tenetur qui fuga sit sint possimus dolores et alias.",
-            "base_price": "48987.00",
-            "formatted_price": "48.987 VNĐ",
-            "slug": "ca-phe-moka-java-premium-2212",
-            "coffee_type": "blend",
-            "roast_level": "medium",
-            "flavor_profile": "Đậm đà, hương caramel",
-            "strength_score": "2.5",
-            "meta_title": "Nulla assumenda dolorum officiis ex voluptatem quo.",
-            "meta_description": null,
-            "stock_quantity": 343,
-            "total_stock": 255,
-            "has_variants": true,
-            "status": "active",
-            "is_featured": false,
-            "is_in_stock": true,
-            "view_count": 2096,
-            "sold_count": 453,
-            "category": {
-                "id": 1,
-                "category_name": "Single Origin Coffee"
-            },
-            "brand": {
-                "id": 4,
-                "brand_name": "The Coffee House"
-            },
-            "origin": {
-                "id": 2,
-                "origin_name": "Kenya"
-            },
-            "primary_image": {
-                "id": 289,
-                "image_url": "http://127.0.0.1:8000/images/defaults/product-placeholder.jpg",
-                "image_url_raw": "/storage/products/sample/coffee-beans-1.jpg",
-                "image_name": "coffee-beans-1.jpg",
-                "local_path": "products/sample/coffee-beans-1.jpg",
-                "image_exists": false,
-                "alt_text": "Sản phẩm cà phê premium",
-                "sort_order": 1,
-                "is_primary": true,
-                "created_at": "2025-07-03T07:56:56.000000Z",
-                "updated_at": "2025-07-03T07:56:56.000000Z"
-            },
-            "created_at": "2025-07-03T07:56:56.000000Z",
-            "updated_at": "2025-07-03T07:56:58.000000Z",
-            "deleted_at": null
+            "id": 1,
+            "label": "Nhà riêng",
+            "recipient_name": "John Doe",
+            "phone_number": "0123456789",
+            "address_line_1": "123 Nguyễn Trãi",
+            "address_line_2": "Tầng 5",
+            "ward": "Phường Thanh Xuân",
+            "district": "Thanh Xuân",
+            "city": "Hà Nội",
+            "postal_code": "100000",
+            "latitude": 21.0285,
+            "longitude": 105.8542,
+            "is_default": true,
+            "type": "home",
+            "type_display": "Nhà riêng",
+            "type_icon": "🏠",
+            "display_label": "Nhà riêng",
+            "delivery_notes": "Gọi trước khi giao",
+            "full_address": "123 Nguyễn Trãi, Tầng 5, Phường Thanh Xuân, Thanh Xuân, Hà Nội",
+            "formatted_address": "John Doe\n0123456789\n123 Nguyễn Trãi, Tầng 5, Phường Thanh Xuân, Thanh Xuân, Hà Nội",
+            "has_coordinates": true,
+            "is_complete": true,
+            "available_shipping_methods": [
+                {
+                    "id": 1,
+                    "name": "Giao hàng tiêu chuẩn",
+                    "cost": 30000,
+                    "estimated_delivery": "2-3 ngày"
+                }
+            ],
+            "created_at": "2024-06-22T10:30:00.000000Z"
         }
-    ],
-    "meta": {
-        "current_page": 1,
-        "last_page": 7,
-        "per_page": 12,
-        "total": 80,
-        "from": 1,
-        "to": 12
-    },
-    "links": {
-        "first": "http://127.0.0.1:8000/api/products?page=1",
-        "last": "http://127.0.0.1:8000/api/products?page=7",
-        "prev": null,
-        "next": "http://127.0.0.1:8000/api/products?page=2"
-    },
-    "message": "Products retrieved successfully"
+    ]
 }
+```
+
+---
+
+## ➕ Add New Address
+
+**POST** `/api/user/addresses`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Request Body
+
+```json
+{
+    "label": "Văn phòng",
+    "recipient_name": "John Doe",
+    "phone_number": "0123456789",
+    "address_line_1": "456 Lê Duẩn",
+    "address_line_2": "Tòa nhà ABC, Tầng 10",
+    "ward": "Phường Đống Đa",
+    "district": "Đống Đa",
+    "city": "Hà Nội",
+    "postal_code": "100000",
+    "latitude": 21.0285,
+    "longitude": 105.8542,
+    "type": "office",
+    "delivery_notes": "Liên hệ lễ tân tầng 1",
+    "is_default": false
+}
+```
+
+### Parameters
+
+| Field          | Type    | Required | Description                      |
+| -------------- | ------- | -------- | -------------------------------- |
+| label          | string  | No       | Custom label for address         |
+| recipient_name | string  | Yes      | Recipient full name              |
+| phone_number   | string  | Yes      | Contact phone number             |
+| address_line_1 | string  | Yes      | Main address line                |
+| address_line_2 | string  | No       | Additional address info          |
+| ward           | string  | Yes      | Ward/Commune                     |
+| district       | string  | Yes      | District                         |
+| city           | string  | Yes      | City/Province                    |
+| postal_code    | string  | No       | Postal/ZIP code                  |
+| latitude       | decimal | No       | GPS latitude                     |
+| longitude      | decimal | No       | GPS longitude                    |
+| type           | string  | No       | Address type (home/office/other) |
+| delivery_notes | string  | No       | Special delivery instructions    |
+| is_default     | boolean | No       | Set as default address           |
+
+### Response Success (201)
+
+```json
+{
+    "success": true,
+    "message": "Address created successfully",
+    "data": {
+        "id": 2,
+        "label": "Văn phòng",
+        "recipient_name": "John Doe",
+        "phone_number": "0123456789",
+        "address_line_1": "456 Lê Duẩn",
+        "address_line_2": "Tòa nhà ABC, Tầng 10",
+        "ward": "Phường Đống Đa",
+        "district": "Đống Đa",
+        "city": "Hà Nội",
+        "postal_code": "100000",
+        "latitude": 21.0285,
+        "longitude": 105.8542,
+        "is_default": false,
+        "type": "office",
+        "type_display": "Văn phòng",
+        "type_icon": "🏢",
+        "display_label": "Văn phòng",
+        "delivery_notes": "Liên hệ lễ tân tầng 1",
+        "full_address": "456 Lê Duẩn, Tòa nhà ABC, Tầng 10, Phường Đống Đa, Đống Đa, Hà Nội",
+        "has_coordinates": true,
+        "is_complete": true,
+        "created_at": "2024-06-22T14:30:00.000000Z"
+    }
+}
+```
+
+---
+
+## 🏠 Get Address Details
+
+**GET** `/api/user/addresses/{id}`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Address retrieved successfully",
+    "data": {
+        "id": 1,
+        "label": "Nhà riêng",
+        "recipient_name": "John Doe",
+        "phone_number": "0123456789",
+        "address_line_1": "123 Nguyễn Trãi",
+        "address_line_2": "Tầng 5",
+        "ward": "Phường Thanh Xuân",
+        "district": "Thanh Xuân",
+        "city": "Hà Nội",
+        "postal_code": "100000",
+        "latitude": 21.0285,
+        "longitude": 105.8542,
+        "is_default": true,
+        "type": "home",
+        "type_display": "Nhà riêng",
+        "type_icon": "🏠",
+        "display_label": "Nhà riêng",
+        "delivery_notes": "Gọi trước khi giao",
+        "full_address": "123 Nguyễn Trãi, Tầng 5, Phường Thanh Xuân, Thanh Xuân, Hà Nội",
+        "formatted_address": "John Doe\n0123456789\n123 Nguyễn Trãi, Tầng 5, Phường Thanh Xuân, Thanh Xuân, Hà Nội",
+        "has_coordinates": true,
+        "is_complete": true,
+        "missing_fields": [],
+        "available_shipping_methods": [
+            {
+                "id": 1,
+                "name": "Giao hàng tiêu chuẩn",
+                "cost": 30000,
+                "estimated_delivery": "2-3 ngày"
+            },
+            {
+                "id": 2,
+                "name": "Giao hàng nhanh",
+                "cost": 50000,
+                "estimated_delivery": "1-2 ngày"
+            }
+        ],
+        "created_at": "2024-06-22T10:30:00.000000Z",
+        "updated_at": "2024-06-22T10:30:00.000000Z"
+    }
+}
+```
+
+---
+
+## ✏️ Update Address
+
+**PUT** `/api/user/addresses/{id}`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Request Body
+
+```json
+{
+    "label": "Nhà mới",
+    "recipient_name": "John Doe",
+    "phone_number": "0987654321",
+    "address_line_1": "789 Hoàng Quốc Việt",
+    "delivery_notes": "Gọi trước 30 phút"
+}
+```
+
+### Business Rules
+
+-   ✅ Only address owner can update
+-   ✅ All fields are optional
+-   ✅ Partial updates supported
+-   ✅ Validation on required fields
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Address updated successfully",
+    "data": {
+        "id": 1,
+        "label": "Nhà mới",
+        "recipient_name": "John Doe",
+        "phone_number": "0987654321",
+        "address_line_1": "789 Hoàng Quốc Việt",
+        "delivery_notes": "Gọi trước 30 phút",
+        "updated_at": "2024-06-22T15:00:00.000000Z"
+    }
+}
+```
+
+---
+
+## 🎯 Set Default Address
+
+**POST** `/api/user/addresses/{id}/set-default`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Business Rules
+
+-   ✅ Only one default address per user
+-   ✅ Previous default automatically unset
+-   ✅ First address auto-set as default
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Default address updated successfully",
+    "data": {
+        "id": 2,
+        "is_default": true,
+        "updated_at": "2024-06-22T15:30:00.000000Z"
+    }
+}
+```
+
+---
+
+## 🗑️ Delete Address
+
+**DELETE** `/api/user/addresses/{id}`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Business Rules
+
+-   ✅ Only address owner can delete
+-   ✅ Cannot delete if used in pending orders
+-   ✅ If default deleted, next address becomes default
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Address deleted successfully",
+    "data": null
+}
+```
+
+### Response Error (400)
+
+```json
+{
+    "success": false,
+    "message": "Cannot delete address used in pending orders"
+}
+```
+
+---
+
+## 🏷️ Address Types
+
+| Type     | Display   | Icon | Description              |
+| -------- | --------- | ---- | ------------------------ |
+| `home`   | Nhà riêng | 🏠   | Residential address      |
+| `office` | Văn phòng | 🏢   | Office/workplace address |
+| `other`  | Khác      | 📍   | Other address type       |
+
+---
+
+## 🗺️ GPS Integration
+
+### **Coordinate System**
+
+-   ✅ WGS84 coordinate system
+-   ✅ Decimal degrees format
+-   ✅ 8 decimal places precision
+-   ✅ Vietnam coordinate bounds validation
+
+### **Distance Calculation**
+
+```php
+// Calculate distance between addresses
+$distance = $address1->distanceTo($address2); // Returns km
+
+// Get nearby addresses
+$nearbyAddresses = UserAddress::where('city', $address->city)
+    ->where('district', $address->district)
+    ->get();
+```
+
+### **Map Integration Ready**
+
+-   Google Maps API
+-   OpenStreetMap
+-   Vietnam specific map services
+-   Geocoding services
+
+---
+
+## 🚚 Shipping Integration
+
+### **Available Shipping Methods**
+
+```php
+// Get shipping methods for address
+$shippingMethods = $address->getAvailableShippingMethods();
+
+// Returns array of available methods with costs
+[
+    [
+        'id' => 1,
+        'name' => 'Giao hàng tiêu chuẩn',
+        'cost' => 30000,
+        'estimated_delivery' => '2-3 ngày'
+    ]
+]
+```
+
+### **Address Validation**
+
+-   ✅ Required field validation
+-   ✅ Phone number format validation
+-   ✅ City/District/Ward validation
+-   ✅ Coordinate bounds checking
+
+---
+
+## 🔒 Security & Privacy
+
+### **Access Control**
+
+-   ✅ Users can only access their own addresses
+-   ✅ Address ID validation
+-   ✅ Ownership verification
+
+### **Data Protection**
+
+-   ✅ Personal information encryption
+-   ✅ GPS coordinate protection
+-   ✅ Phone number masking in logs
+-   ✅ GDPR compliance ready
+
+---
+
+## 📊 Analytics & Insights
+
+### **Address Usage**
+
+-   Most used address types
+-   Geographic distribution
+-   Delivery success rates by area
+-   Popular delivery locations
+
+### **Business Intelligence**
+
+-   Customer location patterns
+-   Shipping cost optimization
+-   Service area expansion
+-   Delivery route planning
+
+---
+
+## 🧪 Testing Examples
+
+### **cURL Examples**
+
+#### List Addresses
+
+```bash
+curl -X GET "http://localhost:8000/api/user/addresses" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### Create Address
+
+```bash
+curl -X POST "http://localhost:8000/api/user/addresses" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "label": "Nhà riêng",
+    "recipient_name": "Nguyễn Văn A",
+    "phone_number": "0123456789",
+    "address_line_1": "123 Nguyễn Trãi",
+    "ward": "Phường Thanh Xuân",
+    "district": "Thanh Xuân",
+    "city": "Hà Nội",
+    "type": "home"
+  }'
+```
+
+#### Set Default Address
+
+```bash
+curl -X POST "http://localhost:8000/api/user/addresses/1/set-default" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### **JavaScript/Fetch Examples**
+
+#### Get Addresses
+
+```javascript
+const response = await fetch("/api/user/addresses", {
+    method: "GET",
+    headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+    },
+});
+const data = await response.json();
+```
+
+#### Update Address
+
+```javascript
+const response = await fetch(`/api/user/addresses/${addressId}`, {
+    method: "PUT",
+    headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+        label: "Văn phòng mới",
+        delivery_notes: "Gọi trước 15 phút",
+    }),
+});
+```
+
+---
+
+## ❌ Error Responses
+
+### **Validation Error (422)**
+
+```json
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "recipient_name": ["The recipient name field is required."],
+        "phone_number": ["The phone number field is required."],
+        "address_line_1": ["The address line 1 field is required."]
+    }
+}
+```
+
+### **Not Found (404)**
+
+```json
+{
+    "success": false,
+    "message": "Address not found"
+}
+```
+
+### **Unauthorized (401)**
+
+```json
+{
+    "success": false,
+    "message": "Unauthenticated"
+}
+```
+
+### **Forbidden (403)**
+
+```json
+{
+    "success": false,
+    "message": "You don't have permission to access this address"
+}
+```
+
+---
+
+## 📱 Frontend Integration
+
+### **React Hook Example**
+
+```javascript
+import { useState, useEffect } from "react";
+
+const useUserAddresses = () => {
+    const [addresses, setAddresses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchAddresses = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("/api/user/addresses", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch addresses");
+
+            const data = await response.json();
+            setAddresses(data.data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addAddress = async (addressData) => {
+        try {
+            const response = await fetch("/api/user/addresses", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(addressData),
+            });
+
+            if (!response.ok) throw new Error("Failed to add address");
+
+            const data = await response.json();
+            setAddresses((prev) => [...prev, data.data]);
+            return data.data;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        }
+    };
+
+    const setDefaultAddress = async (addressId) => {
+        try {
+            const response = await fetch(
+                `/api/user/addresses/${addressId}/set-default`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) throw new Error("Failed to set default address");
+
+            // Update local state
+            setAddresses((prev) =>
+                prev.map((addr) => ({
+                    ...addr,
+                    is_default: addr.id === addressId,
+                }))
+            );
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        }
+    };
+
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
+
+    return {
+        addresses,
+        loading,
+        error,
+        fetchAddresses,
+        addAddress,
+        setDefaultAddress,
+    };
+};
+```
+
+---
+
+## 🔧 Development Notes
+
+### **Database Schema**
+
+```sql
+CREATE TABLE user_addresses (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    label VARCHAR(255),
+    recipient_name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    address_line_1 VARCHAR(500) NOT NULL,
+    address_line_2 VARCHAR(500),
+    ward VARCHAR(255) NOT NULL,
+    district VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    postal_code VARCHAR(20),
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    is_default BOOLEAN DEFAULT FALSE,
+    type ENUM('home', 'office', 'other') DEFAULT 'home',
+    delivery_notes TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_default (user_id, is_default),
+    INDEX idx_coordinates (latitude, longitude)
+);
+```
+
+### **Model Relationships**
+
+-   `User` hasMany `UserAddress`
+-   `UserAddress` belongsTo `User`
+-   `Order` belongsTo `UserAddress` (delivery_address_id)
+
+---
+
+## 🚀 Performance Tips
+
+1. **Pagination**: For users with many addresses, implement pagination
+2. **Caching**: Cache frequently accessed addresses
+3. **Indexing**: Database indexes on user_id and coordinates
+4. **Lazy Loading**: Load shipping methods only when needed
+5. **Validation**: Client-side validation for better UX
+
+---
+
+## 🌟 Best Practices
+
+1. **Always validate coordinates** if provided
+2. **Sanitize address inputs** to prevent XSS
+3. **Implement rate limiting** for address creation
+4. **Log address changes** for audit trails
+5. **Backup address data** regularly
+6. **Test with real Vietnamese addresses**

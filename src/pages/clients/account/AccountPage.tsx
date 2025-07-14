@@ -1,17 +1,18 @@
-import type React from "react"
-import { useState } from "react"
-import { Edit2 } from "lucide-react"
-import AccountNav from "../../../components/AccountNav"
-import { useUserStore } from "../../../stores/useUserStore"
+import type React from "react";
+import { useState } from "react";
+import { Edit2 } from "lucide-react";
+import AccountNav from "../../../components/AccountNav";
+import { useUserStore } from "../../../stores/useUserStore";
+import AddressManagement from "../../../components/address/AddressManagement";
 
 export default function AccountPage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const { user } = useUserStore()
+  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useUserStore();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsEditing(false)
-  }
+    e.preventDefault();
+    setIsEditing(false);
+  };
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -57,7 +58,10 @@ export default function AccountPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Họ và tên
                       </label>
                       <input
@@ -67,7 +71,10 @@ export default function AccountPage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Địa chỉ Email
                       </label>
                       <input
@@ -78,13 +85,16 @@ export default function AccountPage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="phone"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Số điện thoại
                       </label>
                       <input
                         id="phone"
                         type="tel"
-                        defaultValue={user?.phone}
+                        defaultValue={user?.phone_number || ""}
                         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                       />
                     </div>
@@ -111,7 +121,7 @@ export default function AccountPage() {
                   <div className="flex-shrink-0">
                     <div className="relative w-24 h-24 rounded-full overflow-hidden">
                       <img
-                        src={user?.image || "/placeholder.svg"}
+                        src={user?.avatar || "/placeholder.svg"}
                         alt={user?.name}
                         className="object-cover"
                       />
@@ -134,7 +144,7 @@ export default function AccountPage() {
                       <h3 className="text-sm font-medium text-stone-500">
                         Số điện thoại
                       </h3>
-                      <p>{user?.phone}</p>
+                      <p>{user?.phone_number}</p>
                     </div>
                   </div>
                 </div>
@@ -142,15 +152,8 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Address section - giữ nguyên để bạn tùy chỉnh thêm sau */}
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-medium">Địa chỉ</h2>
-              <button className="text-amber-800 hover:text-amber-900 text-sm font-medium">
-                Thêm địa chỉ mới
-              </button>
-            </div>
-          </div>
+          {/* Address Management */}
+          <AddressManagement />
 
           {/* Password section */}
           <div className="bg-white border rounded-lg overflow-hidden">
@@ -169,5 +172,5 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
