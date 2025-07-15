@@ -212,4 +212,25 @@ export interface IOrderCreate {
   notes?: string;
   promotion_code?: string;
   items: OrderItem[];
-} 
+}
+
+// Cancel Order Interfaces
+export interface CancelOrderRequest {
+  reason?: string;
+}
+
+export interface CancelOrderResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    order_number: string;
+    status: {
+      id: number;
+      status_name: string;
+      display_name: string;
+    };
+    total_amount: number;
+    formatted_total_amount: string;
+  };
+}

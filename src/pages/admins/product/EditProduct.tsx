@@ -837,6 +837,7 @@ const EditProduct = () => {
                 <Select>
                   <Option value="active">Đang bán</Option>
                   <Option value="inactive">Ngừng bán</Option>
+                  <Option value="out_of_stock">Hết hàng</Option>
                 </Select>
               </Form.Item>
 
