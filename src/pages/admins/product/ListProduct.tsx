@@ -4,7 +4,7 @@ import {
   deleteAdminProduct,
 } from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
-import { Table, Image, Button, Space, Spin } from "antd";
+import { Table, Image, Button, Space } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 
@@ -66,9 +66,8 @@ export default function ListProduct() {
     },
     {
       title: "Giá",
-      dataIndex: "base_price",
-      key: "base_price",
-      render: (price: string) => `${Number(price).toLocaleString()}₫`,
+      dataIndex: "display_price",
+      key: "display_price",
     },
     {
       title: "Danh mục",

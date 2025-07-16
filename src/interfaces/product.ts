@@ -33,6 +33,7 @@ export interface IProduct {
   description: string;
   short_description: string;
   base_price: string;
+  display_price?: string;
   category_id: number;
   brand_id: number;
   origin_id: number;

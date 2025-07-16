@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { IUser, UserLogin, UserRegister } from '../interfaces/user';
 import { login, register, getProfile, logout } from '../services/authService';
 import { isAxiosError } from 'axios';
+import { useCartStore } from './useCartStore';
 import toast from 'react-hot-toast';
 
 interface UserState {
@@ -33,12 +34,22 @@ export const useUserStore = create<UserState>()(
           const { user, token } = data;
           localStorage.setItem('token', token);
           set({ user, isAuthenticated: true, loading: false });
+
+          // Sync cart sau khi login thành công
+          useCartStore.getState().syncCart();
         } catch (error) {
+          let errorMessage = 'Login failed';
+
           if (isAxiosError(error)) {
-            set({ error: error.response?.data?.message || 'Login failed', loading: false });
-          } else {
-            set({ error: 'Login failed', loading: false });
+            errorMessage = error.response?.data?.message || error.message || 'Login failed';
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
           }
+
+          set({ error: errorMessage, loading: false });
+
+          // Throw error để mutation có thể catch và không navigate
+          throw error;
         }
       },
       register: async (payload) => {
@@ -47,11 +58,18 @@ export const useUserStore = create<UserState>()(
           const { user } = await register(payload);
           set({ user, isAuthenticated: true, loading: false });
         } catch (error) {
+          let errorMessage = 'Register failed';
+
           if (isAxiosError(error)) {
-            set({ error: error.response?.data?.message || 'Register failed', loading: false });
-          } else {
-            set({ error: 'Register failed', loading: false });
+            errorMessage = error.response?.data?.message || error.message || 'Register failed';
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
           }
+
+          set({ error: errorMessage, loading: false });
+
+          // Throw error để mutation có thể catch
+          throw error;
         }
       },
       getProfile: async () => {
@@ -65,6 +83,7 @@ export const useUserStore = create<UserState>()(
           } else {
             set({ error: 'Get profile failed', loading: false });
           }
+          useCartStore.getState().clearLocalCart();
         }
       },
       logout: async () => {
