@@ -72,7 +72,14 @@ export const useUserStore = create<UserState>()(
         try {
           await logout();
           localStorage.removeItem('token');
+
+          // Clear cart khi logout
+          useCartStore.getState().clearLocalCart();
+
           set({ user: null, isAuthenticated: false, loading: false });
+
+          // Thông báo đăng xuất thành công
+          toast.success('Đăng xuất thành công!');
         } catch (error) {
           if (isAxiosError(error)) {
             set({ error: error.response?.data?.message || 'Logout failed', loading: false });
