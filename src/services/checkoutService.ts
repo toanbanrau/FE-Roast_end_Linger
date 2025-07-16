@@ -1,5 +1,5 @@
 import { adminAxios, clientAxios } from "../configs/config";
-import type { IOrder, IOrderCreate } from "../interfaces/order";
+import type { IOrder, IOrderCreate, CancelOrderRequest, CancelOrderResponse } from "../interfaces/order";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -35,6 +35,12 @@ export const getOrdersByUserId = async (userId: number): Promise<IOrder[]> => {
 
 export const getOrderById = async (id: number): Promise<IOrder> => {
     const response = await adminAxios.get<ApiResponse<IOrder>>(`/orders/${id}`);
+    return response.data.data;
+}
+
+// Cancel order
+export const cancelOrder = async (id: number, request: CancelOrderRequest): Promise<CancelOrderResponse['data']> => {
+    const response = await clientAxios.post<CancelOrderResponse>(`/orders/${id}/cancel`, request);
     return response.data.data;
 }
 

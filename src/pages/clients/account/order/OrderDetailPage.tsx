@@ -1,12 +1,23 @@
-import { ArrowLeft, Download, Truck, Package, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Truck,
+  Package,
+  CheckCircle,
+  X,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import AccountNav from "../../../../components/AccountNav";
 import { getMyOrderById } from "../../../../services/checkoutService";
 import type { IOrder } from "../../../../interfaces/order";
+import CancelOrderModal from "../../../../components/order/CancelOrderModal";
+import { canCancelOrder } from "../../../../utils/orderStatus";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const {
     data: order,
@@ -94,10 +105,19 @@ export default function OrderDetailPage() {
                     Đặt ngày {formatDate(order.dates.created_at)}
                   </p>
                 </div>
-                <div>
+                <div className="flex items-center gap-3">
+                  {canCancelOrder(order.status) && (
+                    <button
+                      onClick={() => setIsCancelModalOpen(true)}
+                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-sm"
+                    >
+                      <X className="h-4 w-4" />
+                      Hủy đơn hàng
+                    </button>
+                  )}
                   <Link
                     to={`/account/orders/${order.id}/invoice`}
-                    className="inline-flex items-center gap-1 text-amber-800 hover:text-amber-900 font-medium"
+                    className="inline-flex items-center gap-1 text-amber-800 hover:text-amber-900 font-medium text-sm"
                   >
                     <Download className="h-4 w-4" /> Tải hóa đơn
                   </Link>
@@ -346,6 +366,17 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        orderId={order.id}
+        orderNumber={order.order_number}
+        onSuccess={() => {
+          // Modal will handle the success toast and query invalidation
+        }}
+      />
     </div>
   );
 }

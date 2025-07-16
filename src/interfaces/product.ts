@@ -33,6 +33,7 @@ export interface IProduct {
   description: string;
   short_description: string;
   base_price: string;
+  display_price?: string;
   category_id: number;
   brand_id: number;
   origin_id: number;
@@ -99,7 +100,7 @@ export interface IProductCreate {
   meta_description: string;
   stock_quantity: number;
   has_variants: boolean;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'out_of_stock';
   is_featured: boolean;
   images: {
     image_file: File; // File upload

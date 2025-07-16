@@ -109,6 +109,10 @@ const EditProduct = () => {
 
       form.setFieldsValue({
         ...product,
+        // ✅ Extract IDs từ nested objects
+        category_id: product.category?.id,
+        brand_id: product.brand?.id,
+        origin_id: product.origin?.id,
         base_price: product.base_price,
         primary_image: primaryImageFile,
         primary_alt_text: product.primary_image?.alt_text || "",
@@ -125,16 +129,14 @@ const EditProduct = () => {
                   acc[attr.attribute_name] = attr.id;
                   return acc;
                 }, {}),
-                // Xử lý ảnh variant
-                image: variant.image
+                // Xử lý ảnh variant - chỉ sử dụng image_url
+                image: variant.image_url
                   ? [
                       {
                         uid: variant.id.toString(),
                         name: `variant-${variant.id}`,
                         status: "done" as const,
-                        url: variant.image.startsWith("http")
-                          ? variant.image
-                          : `http://127.0.0.1:8000${variant.image}`,
+                        url: variant.image_url,
                       },
                     ]
                   : [],
@@ -182,6 +184,7 @@ const EditProduct = () => {
       "product_name",
       "description",
       "short_description",
+      "base_price", // ✅ Thêm base_price
       "coffee_type",
       "category_id",
       "brand_id",
@@ -191,9 +194,9 @@ const EditProduct = () => {
       "strength_score",
       "meta_title",
       "meta_description",
+      "has_variants",
       "status",
       "is_featured",
-      "has_variants",
     ];
 
     basicFields.forEach((field) => {
@@ -218,58 +221,80 @@ const EditProduct = () => {
     }
     // Khi có variants: KHÔNG gửi base_price (để backend tự set null)
 
-    // Xử lý ảnh chính và album ảnh phụ (chỉ ảnh mới)
-    const images: {
+    // ===== XỬ LÝ ẢNH CHÍNH (CHỈ ẢNH MỚI) =====
+    const processedImages: {
       image_file: File;
       alt_text: string;
       is_primary: boolean;
     }[] = [];
 
-    // Ảnh chính (chỉ thêm nếu có file mới)
+    // Thêm ảnh chính nếu có file mới
     if (
       v.primary_image &&
       Array.isArray(v.primary_image) &&
       v.primary_image.length > 0 &&
       (v.primary_image[0] as UploadFile).originFileObj
     ) {
-      images.push({
-        image_file: (v.primary_image[0] as UploadFile).originFileObj as File,
-        alt_text: (v.primary_alt_text as string) || "Ảnh chính",
+      const primaryImageFile = (v.primary_image[0] as UploadFile)
+        .originFileObj as File;
+      const primaryAltText = (v.primary_alt_text as string) || "Ảnh chính";
+
+      processedImages.push({
+        image_file: primaryImageFile,
+        alt_text: primaryAltText,
         is_primary: true,
       });
     }
 
-    // Album ảnh phụ (chỉ thêm ảnh mới)
+    // ===== XỬ LÝ ALBUM ẢNH PHỤ (CHỈ ẢNH MỚI) =====
     if (v.album_images && Array.isArray(v.album_images)) {
-      (v.album_images as unknown[]).forEach((imgRaw) => {
+      (v.album_images as unknown[]).forEach((imgRaw, index) => {
         const img = imgRaw as {
           image: UploadFile[];
           alt_text?: string;
         };
+
         if (
           img.image &&
           Array.isArray(img.image) &&
           img.image.length > 0 &&
           img.image[0].originFileObj
         ) {
-          images.push({
-            image_file: img.image[0].originFileObj as File,
-            alt_text: img.alt_text || "Ảnh phụ",
+          const albumImageFile = img.image[0].originFileObj as File;
+          const albumAltText = img.alt_text || `Ảnh phụ ${index + 1}`;
+
+          processedImages.push({
+            image_file: albumImageFile,
+            alt_text: albumAltText,
             is_primary: false,
           });
         }
       });
     }
-
-    // Thêm ảnh mới vào FormData
-    images.forEach((img, idx) => {
+    // ===== THÊM ẢNH MỚI VÀO FORMDATA =====
+    processedImages.forEach((img, idx) => {
       formData.append(`images[${idx}][image_file]`, img.image_file);
       formData.append(`images[${idx}][alt_text]`, img.alt_text);
       formData.append(`images[${idx}][is_primary]`, img.is_primary ? "1" : "0");
+
+      console.log(`📤 Đã thêm vào FormData - images[${idx}]:`, {
+        fileName: img.image_file.name,
+        altText: img.alt_text,
+        isPrimary: img.is_primary,
+      });
     });
-    // Xử lý variants nếu có (sử dụng logic mới như AddProduct)
+    // ===== XỬ LÝ VARIANTS =====
     if (v.has_variants && v.variants && Array.isArray(v.variants)) {
       (v.variants as any[]).forEach((variant, idx) => {
+        // Lấy attribute values từ các trường form (như AddProduct)
+        const attrValues: number[] = [];
+        selectedAttributeTypes.forEach((attrName) => {
+          const attrValue = variant[attrName];
+          if (attrValue) {
+            attrValues.push(attrValue);
+          }
+        });
+
         // Thêm thông tin variant vào FormData
         formData.append(
           `variants[${idx}][variant_name]`,
@@ -283,15 +308,22 @@ const EditProduct = () => {
         );
         formData.append(`variants[${idx}][status]`, variant.status ? "1" : "0");
 
-        // Thêm attribute_values nếu có
-        if (variant.attributes && Array.isArray(variant.attributes)) {
-          variant.attributes.forEach((attr: any, attrIdx: number) => {
-            formData.append(
-              `variants[${idx}][attribute_values][${attrIdx}]`,
-              String(attr.id)
-            );
-          });
-        }
+        // Thêm attribute_values (match với JSON ví dụ)
+        attrValues.forEach((attrVal, attrIdx) => {
+          formData.append(
+            `variants[${idx}][attribute_values][${attrIdx}]`,
+            String(attrVal)
+          );
+        });
+
+        console.log(`✅ Đã xử lý variant ${idx + 1}:`, {
+          variant_name: variant.variant_name,
+          sku_code: variant.sku_code,
+          price: variant.price,
+          stock_quantity: variant.stock_quantity,
+          status: variant.status,
+          attribute_values: attrValues,
+        });
 
         // Thêm ảnh variant nếu có file mới
         if (
@@ -575,16 +607,16 @@ const EditProduct = () => {
                             <Col span={12}>
                               <Form.Item
                                 {...restField}
-                                name={[name, "sku"]}
-                                label="SKU"
+                                name={[name, "sku_code"]}
+                                label="SKU Code"
                                 rules={[
                                   {
                                     required: true,
-                                    message: "SKU là bắt buộc",
+                                    message: "SKU Code là bắt buộc",
                                   },
                                 ]}
                               >
-                                <Input placeholder="SKU" />
+                                <Input placeholder="SKU Code" />
                               </Form.Item>
                             </Col>
 
@@ -837,6 +869,7 @@ const EditProduct = () => {
                 <Select>
                   <Option value="active">Đang bán</Option>
                   <Option value="inactive">Ngừng bán</Option>
+                  <Option value="out_of_stock">Hết hàng</Option>
                 </Select>
               </Form.Item>
 
@@ -856,7 +889,7 @@ const EditProduct = () => {
                 loading={mutation.isPending}
                 block
               >
-                Thêm sản phẩm
+                Sửa Sản Phẩm
               </Button>
             </Form.Item>
           </Col>

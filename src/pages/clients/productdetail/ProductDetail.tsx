@@ -8,6 +8,10 @@ import type { IProduct } from "../../../interfaces/product";
 import { useState, useMemo, useEffect } from "react";
 import type { IAddProductToCartPayload } from "../../../interfaces/cart";
 import { ChevronRight, Minus, Plus, ShoppingBag, Truck } from "lucide-react";
+import {
+  getProductStatusDisplay,
+  isProductAvailable,
+} from "../../../utils/productStatus";
 import type {
   IProductVariant,
   IProductImage,
@@ -200,9 +204,21 @@ export default function ProductDetailPage() {
               <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded-full">
                 {product.category?.category_name}
               </span>
-              <span className="text-xs font-medium text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">
-                {product.stock_quantity > 0 ? "Còn Hàng" : "Hết Hàng"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-xs font-medium px-2 py-1 rounded-full"
+                  style={{
+                    color: getProductStatusDisplay(product.status).color,
+                    backgroundColor: getProductStatusDisplay(product.status)
+                      .bgColor,
+                  }}
+                >
+                  {getProductStatusDisplay(product.status).text}
+                </span>
+                <span className="text-xs font-medium text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">
+                  {product.stock_quantity > 0 ? "Còn Hàng" : "Hết Hàng"}
+                </span>
+              </div>
             </div>
             <h1 className="text-3xl font-serif font-bold tracking-tight">
               {product.product_name}
@@ -298,7 +314,9 @@ export default function ProductDetailPage() {
                   });
                 }}
                 disabled={
-                  product.stock_quantity < 1 || addCartMutation.isPending
+                  product.stock_quantity < 1 ||
+                  addCartMutation.isPending ||
+                  !isProductAvailable(product.status)
                 }
               >
                 <ShoppingBag className="h-5 w-5" />

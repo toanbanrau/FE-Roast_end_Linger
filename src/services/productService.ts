@@ -6,7 +6,7 @@ import type {
 // ================= ADMIN PRODUCT SERVICE =================
 
 // Lấy danh sách sản phẩm (có filter/search/pagination)
-export const getAdminProducts = async (): Promise<IProduct> => {
+export const getAdminProducts = async (): Promise<IProduct[]> => {
   const res = await adminAxios.get("/products");
   return res.data.data;
 };
