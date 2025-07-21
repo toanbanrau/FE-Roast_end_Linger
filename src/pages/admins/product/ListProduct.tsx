@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAdminProducts } from "../../../services/productService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getAdminProducts,
+  deleteAdminProduct,
+} from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
-import { Table, Image, Button, Space, Spin } from "antd";
+import { Table, Image, Button, Space } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 
@@ -9,11 +12,31 @@ import type { ColumnsType } from "antd/es/table";
 
 export default function ListProduct() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["admin-products"],
     queryFn: getAdminProducts,
   });
+
+  // Mutation xóa sản phẩm
+  const deleteMutation = useMutation({
+    mutationFn: deleteAdminProduct,
+    onSuccess: () => {
+      alert("Xóa sản phẩm thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+    onError: () => {
+      alert("Có lỗi xảy ra khi xóa sản phẩm!");
+    },
+  });
+
+  // Hàm xóa sản phẩm
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Bạn có chắc muốn xóa sản phẩm "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const columns: ColumnsType<IProduct> = [
     {
@@ -43,9 +66,8 @@ export default function ListProduct() {
     },
     {
       title: "Giá",
-      dataIndex: "base_price",
-      key: "base_price",
-      render: (price: string) => `${Number(price).toLocaleString()}₫`,
+      dataIndex: "display_price",
+      key: "display_price",
     },
     {
       title: "Danh mục",
@@ -64,7 +86,18 @@ export default function ListProduct() {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (status === "active" ? "Hiện" : "Ẩn"),
+      render: (status: string) => {
+        switch (status) {
+          case "active":
+            return <span style={{ color: "#52c41a" }}>Đang bán</span>;
+          case "inactive":
+            return <span style={{ color: "#ff4d4f" }}>Ngừng bán</span>;
+          case "out_of_stock":
+            return <span style={{ color: "#faad14" }}>Hết hàng</span>;
+          default:
+            return status;
+        }
+      },
     },
     {
       title: "Hành động",
@@ -77,6 +110,14 @@ export default function ListProduct() {
           <Link to={`/admin/product/${record.id}`}>
             <Button type="link">Xem</Button>
           </Link>
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDelete(record.id, record.product_name)}
+            loading={deleteMutation.isPending}
+          >
+            Xóa
+          </Button>
         </Space>
       ),
     },

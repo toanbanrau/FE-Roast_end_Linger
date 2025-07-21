@@ -11,6 +11,7 @@ interface CartState {
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
+  clearLocalCart: () => void;
   syncCart: () => Promise<void>;
 }
 
@@ -85,6 +86,9 @@ export const useCartStore = create<CartState>()(
         } finally {
           set({ loading: false });
         }
+      },
+      clearLocalCart: () => {
+        set({ cart: initialState, loading: false });
       },
     }),
     {

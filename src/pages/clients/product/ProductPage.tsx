@@ -1,5 +1,5 @@
-import { Filter } from "lucide-react"
-import { Link, useSearchParams } from "react-router-dom"
+import { Filter } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAllProductsClient } from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
@@ -9,42 +9,62 @@ import { useMemo, useCallback } from "react";
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Lấy các query params theo format API
-  const page = parseInt(searchParams.get('page') || '1');
-  const perPage = parseInt(searchParams.get('per_page') || '12');
-  const categoryId = searchParams.get('category_id') || '';
-  const brandId = searchParams.get('brand_id') || '';
-  const coffeeType = searchParams.get('coffee_type') || '';
-  const isFeatured = searchParams.get('is_featured') || '';
-  const sortBy = searchParams.get('sort_by') || 'created_at';
-  const sortOrder = searchParams.get('sort_order') || 'desc';
-  const search = searchParams.get('search') || '';
+  const page = parseInt(searchParams.get("page") || "1");
+  const perPage = parseInt(searchParams.get("per_page") || "12");
+  const categoryId = searchParams.get("category_id") || "";
+  const brandId = searchParams.get("brand_id") || "";
+  const coffeeType = searchParams.get("coffee_type") || "";
+  const isFeatured = searchParams.get("is_featured") || "";
+  const sortBy = searchParams.get("sort_by") || "created_at";
+  const sortOrder = searchParams.get("sort_order") || "desc";
+  const search = searchParams.get("search") || "";
 
   // Tạo query params cho API
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
-    if (page > 1) params.set('page', page.toString());
-    if (perPage !== 12) params.set('per_page', perPage.toString());
-    if (categoryId) params.set('category_id', categoryId);
-    if (brandId) params.set('brand_id', brandId);
-    if (coffeeType) params.set('coffee_type', coffeeType);
-    if (isFeatured) params.set('is_featured', isFeatured);
-    if (sortBy !== 'created_at') params.set('sort_by', sortBy);
-    if (sortOrder !== 'desc') params.set('sort_order', sortOrder);
-    if (search) params.set('search', search);
+    if (page > 1) params.set("page", page.toString());
+    if (perPage !== 12) params.set("per_page", perPage.toString());
+    if (categoryId) params.set("category_id", categoryId);
+    if (brandId) params.set("brand_id", brandId);
+    if (coffeeType) params.set("coffee_type", coffeeType);
+    if (isFeatured) params.set("is_featured", isFeatured);
+    if (sortBy !== "created_at") params.set("sort_by", sortBy);
+    if (sortOrder !== "desc") params.set("sort_order", sortOrder);
+    if (search) params.set("search", search);
     return params;
-  }, [page, perPage, categoryId, brandId, coffeeType, isFeatured, sortBy, sortOrder, search]);
+  }, [
+    page,
+    perPage,
+    categoryId,
+    brandId,
+    coffeeType,
+    isFeatured,
+    sortBy,
+    sortOrder,
+    search,
+  ]);
 
-  const { data: productsResponse, isLoading, isError, error } = useQuery({
+  const {
+    data: productsResponse,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", queryParams.toString()],
     queryFn: () => getAllProductsClient(queryParams),
   });
 
-  const { data: categories, isLoading: isLoadingCategories, isError: isErrorCategories, error: categoriesError } = useQuery({
-    queryKey: ['categories'],
+  const {
+    data: categories,
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories,
+    error: categoriesError,
+  } = useQuery({
+    queryKey: ["categories"],
     queryFn: () => getAllCategories(),
-    initialData: [], 
+    initialData: [],
   });
 
   // Xử lý response có cấu trúc phân trang
@@ -57,35 +77,57 @@ export default function ProductsPage() {
   const to = meta?.to || 0;
 
   // Cập nhật query params
-  const updateSearchParams = useCallback((updates: Record<string, string | number>) => {
-    const newParams = new URLSearchParams(searchParams);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === '' || value === 0) {
-        newParams.delete(key);
-      } else {
-        newParams.set(key, String(value));
+  const updateSearchParams = useCallback(
+    (updates: Record<string, string | number>) => {
+      const newParams = new URLSearchParams(searchParams);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === "" || value === 0) {
+          newParams.delete(key);
+        } else {
+          newParams.set(key, String(value));
+        }
+      });
+      // Reset về trang 1 khi filter thay đổi (trừ khi đang thay đổi page)
+      if (updates.page === undefined) {
+        newParams.set("page", "1");
       }
-    });
-    // Reset về trang 1 khi filter thay đổi (trừ khi đang thay đổi page)
-    if (updates.page === undefined) {
-      newParams.set('page', '1');
-    }
-    setSearchParams(newParams, { replace: true });
-  }, [searchParams, setSearchParams]);
+      setSearchParams(newParams, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   // Thêm kiểm tra loading và error cho categories
-  if (isLoadingCategories) return <div className="text-center py-12">Đang tải danh mục...</div>;
-  if (isErrorCategories) return <div className="text-center py-12 text-red-500">Lỗi tải danh mục: {categoriesError instanceof Error ? categoriesError.message : "Unknown error"}</div>;
-  
-  if (isLoading) return <div className="text-center py-12">Đang tải sản phẩm...</div>;
-  if (isError) return <div className="text-center py-12 text-red-500">Lỗi tải sản phẩm: {error instanceof Error ? error.message : "Unknown error"}</div>;
+  if (isLoadingCategories)
+    return <div className="text-center py-12">Đang tải danh mục...</div>;
+  if (isErrorCategories)
+    return (
+      <div className="text-center py-12 text-red-500">
+        Lỗi tải danh mục:{" "}
+        {categoriesError instanceof Error
+          ? categoriesError.message
+          : "Unknown error"}
+      </div>
+    );
+
+  if (isLoading)
+    return <div className="text-center py-12">Đang tải sản phẩm...</div>;
+  if (isError)
+    return (
+      <div className="text-center py-12 text-red-500">
+        Lỗi tải sản phẩm:{" "}
+        {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="mb-8">
-        <h1 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl">Our Coffee Collection</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl">
+          Our Coffee Collection
+        </h1>
         <p className="mt-4 text-lg text-stone-600">
-          Explore our curated selection of premium coffee beans from around the world.
+          Explore our curated selection of premium coffee beans from around the
+          world.
         </p>
       </div>
 
@@ -98,18 +140,25 @@ export default function ProductsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={categoryId === ''}
-                  onChange={() => updateSearchParams({ category_id: '' })}
+                  checked={categoryId === ""}
+                  onChange={() => updateSearchParams({ category_id: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
                 <label className="text-sm font-medium">Tất cả</label>
               </div>
               {categories.map((categoryItem: ICategory) => (
-                <div key={categoryItem.id} className="flex items-center space-x-2">
+                <div
+                  key={categoryItem.id}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     checked={categoryId === categoryItem.id.toString()}
-                    onChange={() => updateSearchParams({ category_id: categoryItem.id.toString() })}
+                    onChange={() =>
+                      updateSearchParams({
+                        category_id: categoryItem.id.toString(),
+                      })
+                    }
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
                   <label className="text-sm font-medium">
@@ -126,8 +175,8 @@ export default function ProductsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={coffeeType === ''}
-                  onChange={() => updateSearchParams({ coffee_type: '' })}
+                  checked={coffeeType === ""}
+                  onChange={() => updateSearchParams({ coffee_type: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
                 <label className="text-sm font-medium">Tất cả</label>
@@ -154,8 +203,8 @@ export default function ProductsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={isFeatured === ''}
-                  onChange={() => updateSearchParams({ is_featured: '' })}
+                  checked={isFeatured === ""}
+                  onChange={() => updateSearchParams({ is_featured: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
                 <label className="text-sm font-medium">Tất cả</label>
@@ -163,11 +212,13 @@ export default function ProductsPage() {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={isFeatured === 'true'}
-                  onChange={() => updateSearchParams({ is_featured: 'true' })}
+                  checked={isFeatured === "true"}
+                  onChange={() => updateSearchParams({ is_featured: "true" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Chỉ sản phẩm nổi bật</label>
+                <label className="text-sm font-medium">
+                  Chỉ sản phẩm nổi bật
+                </label>
               </div>
             </div>
           </div>
@@ -176,7 +227,7 @@ export default function ProductsPage() {
         {/* Filters - Mobile */}
         <div className="lg:hidden w-full mb-6">
           <div className="flex justify-between items-center">
-            <button 
+            <button
               type="button"
               className="flex items-center gap-2 px-4 py-2 border rounded-md"
             >
@@ -186,10 +237,12 @@ export default function ProductsPage() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-stone-600">Sort by:</span>
-              <select 
+              <select
                 className="border rounded-md px-2 py-1 text-sm"
                 value={sortBy}
-                onChange={(e) => updateSearchParams({ sort_by: e.target.value })}
+                onChange={(e) =>
+                  updateSearchParams({ sort_by: e.target.value })
+                }
               >
                 <option value="created_at">Mới nhất</option>
                 <option value="product_name">Tên sản phẩm</option>
@@ -209,10 +262,12 @@ export default function ProductsPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-stone-600">Sort by:</span>
-              <select 
+              <select
                 className="border rounded-md px-2 py-1 text-sm"
                 value={sortBy}
-                onChange={(e) => updateSearchParams({ sort_by: e.target.value })}
+                onChange={(e) =>
+                  updateSearchParams({ sort_by: e.target.value })
+                }
               >
                 <option value="created_at">Mới nhất</option>
                 <option value="product_name">Tên sản phẩm</option>
@@ -226,8 +281,15 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product: IProduct) => {
               let variantPrice: number | null = null;
-              if (product.has_variants && Array.isArray(product.variants) && product.variants.length > 0) {
-                const found = product.variants.find(v => v.price && !isNaN(Number(v.price)) && Number(v.price) > 0);
+              if (
+                product.has_variants &&
+                Array.isArray(product.variants) &&
+                product.variants.length > 0
+              ) {
+                const found = product.variants.find(
+                  (v) =>
+                    v.price && !isNaN(Number(v.price)) && Number(v.price) > 0
+                );
                 if (found) variantPrice = Number(found.price);
               }
               return (
@@ -238,8 +300,12 @@ export default function ProductsPage() {
                 >
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src={product.primary_image?.image_url || "/placeholder.svg"}
-                      alt={product.primary_image?.alt_text || product.product_name}
+                      src={
+                        product.primary_image?.image_url || "/placeholder.svg"
+                      }
+                      alt={
+                        product.primary_image?.alt_text || product.product_name
+                      }
                       width={400}
                       height={400}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
@@ -251,10 +317,18 @@ export default function ProductsPage() {
                         {product.category?.category_name || ""}
                       </span>
                     </div>
-                    <h3 className="text-xl font-medium text-stone-900">{product.product_name}</h3>
-                    <p className="mt-2 text-stone-600 text-sm">{product.short_description}</p>
+                    <h3 className="text-xl font-medium text-stone-900">
+                      {product.product_name}
+                    </h3>
+                    <p className="mt-2 text-stone-600 text-sm">
+                      {product.short_description}
+                    </p>
                     <div className="mt-4 flex items-center justify-between">
-                      {product.has_variants && variantPrice !== null ? (
+                      {product.display_price ? (
+                        <span className="text-lg font-semibold text-amber-800">
+                          {product.display_price}
+                        </span>
+                      ) : product.has_variants && variantPrice !== null ? (
                         <span className="text-lg font-semibold text-amber-800">
                           {variantPrice.toLocaleString()}₫
                         </span>
@@ -263,7 +337,7 @@ export default function ProductsPage() {
                           {Number(product.base_price).toLocaleString()}₫
                         </span>
                       )}
-                      <button 
+                      <button
                         type="button"
                         className="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1 rounded-md text-sm font-medium"
                       >
@@ -280,7 +354,7 @@ export default function ProductsPage() {
           {totalPages > 1 && (
             <div className="mt-12 flex justify-center">
               <nav className="flex items-center gap-1">
-                <button 
+                <button
                   type="button"
                   className="h-8 w-8 border rounded-md hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={currentPage === 1}
@@ -288,7 +362,7 @@ export default function ProductsPage() {
                 >
                   ←
                 </button>
-                
+
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
                   if (totalPages <= 5) {
@@ -300,13 +374,13 @@ export default function ProductsPage() {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-                  
+
                   return (
                     <button
                       key={pageNum}
                       type="button"
                       className={`h-8 w-8 border rounded-md hover:bg-amber-50 ${
-                        currentPage === pageNum ? 'bg-amber-800 text-white' : ''
+                        currentPage === pageNum ? "bg-amber-800 text-white" : ""
                       }`}
                       onClick={() => updateSearchParams({ page: pageNum })}
                     >
@@ -314,8 +388,8 @@ export default function ProductsPage() {
                     </button>
                   );
                 })}
-                
-                <button 
+
+                <button
                   type="button"
                   className="h-8 w-8 border rounded-md hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={currentPage === totalPages}
@@ -329,5 +403,5 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
