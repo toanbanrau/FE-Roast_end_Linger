@@ -6,9 +6,7 @@ import {
   deleteBlogPost,
 } from "../../../services/blogPostService";
 import type { IAdminBlogPost } from "../../../interfaces/blog";
-import EyeIcon from "../../../components/icons/EyeIcon";
-import EditIcon from "../../../components/icons/EditIcon";
-import TrashIcon from "../../../components/icons/TrashIcon";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const ListBlogPost = () => {
   const navigate = useNavigate();
@@ -35,10 +33,10 @@ const ListBlogPost = () => {
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+      title: "STT",
+      key: "stt",
       width: 60,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Tiêu đề",
@@ -64,18 +62,14 @@ const ListBlogPost = () => {
       title: "Thao tác",
       key: "action",
       width: 150,
-      render: (_: any, record: IAdminBlogPost) => (
+      render: (_: unknown, record: IAdminBlogPost) => (
         <Space size="middle">
           <Button
-            icon={<EyeIcon />}
-            onClick={() => navigate(`/admin/blog-post/${record.id}`)}
-          />
-          <Button
-            icon={<EditIcon />}
+            icon={<EditOutlined />}
             onClick={() => navigate(`/admin/blog-post/edit/${record.id}`)}
           />
           <Button
-            icon={<TrashIcon />}
+            icon={<DeleteOutlined />}
             danger
             onClick={() => handleDelete(record.id)}
           />

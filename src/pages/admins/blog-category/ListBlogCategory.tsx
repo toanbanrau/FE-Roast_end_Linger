@@ -1,4 +1,5 @@
-import { Table, Button, Tag } from "antd";
+import { Table, Button, Tag, Space } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,9 +7,6 @@ import {
   deleteBlogCategory,
 } from "../../../services/blogCategoryService";
 import type { IAdminBlogCategory } from "../../../interfaces/category";
-import EyeIcon from "../../../components/icons/EyeIcon";
-import EditIcon from "../../../components/icons/EditIcon";
-import TrashIcon from "../../../components/icons/TrashIcon";
 
 const ListBlogCategory = () => {
   const navigate = useNavigate();
@@ -54,7 +52,8 @@ const ListBlogCategory = () => {
       title: "Danh Mục Cha",
       dataIndex: "parent",
       key: "parent",
-      render: (parent: IAdminBlogCategory | null) => parent?.category_name || "-",
+      render: (parent: IAdminBlogCategory | null) =>
+        parent?.category_name || "-",
     },
     {
       title: "Trạng Thái",
@@ -67,17 +66,17 @@ const ListBlogCategory = () => {
       title: "Hành Động",
       key: "action",
       render: (_: unknown, record: IAdminBlogCategory) => (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <EyeIcon style={{color:'yellow',cursor: 'pointer', transition: 'color 0.2s'}} onClick={() => navigate(`/admin/blog-category/${record.id}`)} />
-          <EditIcon
-            style={{ color: '#1677ff', cursor: 'pointer', transition: 'color 0.2s' }}
+        <Space size="middle">
+          <Button
+            icon={<EditOutlined />}
             onClick={() => navigate(`/admin/blog-category/edit/${record.id}`)}
           />
-          <TrashIcon
-            style={{ color: '#ff4d4f', cursor: 'pointer', transition: 'color 0.2s' }}
+          <Button
+            icon={<DeleteOutlined />}
+            danger
             onClick={() => handleDelete(record.id)}
           />
-        </div>
+        </Space>
       ),
     },
   ];

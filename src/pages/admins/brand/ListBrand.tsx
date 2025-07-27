@@ -1,11 +1,9 @@
-import { Image, message, Table, Button } from "antd";
+import { Image, message, Table, Button, Space } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IBrand } from "../../../interfaces/brand";
 import { deleteBrand, getAllBrands } from "../../../services/brandService";
-import TrashIcon from "../../../components/icons/TrashIcon";
-import EditIcon from "../../../components/icons/EditIcon";
-import EyeIcon from "../../../components/icons/EyeIcon";
 
 const ListBrand = () => {
   const navigate = useNavigate();
@@ -48,7 +46,9 @@ const ListBrand = () => {
     },
     {
       title: "Logo",
-      render: (data: IBrand) => <Image src={data.logo} width={60} height={60} />,
+      render: (data: IBrand) => (
+        <Image src={data.logo} width={60} height={60} />
+      ),
     },
     {
       title: "Website",
@@ -59,21 +59,17 @@ const ListBrand = () => {
       title: "Hành động",
       key: "action",
       render: (data: IBrand) => (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-           <EyeIcon style={{color:'yellow',cursor: 'pointer', transition: 'color 0.2s'}} />
-          <EditIcon
-            style={{ color: '#1677ff', cursor: 'pointer', transition: 'color 0.2s' }}
+        <Space size="middle">
+          <Button
+            icon={<EditOutlined />}
             onClick={() => navigate(`/admin/brand/edit/${data.id}`)}
-           
           />
-          <TrashIcon
-            style={{ color: '#ff4d4f', cursor: 'pointer', transition: 'color 0.2s' }}
+          <Button
+            icon={<DeleteOutlined />}
+            danger
             onClick={() => handleDeleteBrand(data.id)}
-
           />
-         
-          
-        </div>
+        </Space>
       ),
     },
   ];

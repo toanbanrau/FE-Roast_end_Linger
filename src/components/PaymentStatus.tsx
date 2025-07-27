@@ -17,24 +17,20 @@ interface PhaseInfo {
 
 interface PaymentStatusProps {
   status: "pending" | "completed" | "failed";
-  phase: number;
   phaseInfo: PhaseInfo;
   checkCount: number;
   timeElapsed: number;
   loading: boolean;
   onManualCheck?: () => void;
-  onStatusUpdate?: (data: any) => void;
 }
 
 export const PaymentStatus: React.FC<PaymentStatusProps> = ({
   status,
-  phase,
   phaseInfo,
   checkCount,
   timeElapsed,
   loading,
   onManualCheck,
-  onStatusUpdate,
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -72,33 +68,19 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-xs text-gray-500 mb-1">Trạng thái</div>
-          <div
-            className="font-semibold"
-            style={{ color: getPaymentStatusColor(status) }}
-          >
+      <div className="flex justify-between text-sm text-gray-600 mb-4">
+        <span>
+          Trạng thái:{" "}
+          <strong style={{ color: getPaymentStatusColor(status) }}>
             {getPaymentStatusText(status)}
-          </div>
-        </div>
-
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-xs text-gray-500 mb-1">Lần kiểm tra</div>
-          <div className="font-semibold text-gray-800">{checkCount}</div>
-        </div>
-
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-xs text-gray-500 mb-1">Thời gian</div>
-          <div className="font-semibold text-gray-800">
-            {formatTime(timeElapsed)}
-          </div>
-        </div>
-
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-xs text-gray-500 mb-1">Giai đoạn</div>
-          <div className="font-semibold text-gray-800">{phase}/4</div>
-        </div>
+          </strong>
+        </span>
+        <span>
+          Thời gian: <strong>{formatTime(timeElapsed)}</strong>
+        </span>
+        <span>
+          Lần kiểm tra: <strong>{checkCount}</strong>
+        </span>
       </div>
 
       {loading && status === "pending" && (
@@ -119,29 +101,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
             {loading ? "Đang kiểm tra..." : "Kiểm tra ngay"}
           </button>
 
-          <div className="text-xs text-amber-700 bg-amber-50 rounded p-2">
-            💡 <strong>Debug:</strong> Nếu đã chuyển khoản thành công, click
-            "Kiểm tra ngay" để force check API
-          </div>
-
-          {/* Temporary debug button */}
-          <button
-            onClick={() => {
-              console.log("🧪 MOCK SUCCESS - For testing only");
-              // Mock completed response for testing
-              const mockData = {
-                payment_id: 123,
-                status: "completed",
-                completed_at: new Date().toISOString(),
-                detection_method: "manual_test",
-              };
-              onStatusUpdate?.(mockData);
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"
-          >
-            🧪 Mock Success (Test Only)
-          </button>
-
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <div className="flex items-start gap-2">
               <span className="text-green-600 text-lg">💡</span>
@@ -157,29 +116,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
       )}
 
       {status === "completed" && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-green-700">⚡ Thời gian phát hiện:</span>
-              <span className="font-semibold text-green-800">
-                {formatTime(timeElapsed)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-green-700">🔍 Số lần kiểm tra:</span>
-              <span className="font-semibold text-green-800">{checkCount}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-green-700">🎯 Hiệu suất:</span>
-              <span className="font-semibold text-green-800">
-                {timeElapsed < 10000
-                  ? "Xuất sắc"
-                  : timeElapsed < 30000
-                  ? "Tốt"
-                  : "Bình thường"}
-              </span>
-            </div>
-          </div>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+          <p className="text-green-700 font-medium">
+            ✅ Thanh toán đã được xác nhận thành công!
+          </p>
         </div>
       )}
 
@@ -198,33 +138,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
           </button>
         </div>
       )}
-
-      {/* Phase Progress Bar */}
-      <div className="mt-4">
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-          <div
-            className="h-2 rounded-full transition-all duration-300"
-            style={{
-              width: `${(phase / 4) * 100}%`,
-              backgroundColor: getPaymentStatusColor(status),
-            }}
-          ></div>
-        </div>
-        <div className="flex justify-between text-xs text-gray-500">
-          {["Lightning", "Rapid", "Fast", "Standard"].map(
-            (phaseName, index) => (
-              <span
-                key={phaseName}
-                className={`${
-                  index + 1 <= phase ? "text-amber-600 font-medium" : ""
-                }`}
-              >
-                {phaseName}
-              </span>
-            )
-          )}
-        </div>
-      </div>
     </div>
   );
 };

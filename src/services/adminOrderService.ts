@@ -8,6 +8,12 @@ interface ApiResponse<T> {
   data: T;
 }
 
+// Update Order Status Request interface
+interface UpdateOrderStatusRequest {
+  status_id: number;
+  notes?: string;
+}
+
 interface OrdersResponse {
   orders: IOrder[];
   pagination: {
@@ -70,26 +76,59 @@ export const getOrderById = async (id: number): Promise<IOrder> => {
 };
 
 // Cập nhật trạng thái đơn hàng
-export const updateOrderStatus = async (id: number, statusId: number): Promise<IOrder> => {
-  const response = await adminAxios.patch<ApiResponse<IOrder>>(`/orders/${id}/status`, {
-    status_id: statusId
-  });
-  return response.data.data;
+export const updateOrderStatus = async (
+  id: number,
+  statusId: number,
+  notes?: string
+): Promise<IOrder> => {
+  console.log(`🔄 Updating order ${id} status to ${statusId}`);
+  console.log(`📤 API URL: PATCH /api/admin/orders/${id}/status`);
+
+  const requestBody: UpdateOrderStatusRequest = {
+    status_id: statusId,
+    ...(notes && { notes })
+  };
+
+  console.log(`📤 Request body:`, requestBody);
+
+  try {
+    const response = await adminAxios.patch<ApiResponse<IOrder>>(`/orders/${id}/status`, requestBody);
+
+    console.log(`✅ Order status updated successfully:`, response.data);
+    return response.data.data;
+  } catch (error) {
+    console.error(`❌ Failed to update order status:`, error);
+    throw error;
+  }
 };
 
-// Lấy danh sách trạng thái đơn hàng (tạm thời dùng static data)
-export const getOrderStatuses = async (): Promise<{ id: number; name: string; display_name: string; color: string }[]> => {
-  // Tạm thời return static data vì chưa có API này trong docs
-  return [
-    { id: 1, name: "pending", display_name: "Chờ xác nhận", color: "#FFA500" },
-    { id: 2, name: "confirmed", display_name: "Đã xác nhận", color: "#007BFF" },
-    { id: 3, name: "processing", display_name: "Đang xử lý", color: "#17A2B8" },
-    { id: 4, name: "shipping", display_name: "Đang giao hàng", color: "#6F42C1" },
-    { id: 5, name: "delivered", display_name: "Đã giao hàng", color: "#28A745" },
-    { id: 6, name: "completed", display_name: "Hoàn thành", color: "#28A745" },
-    { id: 7, name: "cancelled", display_name: "Đã hủy", color: "#DC3545" },
-    { id: 8, name: "refunded", display_name: "Đã hoàn tiền", color: "#E83E8C" },
-  ];
+// Interface cho Order Status từ API
+interface OrderStatus {
+  id: number;
+  status_name: string;
+  description: string;
+  color: string;
+  sort_order: number;
+  can_be_cancelled: boolean;
+  is_final_status: boolean;
+  orders_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Lấy danh sách trạng thái đơn hàng từ API
+export const getOrderStatuses = async (): Promise<OrderStatus[]> => {
+  console.log('🔄 Fetching order statuses from API...');
+
+  try {
+    const response = await adminAxios.get<ApiResponse<OrderStatus[]>>('/order-statuses');
+
+    console.log('✅ Order statuses fetched successfully:', response.data.data);
+    return response.data.data;
+  } catch (error) {
+    console.error('❌ Failed to fetch order statuses:', error);
+    throw error;
+  }
 };
 
 // Tìm kiếm đơn hàng - sử dụng getAllOrders với search param
@@ -147,6 +186,9 @@ export const getOrderStats = async (params?: {
   if (params?.date_from) queryParams.append('date_from', params.date_from);
   if (params?.date_to) queryParams.append('date_to', params.date_to);
 
-  const response = await adminAxios.get<ApiResponse<OrderStatistics>>(`/orders/statistics?${queryParams.toString()}`);
+  const queryString = queryParams.toString();
+  const url = queryString ? `/orders/statistics?${queryString}` : '/orders/statistics';
+
+  const response = await adminAxios.get<ApiResponse<OrderStatistics>>(url);
   return response.data.data;
 };

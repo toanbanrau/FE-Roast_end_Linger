@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronRight, Lock } from "lucide-react";
+import { ChevronRight, Lock, Plus, MapPin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../../../stores/useCartStore";
 import { useUserStore } from "../../../stores/useUserStore";
@@ -14,6 +14,9 @@ import type {
   District,
   Ward,
 } from "../../../services/locationService";
+import { useQuery } from "@tanstack/react-query";
+import { addressQueryOptions } from "../../../services/addressUserServices";
+import type { UserAddress } from "../../../interfaces/address";
 
 interface IFormCheckout {
   customer_name: string;
@@ -40,15 +43,30 @@ export default function CheckoutPage() {
     null
   );
   const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
+
+  // Address selection states
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(
+    null
+  );
+  const [useNewAddress, setUseNewAddress] = useState(false);
+
   const navigate = useNavigate();
 
   const { cart, clearCart } = useCartStore();
   const { user } = useUserStore();
 
+  // Fetch user addresses
+  const { data: addresses = [] } = useQuery({
+    ...addressQueryOptions.getAddresses(),
+    enabled: !!user, // Only fetch if user is logged in
+  });
+
   const {
     register,
     handleSubmit,
     setValue,
+    trigger,
+    getValues,
     formState: { errors },
   } = useForm<IFormCheckout>();
 
@@ -58,6 +76,77 @@ export default function CheckoutPage() {
       setValue("customer_email", user.email);
     }
   }, [user, setValue]);
+
+  // Handle step navigation
+  const handleStepChange = (newStep: number) => {
+    if (newStep <= step) {
+      setStep(newStep);
+    }
+  };
+
+  // Validate step before proceeding
+  const validateAndProceedToStep = async (nextStep: number) => {
+    let fieldsToValidate: (keyof IFormCheckout)[] = [];
+
+    // Define required fields for each step
+    if (step === 1) {
+      // Step 1: Shipping information
+      fieldsToValidate = [
+        "customer_name",
+        "customer_email",
+        "customer_phone",
+        "delivery_address",
+        "shippingMethod",
+      ];
+    } else if (step === 2) {
+      // Step 2: Payment method
+      fieldsToValidate = ["payment_method"];
+    }
+
+    // Validate required fields
+    const isValid = await trigger(fieldsToValidate);
+
+    if (isValid) {
+      // Additional validation for location if needed
+      if (step === 1) {
+        const values = getValues();
+        if (!values.delivery_address?.trim()) {
+          toast.error("Vui lòng nhập địa chỉ giao hàng");
+          return;
+        }
+      }
+
+      setStep(nextStep);
+    } else {
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
+    }
+  };
+
+  // Handle address selection
+  const handleAddressSelect = (address: UserAddress) => {
+    setSelectedAddress(address);
+    setUseNewAddress(false);
+
+    // Fill form with selected address data
+    setValue("customer_name", address.recipient_name);
+    setValue("customer_phone", address.phone_number);
+    setValue("delivery_address", address.address_line_1);
+    setValue("city", address.city);
+    setValue("district", address.district);
+    setValue("ward", address.ward);
+  };
+
+  // Handle new address selection
+  const handleNewAddress = () => {
+    setSelectedAddress(null);
+    setUseNewAddress(true);
+
+    // Clear address fields but keep user info
+    setValue("delivery_address", "");
+    setValue("city", "");
+    setValue("district", "");
+    setValue("ward", "");
+  };
 
   const cartItems = cart?.items || [];
 
@@ -201,6 +290,10 @@ export default function CheckoutPage() {
                       type="email"
                       {...register("customer_email", {
                         required: "Email không được để trống",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Email không hợp lệ",
+                        },
                       })}
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                     />
@@ -222,6 +315,10 @@ export default function CheckoutPage() {
                       type="tel"
                       {...register("customer_phone", {
                         required: "Số điện thoại không được để trống",
+                        pattern: {
+                          value: /^[0-9]{10,11}$/,
+                          message: "Số điện thoại phải có 10-11 chữ số",
+                        },
                       })}
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                     />
@@ -236,63 +333,152 @@ export default function CheckoutPage() {
 
               <div className="space-y-4">
                 <h2 className="text-xl font-medium">Địa Chỉ Giao Hàng</h2>
-                <div className=" gap-4">
-                  <div>
-                    <label
-                      htmlFor="customer_name"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Họ Và Tên
-                    </label>
-                    <input
-                      id="customer_name"
-                      {...register("customer_name", {
-                        required: "Họ và tên không được để trống",
-                      })}
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
-                    />
-                    {errors.customer_name && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.customer_name.message}
-                      </p>
-                    )}
+
+                {/* Address Selection Options */}
+                {user && addresses.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-stone-700">
+                      Chọn địa chỉ có sẵn:
+                    </h3>
+                    <div className="space-y-2">
+                      {addresses.map((address) => (
+                        <div
+                          key={address.id}
+                          onClick={() => handleAddressSelect(address)}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedAddress?.id === address.id
+                              ? "border-amber-800 bg-amber-50"
+                              : "border-stone-200 hover:border-stone-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <MapPin className="h-4 w-4 text-stone-500" />
+                                <span className="font-medium">
+                                  {address.recipient_name}
+                                </span>
+                                {address.is_default && (
+                                  <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                                    Mặc định
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-stone-600">
+                                {address.formatted_address}
+                              </p>
+                              <p className="text-sm text-stone-500">
+                                {address.phone_number}
+                              </p>
+                            </div>
+                            <input
+                              type="radio"
+                              name="address_selection"
+                              checked={selectedAddress?.id === address.id}
+                              onChange={() => handleAddressSelect(address)}
+                              className="text-amber-800 focus:ring-amber-800"
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* New Address Option */}
+                      <div
+                        onClick={handleNewAddress}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          useNewAddress
+                            ? "border-amber-800 bg-amber-50"
+                            : "border-stone-200 hover:border-stone-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4 text-stone-500" />
+                            <span className="font-medium">
+                              Thêm địa chỉ mới
+                            </span>
+                          </div>
+                          <input
+                            type="radio"
+                            name="address_selection"
+                            checked={useNewAddress}
+                            onChange={handleNewAddress}
+                            className="text-amber-800 focus:ring-amber-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="delivery_address"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Địa Chỉ
-                  </label>
-                  <input
-                    id="delivery_address"
-                    {...register("delivery_address", {
-                      required: "Địa chỉ không được để trống",
-                    })}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
-                  />
-                  {errors.delivery_address && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.delivery_address.message}
-                    </p>
-                  )}
-                </div>
-                <LocationSelector
-                  onProvinceChange={(province) => {
-                    setSelectedProvince(province);
-                    setValue("city", province?.name || "");
-                  }}
-                  onDistrictChange={(district) => {
-                    setSelectedDistrict(district);
-                    setValue("district", district?.name || "");
-                  }}
-                  onWardChange={(ward) => {
-                    setSelectedWard(ward);
-                    setValue("ward", ward?.name || "");
-                  }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                />
+                )}
+
+                {/* Address Form - Show when new address is selected or no saved addresses */}
+                {(useNewAddress || !user || addresses.length === 0) && (
+                  <div className="space-y-4 p-4 border rounded-lg bg-stone-50">
+                    <h3 className="text-sm font-medium text-stone-700">
+                      {addresses.length === 0
+                        ? "Thông tin giao hàng:"
+                        : "Địa chỉ mới:"}
+                    </h3>
+
+                    <div className="gap-4">
+                      <div>
+                        <label
+                          htmlFor="customer_name"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Họ Và Tên
+                        </label>
+                        <input
+                          id="customer_name"
+                          {...register("customer_name", {
+                            required: "Họ và tên không được để trống",
+                          })}
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                        />
+                        {errors.customer_name && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.customer_name.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="delivery_address"
+                        className="block text-sm font-medium mb-1"
+                      >
+                        Địa Chỉ
+                      </label>
+                      <input
+                        id="delivery_address"
+                        {...register("delivery_address", {
+                          required: "Địa chỉ không được để trống",
+                        })}
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+                      />
+                      {errors.delivery_address && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.delivery_address.message}
+                        </p>
+                      )}
+                    </div>
+                    <LocationSelector
+                      onProvinceChange={(province) => {
+                        setSelectedProvince(province);
+                        setValue("city", province?.name || "");
+                      }}
+                      onDistrictChange={(district) => {
+                        setSelectedDistrict(district);
+                        setValue("district", district?.name || "");
+                      }}
+                      onWardChange={(ward) => {
+                        setSelectedWard(ward);
+                        setValue("ward", ward?.name || "");
+                      }}
+                      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -304,7 +490,9 @@ export default function CheckoutPage() {
                         type="radio"
                         id="standard"
                         value="standard"
-                        {...register("shippingMethod", { required: true })}
+                        {...register("shippingMethod", {
+                          required: "Vui lòng chọn phương thức vận chuyển",
+                        })}
                         defaultChecked
                         className="text-amber-800 focus:ring-amber-800"
                       />
@@ -320,13 +508,18 @@ export default function CheckoutPage() {
                   </div>
                   {/* Option for express shipping can be added here */}
                 </div>
+                {errors.shippingMethod && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.shippingMethod.message}
+                  </p>
+                )}
               </div>
 
               <div className="pt-4">
                 <button
                   type="button"
                   className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
-                  onClick={() => setStep(2)}
+                  onClick={() => validateAndProceedToStep(2)}
                 >
                   Tiếp Tục Thanh Toán
                 </button>
@@ -346,7 +539,9 @@ export default function CheckoutPage() {
                         type="radio"
                         id="online-payment"
                         value="online"
-                        {...register("payment_method", { required: true })}
+                        {...register("payment_method", {
+                          required: "Vui lòng chọn phương thức thanh toán",
+                        })}
                         className="text-amber-800 focus:ring-amber-800"
                       />
                       <label htmlFor="online-payment" className="font-medium">
@@ -361,7 +556,9 @@ export default function CheckoutPage() {
                         type="radio"
                         id="bank-transfer"
                         value="bank_transfer"
-                        {...register("payment_method", { required: true })}
+                        {...register("payment_method", {
+                          required: "Vui lòng chọn phương thức thanh toán",
+                        })}
                         className="text-amber-800 focus:ring-amber-800"
                       />
                       <label htmlFor="bank-transfer" className="font-medium">
@@ -386,7 +583,9 @@ export default function CheckoutPage() {
                         type="radio"
                         id="cod"
                         value="cod"
-                        {...register("payment_method", { required: true })}
+                        {...register("payment_method", {
+                          required: "Vui lòng chọn phương thức thanh toán",
+                        })}
                         defaultChecked
                         className="text-amber-800 focus:ring-amber-800"
                       />
@@ -396,6 +595,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+                {errors.payment_method && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.payment_method.message}
+                  </p>
+                )}
               </div>
               <div className="pt-4 flex gap-4">
                 <button
@@ -408,7 +612,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
-                  onClick={() => setStep(3)}
+                  onClick={() => validateAndProceedToStep(3)}
                 >
                   Tiếp Tục Xem Lại
                 </button>

@@ -115,25 +115,40 @@ export default function OrderDetail() {
     {
       title: "Sản phẩm",
       key: "product",
-      render: (_, record) => (
-        <div className="flex items-center space-x-3">
-          <Image
-            src={record.product.image || "/placeholder.svg"}
-            alt={record.product.current_name}
-            width={60}
-            height={60}
-            className="rounded-lg object-cover"
-          />
-          <div>
-            <div className="font-medium">{record.product.current_name}</div>
-            {record.variant && (
-              <div className="text-sm text-gray-500">
-                Biến thể: {record.variant.current_name}
-              </div>
-            )}
+      render: (_, record) => {
+        // Ưu tiên hiển thị ảnh variant nếu có, nếu không thì dùng ảnh product
+        const imageUrl =
+          record.variant?.image || record.product.image || "/placeholder.svg";
+        const altText = record.variant
+          ? `${record.product.current_name} - ${record.variant.current_name}`
+          : record.product.current_name;
+
+        return (
+          <div className="flex items-center space-x-3">
+            <Image
+              src={imageUrl}
+              alt={altText}
+              width={60}
+              height={60}
+              className="rounded-lg object-cover"
+              fallback="/placeholder.svg"
+            />
+            <div>
+              <div className="font-medium">{record.product.current_name}</div>
+              {record.variant && (
+                <div className="text-sm text-gray-500">
+                  Biến thể: {record.variant.current_name}
+                </div>
+              )}
+              {record.variant?.sku && (
+                <div className="text-xs text-gray-400">
+                  SKU: {record.variant.sku}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       title: "Đơn giá",
@@ -201,9 +216,7 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái" span={1}>
                 <div className="flex items-center space-x-2">
-                  <Tag color={getStatusColor(order.status.name)}>
-                    {order.status.display_name}
-                  </Tag>
+                  <Tag color={order.status.color}>{order.status.name}</Tag>
                   {!isEditingStatus ? (
                     <Button
                       size="small"
@@ -222,7 +235,7 @@ export default function OrderDetail() {
                       >
                         {orderStatuses?.map((status) => (
                           <Option key={status.id} value={status.id}>
-                            {status.display_name}
+                            <Tag color={status.color}>{status.status_name}</Tag>
                           </Option>
                         ))}
                       </Select>

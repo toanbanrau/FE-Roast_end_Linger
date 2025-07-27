@@ -106,33 +106,44 @@ export default function ProductDetailPage() {
     );
   }, [product]);
 
-  // Mảng ảnh hiển thị: [ảnh variant nếu có, ảnh chính, ...albumImages]
+  // Mảng ảnh hiển thị: chỉ gồm ảnh chính và album (không bao gồm ảnh variant)
   const displayImages: { url: string; type: string }[] = useMemo(() => {
     const arr: { url: string; type: string }[] = [];
-    const variantImage = selectedVariant?.image || selectedVariant?.image_url;
-    if (variantImage) arr.push({ url: variantImage, type: "variant" });
+
+    // Luôn thêm ảnh chính vào album
     if (product?.primary_image?.image_url)
       arr.push({ url: product.primary_image.image_url, type: "primary" });
+
+    // Thêm các ảnh album
     albumImages.forEach((img) =>
       arr.push({ url: img.image_url, type: "album" })
     );
+
     // Loại trùng url
     return arr.filter(
       (img, idx, self) => self.findIndex((i) => i.url === img.url) === idx
     );
-  }, [selectedVariant, product, albumImages]);
+  }, [product, albumImages]);
 
   // State cho ảnh đang active
   const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
   useEffect(() => {
     const variantImage = selectedVariant?.image || selectedVariant?.image_url;
+
+    // Ưu tiên ảnh variant khi có variant được chọn (ảnh variant sẽ thay thế ảnh chính)
     if (variantImage) {
       setActiveImage(variantImage);
-    } else if (product?.primary_image?.image_url) {
+    }
+    // Nếu không có variant hoặc variant không có ảnh, dùng ảnh chính
+    else if (product?.primary_image?.image_url) {
       setActiveImage(product.primary_image.image_url);
-    } else if (albumImages.length > 0) {
+    }
+    // Fallback về ảnh album đầu tiên
+    else if (albumImages.length > 0) {
       setActiveImage(albumImages[0].image_url);
-    } else {
+    }
+    // Cuối cùng dùng placeholder
+    else {
       setActiveImage("/placeholder.svg");
     }
   }, [selectedVariant, product, albumImages]);
@@ -144,10 +155,33 @@ export default function ProductDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success("Đã thêm vào giỏ hàng!", { position: "top-right" });
     },
-    onError: () => {
-      toast.error("Thêm vào giỏ hàng thất bại!", { position: "top-right" });
+    onError: (error: unknown) => {
+      console.error("Add to cart error:", error);
+      let errorMessage = "Thêm vào giỏ hàng thất bại!";
+
+      if (error && typeof error === "object" && "response" in error) {
+        const response = (error as any).response;
+        if (response?.data?.message) {
+          errorMessage = response.data.message;
+        }
+      }
+
+      toast.error(errorMessage, { position: "top-right" });
     },
   });
+
+  // Hàm kiểm tra số lượng tồn kho
+  const getAvailableStock = () => {
+    if (!product) return 0;
+    if (product.has_variants && selectedVariant) {
+      return selectedVariant.stock_quantity || 0;
+    }
+    return product.stock_quantity || 0;
+  };
+
+  const isOutOfStock = () => {
+    return getAvailableStock() < 1;
+  };
 
   if (isLoading) return <div>Đang tải sản phẩm...</div>;
   if (error) return <div>Lỗi khi tải sản phẩm</div>;
@@ -215,8 +249,16 @@ export default function ProductDetailPage() {
                 >
                   {getProductStatusDisplay(product.status).text}
                 </span>
-                <span className="text-xs font-medium text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">
-                  {product.stock_quantity > 0 ? "Còn Hàng" : "Hết Hàng"}
+                <span
+                  className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    getAvailableStock() > 0
+                      ? "text-emerald-800 bg-emerald-100"
+                      : "text-red-800 bg-red-100"
+                  }`}
+                >
+                  {getAvailableStock() > 0
+                    ? `Còn ${getAvailableStock()} sản phẩm`
+                    : "Hết Hàng"}
                 </span>
               </div>
             </div>
@@ -289,10 +331,26 @@ export default function ProductDetailPage() {
               <button
                 className="flex-1 bg-amber-800 hover:bg-amber-900 text-white px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                 onClick={() => {
-                  if (product.stock_quantity < 1) {
-                    toast.error("Sản phẩm đã hết hàng!");
+                  // Kiểm tra số lượng tồn kho
+                  if (isOutOfStock()) {
+                    toast.error(
+                      `${
+                        product.has_variants && selectedVariant
+                          ? "Biến thể này"
+                          : "Sản phẩm"
+                      } đã hết hàng!`
+                    );
                     return;
                   }
+
+                  // Kiểm tra số lượng muốn mua
+                  if (quantity > getAvailableStock()) {
+                    toast.error(
+                      `Chỉ còn ${getAvailableStock()} sản phẩm trong kho!`
+                    );
+                    return;
+                  }
+
                   if (
                     product.has_variants &&
                     attributeGroups.length > 0 &&
@@ -314,9 +372,10 @@ export default function ProductDetailPage() {
                   });
                 }}
                 disabled={
-                  product.stock_quantity < 1 ||
+                  isOutOfStock() ||
                   addCartMutation.isPending ||
-                  !isProductAvailable(product.status)
+                  !isProductAvailable(product.status) ||
+                  quantity > getAvailableStock()
                 }
               >
                 <ShoppingBag className="h-5 w-5" />

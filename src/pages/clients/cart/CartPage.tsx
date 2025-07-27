@@ -1,11 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCart, updateCartItem, removeFromCart } from "../../../services/cartService";
+import {
+  getCart,
+  updateCartItem,
+  removeFromCart,
+} from "../../../services/cartService";
 import { useCartStore } from "../../../stores/useCartStore";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 // Giả sử có hook kiểm tra đăng nhập
 import { useUserStore } from "../../../stores/useUserStore";
-import type { ICartItem } from '../../../interfaces/cart';
+import type { ICartItem } from "../../../interfaces/cart";
 
 export default function CartPage() {
   const queryClient = useQueryClient();
@@ -19,7 +23,11 @@ export default function CartPage() {
   } = useCartStore();
 
   // React Query cho user đã login
-  const { data: cart, isLoading, error } = useQuery({
+  const {
+    data: cart,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["cart"],
     queryFn: getCart,
     enabled: isLoggedIn,
@@ -38,30 +46,38 @@ export default function CartPage() {
 
   // Chọn nguồn dữ liệu phù hợp
   const cartItems = isLoggedIn ? cart?.items || [] : guestCart.items || [];
-  const subtotal = isLoggedIn ? cart?.subtotal || 0 : guestCart.totalAmount || 0;
+  const subtotal = isLoggedIn
+    ? cart?.subtotal || 0
+    : guestCart.totalAmount || 0;
 
   if (isLoggedIn && isLoading) return <div>Đang tải giỏ hàng...</div>;
   if (isLoggedIn && error) return <div>Lỗi khi tải giỏ hàng</div>;
 
   // Calculate totals
-  const shipping = subtotal > 50 ? 0 : 5.95
-  const tax = subtotal * 0.08 // 8% tax rate
-  const total = subtotal + shipping + tax
+  const shipping = subtotal > 50 ? 0 : 5.95;
+  const tax = subtotal * 0.08; // 8% tax rate
+  const total = subtotal + shipping + tax;
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Giỏ Hàng</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">
+        Giỏ Hàng
+      </h1>
 
       {cartItems.length === 0 ? (
         <div className="text-center py-16">
           <div className="flex justify-center mb-6">
             <ShoppingBag className="h-16 w-16 text-stone-300" />
           </div>
-          <h2 className="text-2xl font-medium mb-4">Giỏ hàng của bạn đang trống</h2>
-          <p className="text-stone-600 mb-8">Bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
+          <h2 className="text-2xl font-medium mb-4">
+            Giỏ hàng của bạn đang trống
+          </h2>
+          <p className="text-stone-600 mb-8">
+            Bạn chưa thêm sản phẩm nào vào giỏ hàng.
+          </p>
           <Link
             to="/products"
-            className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
+            className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium cursor-pointer"
           >
             Xem sản phẩm
           </Link>
@@ -86,13 +102,19 @@ export default function CartPage() {
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-16 relative flex-shrink-0 bg-stone-50 rounded">
                             <img
-                              src={item.product?.image || "/placeholder.svg"}
-                              alt={item.product?.name}
-                              className="object-contain p-2"
+                              src={
+                                item.variant?.image ||
+                                item.product?.image ||
+                                "/placeholder.svg"
+                              }
+                              alt={item.variant?.name || item.product?.name}
+                              className="w-full h-full object-cover"
                             />
                           </div>
                           <div>
-                            <h3 className="font-medium">{item.product?.name}</h3>
+                            <h3 className="font-medium">
+                              {item.product?.name}
+                            </h3>
                             <div className="text-sm text-stone-500 mt-1">
                               {item.variant?.name}
                             </div>
@@ -103,23 +125,37 @@ export default function CartPage() {
                         <div className="flex items-center justify-center">
                           <div className="flex items-center border rounded-md">
                             <button
-                              className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                              className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer"
                               onClick={() =>
                                 isLoggedIn
-                                  ? updateMutation.mutate({ itemId: item.id, quantity: item.quantity - 1 })
-                                  : updateGuestQuantity(item.id, item.quantity - 1)
+                                  ? updateMutation.mutate({
+                                      itemId: item.id,
+                                      quantity: item.quantity - 1,
+                                    })
+                                  : updateGuestQuantity(
+                                      item.id,
+                                      item.quantity - 1
+                                    )
                               }
                               disabled={item.quantity <= 1}
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="w-8 text-center text-sm">{item.quantity}</span>
+                            <span className="w-8 text-center text-sm">
+                              {item.quantity}
+                            </span>
                             <button
-                              className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                              className="h-8 w-8 flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer"
                               onClick={() =>
                                 isLoggedIn
-                                  ? updateMutation.mutate({ itemId: item.id, quantity: item.quantity + 1 })
-                                  : updateGuestQuantity(item.id, item.quantity + 1)
+                                  ? updateMutation.mutate({
+                                      itemId: item.id,
+                                      quantity: item.quantity + 1,
+                                    })
+                                  : updateGuestQuantity(
+                                      item.id,
+                                      item.quantity + 1
+                                    )
                               }
                             >
                               <Plus className="h-3 w-3" />
@@ -128,11 +164,14 @@ export default function CartPage() {
                         </div>
                       </td>
                       <td className="p-4 text-right font-medium">
-                        {isLoggedIn ? item.formatted_total_price : (item.unit_price * item.quantity).toLocaleString() + '₫'}
+                        {isLoggedIn
+                          ? item.formatted_total_price
+                          : (item.unit_price * item.quantity).toLocaleString() +
+                            "₫"}
                       </td>
                       <td className="p-4 text-right">
                         <button
-                          className="h-8 w-8 flex items-center justify-center text-stone-400 hover:text-red-500"
+                          className="h-8 w-8 flex items-center justify-center text-stone-400 hover:text-red-500 cursor-pointer"
                           onClick={() =>
                             isLoggedIn
                               ? removeMutation.mutate(item.id)
@@ -156,10 +195,10 @@ export default function CartPage() {
                   className="max-w-xs px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
               </div>
-              <button className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium">
+              <button className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium cursor-pointer">
                 Áp dụng mã
               </button>
-              <button className="ml-auto border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium">
+              <button className="ml-auto border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium cursor-pointer">
                 Cập nhật giỏ hàng
               </button>
             </div>
@@ -172,11 +211,17 @@ export default function CartPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-stone-600">Tổng tiền sản phẩm</span>
-                  <span className="font-medium">{subtotal.toLocaleString()}₫</span>
+                  <span className="font-medium">
+                    {subtotal.toLocaleString()}₫
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-600">Phí vận chuyển</span>
-                  <span className="font-medium">{shipping === 0 ? "Miễn phí" : `${shipping.toLocaleString()}₫`}</span>
+                  <span className="font-medium">
+                    {shipping === 0
+                      ? "Miễn phí"
+                      : `${shipping.toLocaleString()}₫`}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-600">Thuế</span>
@@ -215,16 +260,21 @@ export default function CartPage() {
 
               <Link
                 to="/checkout"
-                className="block w-full bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium text-center"
+                className="block w-full bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium text-center cursor-pointer"
               >
                 Tiến hành thanh toán
               </Link>
 
               <div className="pt-4 border-t">
-                <h3 className="text-sm font-medium mb-3">Chúng tôi chấp nhận</h3>
+                <h3 className="text-sm font-medium mb-3">
+                  Chúng tôi chấp nhận
+                </h3>
                 <div className="flex gap-2">
-                  {['Visa', 'Mastercard', 'Amex', 'PayPal'].map((method) => (
-                    <div key={method} className="bg-white border rounded px-2 py-1 text-xs">
+                  {["Visa", "Mastercard", "Amex", "PayPal"].map((method) => (
+                    <div
+                      key={method}
+                      className="bg-white border rounded px-2 py-1 text-xs"
+                    >
                       {method}
                     </div>
                   ))}
@@ -236,17 +286,26 @@ export default function CartPage() {
               <h3 className="text-sm font-medium mb-3">Cần hỗ trợ?</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link to="/shipping" className="text-amber-800 hover:underline">
+                  <Link
+                    to="/shipping"
+                    className="text-amber-800 hover:underline"
+                  >
                     Thông tin vận chuyển
                   </Link>
                 </li>
                 <li>
-                  <Link to="/returns" className="text-amber-800 hover:underline">
+                  <Link
+                    to="/returns"
+                    className="text-amber-800 hover:underline"
+                  >
                     Đổi trả & Hoàn tiền
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-amber-800 hover:underline">
+                  <Link
+                    to="/contact"
+                    className="text-amber-800 hover:underline"
+                  >
                     Liên hệ chăm sóc khách hàng
                   </Link>
                 </li>
@@ -256,5 +315,5 @@ export default function CartPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

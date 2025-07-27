@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useUserStore } from "../../../stores/useUserStore";
+import { FcGoogle } from "react-icons/fc";
 
 interface LoginFormData {
   email: string;
@@ -190,14 +191,9 @@ export default function LoginPage() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-stone-300 rounded-md shadow-sm bg-white text-sm font-medium text-stone-500 hover:bg-stone-50"
+                className="w-full inline-flex justify-center py-2 px-4 border border-stone-300 rounded-md shadow-sm bg-white text-sm font-medium text-stone-500 hover:bg-stone-50 cursor-pointer"
               >
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92..."
-                  />
-                </svg>
+                <FcGoogle className="h-5 w-5" />
                 <span className="ml-2">Google</span>
               </button>
 

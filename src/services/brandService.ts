@@ -21,10 +21,13 @@ export const createBrand = async (formData: FormData): Promise<IBrand> => {
 };
 
 export const updateBrand = async (id: number, formData: FormData): Promise<IBrand> => {
-  const response = await adminAxios.put(`/brands/${id}`, formData, {
+  // Thêm _method=PUT vào FormData để backend hiểu đây là PUT request
+  formData.append('_method', 'PUT');
+
+  const response = await adminAxios.post(`/brands/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
-  return response.data;
+  return response.data.data || response.data;
 };
 
 export const deleteBrand = async (id: number): Promise<void> => {

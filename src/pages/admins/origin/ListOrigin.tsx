@@ -1,10 +1,10 @@
-import { Table, message, Modal } from "antd";
+import { Table, message, Modal, Space, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllOrigins, deleteOrigin } from "../../../services/originService";
 import type { IOrigin } from "../../../interfaces/origin";
-import type { ColumnsType } from 'antd/es/table';
-import { EditIcon, EyeIcon, TrashIcon } from "lucide-react";
+import type { ColumnsType } from "antd/es/table";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const ListOrigin = () => {
   const navigate = useNavigate();
@@ -18,20 +18,20 @@ const ListOrigin = () => {
   const mutation = useMutation({
     mutationFn: deleteOrigin,
     onSuccess: () => {
-      message.success('Xóa xuất xứ thành công!');
+      message.success("Xóa xuất xứ thành công!");
       queryClient.invalidateQueries({ queryKey: ["origins"] });
     },
     onError: () => {
-      message.error('Xóa xuất xứ thất bại!');
-    }
+      message.error("Xóa xuất xứ thất bại!");
+    },
   });
 
   const handleDeleteOrigin = (id: number) => {
     Modal.confirm({
-      title: 'Bạn có chắc muốn xóa xuất xứ này?',
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
+      title: "Bạn có chắc muốn xóa xuất xứ này?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
       onOk: () => mutation.mutate(id),
     });
   };
@@ -61,29 +61,29 @@ const ListOrigin = () => {
       title: "Ngày tạo",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
       title: "Ngày cập nhật",
       dataIndex: "updated_at",
       key: "updated_at",
-      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
       title: "Hành động",
       key: "action",
       render: (_: unknown, record: IOrigin) => (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <EyeIcon style={{color:'yellow',cursor: 'pointer', transition: 'color 0.2s'}} />
-          <EditIcon
-            style={{ color: '#1677ff', cursor: 'pointer', transition: 'color 0.2s' }}
+        <Space size="middle">
+          <Button
+            icon={<EditOutlined />}
             onClick={() => navigate(`/admin/origin/edit/${record.id}`)}
           />
-          <TrashIcon
-            style={{ color: '#ff4d4f', cursor: 'pointer', transition: 'color 0.2s' }}
+          <Button
+            icon={<DeleteOutlined />}
+            danger
             onClick={() => handleDeleteOrigin(record.id)}
           />
-        </div>
+        </Space>
       ),
     },
   ];
@@ -96,11 +96,11 @@ const ListOrigin = () => {
       >
         Thêm Xuất Xứ
       </button>
-      <Table 
-        columns={columns} 
-        loading={isLoading} 
-        dataSource={origins} 
-        rowKey="id" 
+      <Table
+        columns={columns}
+        loading={isLoading}
+        dataSource={origins}
+        rowKey="id"
       />
     </>
   );

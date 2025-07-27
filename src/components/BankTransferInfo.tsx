@@ -160,7 +160,7 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
               console.log("Payment status update from PaymentStatus:", data);
               if (data.status === "completed") {
                 setPaymentCompleted(true);
-                toast.success("🎉 Thanh toán thành công! (Mock test)");
+                toast.success("🎉 Thanh toán thành công!");
               }
             }}
           />

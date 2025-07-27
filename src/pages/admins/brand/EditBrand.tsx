@@ -24,7 +24,7 @@ const EditBrand: React.FC = () => {
     onSuccess: () => {
       message.success("Cập nhật thương hiệu thành công!");
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      navigate("admin/brand");
+      navigate("/admin/brand");
     },
     onError: () => {
       message.error("Có lỗi xảy ra khi cập nhật thương hiệu!");

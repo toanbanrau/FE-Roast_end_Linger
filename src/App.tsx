@@ -51,6 +51,12 @@ import AddAttribute from "./pages/admins/attribute/AddAttribute";
 import EditAttribute from "./pages/admins/attribute/EditAttribute";
 import AttributeDetail from "./pages/admins/attribute/AttributeDetail";
 import AttributeValues from "./pages/admins/attribute/AttributeValues";
+// Inventory
+import ListInventory from "./pages/admins/inventory/ListInventory";
+import ImportInventory from "./pages/admins/inventory/ImportInventory";
+import ExportInventory from "./pages/admins/inventory/ExportInventory";
+import ReturnInventory from "./pages/admins/inventory/ReturnInventory";
+import ExpiryManagement from "./pages/admins/inventory/ExpiryManagement";
 
 function App() {
   const element = useRoutes([
@@ -292,6 +298,27 @@ function App() {
         {
           path: "contact/:id",
           element: <ViewContact />,
+        },
+        // Route Inventory
+        {
+          path: "inventory",
+          element: <ListInventory />,
+        },
+        {
+          path: "inventory/import",
+          element: <ImportInventory />,
+        },
+        {
+          path: "inventory/export",
+          element: <ExportInventory />,
+        },
+        {
+          path: "inventory/return",
+          element: <ReturnInventory />,
+        },
+        {
+          path: "inventory/expiry",
+          element: <ExpiryManagement />,
         },
       ],
     },

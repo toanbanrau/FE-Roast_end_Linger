@@ -12,7 +12,6 @@ import {
   Row,
   Col,
   message,
-  Modal,
 } from "antd";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -78,39 +77,26 @@ export default function ListOrder() {
     }: {
       orderId: number;
       statusId: number;
-    }) => updateOrderStatus(orderId, statusId),
-    onSuccess: () => {
+    }) => {
+      console.log("🚀 Mutation function called:", { orderId, statusId });
+      return updateOrderStatus(orderId, statusId);
+    },
+    onSuccess: (data) => {
+      console.log("✅ Mutation success:", data);
       message.success("Cập nhật trạng thái đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("❌ Mutation error:", error);
       message.error("Cập nhật trạng thái thất bại");
     },
   });
 
   const handleStatusChange = (orderId: number, statusId: number) => {
-    Modal.confirm({
-      title: "Xác nhận thay đổi trạng thái",
-      content: "Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng này?",
-      onOk: () => {
-        updateStatusMutation.mutate({ orderId, statusId });
-      },
-    });
-  };
-
-  const getStatusColor = (statusName: string) => {
-    const colorMap: { [key: string]: string } = {
-      pending: "orange",
-      confirmed: "blue",
-      processing: "cyan",
-      shipping: "purple",
-      delivered: "green",
-      completed: "green",
-      cancelled: "red",
-      refunded: "magenta",
-    };
-    return colorMap[statusName] || "default";
+    console.log("🔄 handleStatusChange called:", { orderId, statusId });
+    console.log("🚀 Calling mutation directly (no confirmation)");
+    updateStatusMutation.mutate({ orderId, statusId });
   };
 
   const getPaymentMethodColor = (method: string) => {
@@ -134,6 +120,13 @@ export default function ListOrder() {
   };
 
   const columns: ColumnsType<IOrder> = [
+    {
+      title: "STT",
+      key: "stt",
+      width: 60,
+      render: (_: unknown, __: unknown, index: number) =>
+        (currentPage - 1) * 10 + index + 1,
+    },
     {
       title: "Mã đơn hàng",
       dataIndex: "order_number",
@@ -190,9 +183,7 @@ export default function ListOrder() {
         >
           {orderStatuses?.map((status) => (
             <Option key={status.id} value={status.id}>
-              <Tag color={getStatusColor(status.name)}>
-                {status.display_name}
-              </Tag>
+              <Tag color={status.color}>{status.status_name}</Tag>
             </Option>
           ))}
         </Select>
@@ -288,7 +279,7 @@ export default function ListOrder() {
           >
             {orderStatuses?.map((status) => (
               <Option key={status.id} value={status.id}>
-                {status.display_name}
+                {status.status_name}
               </Option>
             ))}
           </Select>

@@ -1,12 +1,13 @@
 import React from "react";
-import { Table, Tag, message,  } from "antd";
+import { Table, Tag, message, Button, Space } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAllPromotions, deletePromotion } from "../../../services/promotionService";
+import {
+  getAllPromotions,
+  deletePromotion,
+} from "../../../services/promotionService";
 import { useNavigate } from "react-router-dom";
 import type { IPromotion } from "../../../interfaces/promotion";
-import EyeIcon from "../../../components/icons/EyeIcon";
-import EditIcon from "../../../components/icons/EditIcon";
-import TrashIcon from "../../../components/icons/TrashIcon";
 import toast from "react-hot-toast";
 
 const ListPromotion: React.FC = () => {
@@ -56,7 +57,7 @@ const ListPromotion: React.FC = () => {
 
   const columns = [
     {
-      title: "ID",
+      title: "STT",
       render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
@@ -90,7 +91,8 @@ const ListPromotion: React.FC = () => {
       dataIndex: "maximum_discount_amount",
       key: "maximum",
       width: 120,
-      render: (value: string | null) => value ? formatCurrency(value) : "Không giới hạn",
+      render: (value: string | null) =>
+        value ? formatCurrency(value) : "Không giới hạn",
     },
     {
       title: "Từ ngày",
@@ -132,28 +134,24 @@ const ListPromotion: React.FC = () => {
       key: "actions",
       width: 150,
       render: (record: IPromotion) => (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <EyeIcon style={{color:'yellow',cursor: 'pointer', transition: 'color 0.2s'}} />
-       <EditIcon
-         style={{ color: '#1677ff', cursor: 'pointer', transition: 'color 0.2s' }}
-         onClick={() => navigate(`/admin/promotion/edit/${record.id}`)}
-        
-       />
-       <TrashIcon
-         style={{ color: '#ff4d4f', cursor: 'pointer', transition: 'color 0.2s' }}
-         onClick={() => handleDelete(record.id)}
-
-       />
-      
-       
-     </div>
+        <Space size="middle">
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => navigate(`/admin/promotion/edit/${record.id}`)}
+          />
+          <Button
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record.id)}
+          />
+        </Space>
       ),
     },
   ];
 
   return (
     <>
-         <button
+      <button
         onClick={() => navigate("/admin/promotion/add")}
         className="px-4 py-2 mb-3 bg-amber-700 text-white rounded hover:bg-amber-800 transition font-semibold shadow"
       >

@@ -6,9 +6,21 @@ import type {
 // ================= ADMIN PRODUCT SERVICE =================
 
 // Lấy danh sách sản phẩm (có filter/search/pagination)
-export const getAdminProducts = async (): Promise<IProduct[]> => {
-  const res = await adminAxios.get("/products");
-  return res.data.data;
+export const getAdminProducts = async (queryParams?: URLSearchParams): Promise<{
+  data: IProduct[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
+  links: unknown;
+}> => {
+  const url = queryParams ? `/products?${queryParams.toString()}` : "/products";
+  const res = await adminAxios.get(url);
+  return res.data;
 };
 
 // Lấy chi tiết sản phẩm
@@ -19,17 +31,15 @@ export const getAdminProductDetail = async (id: number): Promise<IProduct> => {
 
 // Tạo sản phẩm mới (multipart/form-data)
 export const createAdminProduct = async (formData: FormData): Promise<IProductCreate> => {
-  const res = await adminAxios.post("/products/with-variants", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  // Không cần set Content-Type thủ công, interceptor sẽ tự động xử lý
+  const res = await adminAxios.post("/products/with-variants", formData);
   return res.data.data;
 };
 
 // Cập nhật sản phẩm (multipart/form-data)
 export const updateAdminProduct = async (id: number, formData: FormData): Promise<IProductCreate> => {
-  const res = await adminAxios.put(`/products/${id}/with-variants`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  // Backend yêu cầu sử dụng POST thay vì PUT cho multipart/form-data
+  const res = await adminAxios.post(`/products/${id}/with-variants`, formData);
   return res.data.data;
 };
 
