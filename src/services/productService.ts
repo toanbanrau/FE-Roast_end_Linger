@@ -27,7 +27,7 @@ export const createAdminProduct = async (formData: FormData): Promise<IProductCr
 
 // Cập nhật sản phẩm (multipart/form-data)
 export const updateAdminProduct = async (id: number, formData: FormData): Promise<IProductCreate> => {
-  const res = await adminAxios.put(`/products/${id}`, formData, {
+  const res = await adminAxios.put(`/products/${id}/with-variants`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data.data;

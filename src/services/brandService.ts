@@ -21,9 +21,9 @@ export const createBrand = async (formData: FormData): Promise<IBrand> => {
 };
 
 export const updateBrand = async (id: number, formData: FormData): Promise<IBrand> => {
-  const response = await adminAxios.post(`/brands/${id}`, formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  );
+  const response = await adminAxios.put(`/brands/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
   return response.data;
 };
 
