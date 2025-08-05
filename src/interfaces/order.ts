@@ -34,6 +34,14 @@ interface OrderStatus {
   can_be_cancelled: boolean;
 }
 
+interface OrderShippingMethod {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  estimated_delivery: string;
+}
+
 interface OrderDates {
   created_at: string;
   delivery_date: string | null;
@@ -190,6 +198,7 @@ export interface IOrder {
   delivery_info: DeliveryInfo;
   order_totals: OrderTotals;
   payment_method: string;
+  shipping_method: OrderShippingMethod;
   status: OrderStatus;
   promotion_code: string | null;
   notes: string | null;
@@ -209,6 +218,7 @@ export interface IOrderCreate {
   delivery_address: string;
   customer_phone: string;
   payment_method: string;
+  shipping_method_id: number; // BẮT BUỘC
   notes?: string;
   promotion_code?: string;
   items: OrderItem[];

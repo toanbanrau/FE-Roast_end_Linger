@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProductById } from "../../../services/productService";
+import { getProductBySlug } from "../../../services/productService";
 import { useCartStore } from "../../../stores/useCartStore";
 import { useUserStore } from "../../../stores/useUserStore";
 import { toast } from "react-toastify";
@@ -16,10 +16,13 @@ import type {
   IProductVariant,
   IProductImage,
 } from "../../../interfaces/product";
+import ProductDetailSkeleton from "../../../components/ProductDetailSkeleton";
+import ProductReviews from "../../../components/ProductReviews";
 
 export default function ProductDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
+
   const queryClient = useQueryClient();
   const isLoggedIn = useUserStore((state) => !!state.user);
   const { addToCart } = useCartStore();
@@ -29,8 +32,22 @@ export default function ProductDetailPage() {
     isLoading,
     error,
   } = useQuery<IProduct | undefined>({
-    queryKey: ["product-detail", id],
-    queryFn: () => getProductById(Number(id)),
+    queryKey: ["product-detail", slug],
+    queryFn: () => getProductBySlug(slug!),
+    enabled: !!slug,
+    retry: (failureCount, error) => {
+      // Retry tối đa 2 lần, trừ khi là 404 (không tìm thấy)
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        (error as { response?: { status?: number } }).response?.status === 404
+      ) {
+        return false; // Không retry nếu 404
+      }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   type VariantWithAttributes = IProductVariant & {
@@ -42,9 +59,13 @@ export default function ProductDetailPage() {
     [key: string]: number;
   }>({});
 
-  const variants: VariantWithAttributes[] =
-    (product && (product as { variants?: VariantWithAttributes[] }).variants) ||
-    [];
+  const variants: VariantWithAttributes[] = useMemo(() => {
+    return (
+      (product &&
+        (product as { variants?: VariantWithAttributes[] }).variants) ||
+      []
+    );
+  }, [product]);
   const attributeGroups = useMemo(() => {
     if (!variants || variants.length === 0) return [];
     const groups: { name: string; values: { id: number; value: string }[] }[] =
@@ -160,7 +181,9 @@ export default function ProductDetailPage() {
       let errorMessage = "Thêm vào giỏ hàng thất bại!";
 
       if (error && typeof error === "object" && "response" in error) {
-        const response = (error as any).response;
+        const response = (
+          error as { response?: { data?: { message?: string } } }
+        ).response;
         if (response?.data?.message) {
           errorMessage = response.data.message;
         }
@@ -183,9 +206,146 @@ export default function ProductDetailPage() {
     return getAvailableStock() < 1;
   };
 
-  if (isLoading) return <div>Đang tải sản phẩm...</div>;
-  if (error) return <div>Lỗi khi tải sản phẩm</div>;
-  if (!product) return <div>Không tìm thấy sản phẩm</div>;
+  // SEO: Update document title and meta description
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.product_name} | Coffee Shop`;
+
+      // Update meta description
+      const metaDescription = document.querySelector(
+        'meta[name="description"]'
+      );
+      if (metaDescription) {
+        metaDescription.setAttribute(
+          "content",
+          product.short_description ||
+            `Mua ${product.product_name} chất lượng cao tại Coffee Shop. ${
+              product.description || ""
+            }`
+        );
+      }
+
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute(
+          "content",
+          `${product.product_name} | Coffee Shop`
+        );
+      }
+
+      const ogDescription = document.querySelector(
+        'meta[property="og:description"]'
+      );
+      if (ogDescription) {
+        ogDescription.setAttribute(
+          "content",
+          product.short_description ||
+            `Mua ${product.product_name} chất lượng cao tại Coffee Shop.`
+        );
+      }
+
+      const ogImage = document.querySelector('meta[property="og:image"]');
+      if (ogImage && product.primary_image?.image_url) {
+        ogImage.setAttribute("content", product.primary_image.image_url);
+      }
+
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) {
+        ogUrl.setAttribute(
+          "content",
+          `${window.location.origin}/product/${product.slug}`
+        );
+      }
+    }
+  }, [product]);
+
+  // Lắng nghe param slug thay đổi để call API lại
+  useEffect(() => {
+    if (slug) {
+      console.log("🔄 Slug changed, refetching product:", slug);
+
+      // Reset selected variant khi chuyển sản phẩm
+      setSelectedVariant(null);
+      setSelectedAttributes({});
+      setQuantity(1);
+
+      // Scroll to top khi chuyển sản phẩm
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // useQuery sẽ tự động refetch khi slug thay đổi
+      // Có thể thêm logic khác ở đây nếu cần
+    }
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="container px-4 py-12 md:px-6 md:py-16">
+        <ProductDetailSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("❌ Error loading product:", error);
+    return (
+      <div className="container px-4 py-12 md:px-6 md:py-16">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Lỗi khi tải sản phẩm
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {error instanceof Error
+              ? error.message
+              : "Đã xảy ra lỗi không xác định"}
+          </p>
+          <div className="space-x-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-amber-800 text-white px-4 py-2 rounded-md hover:bg-amber-900"
+            >
+              Thử lại
+            </button>
+            <Link
+              to="/products"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            >
+              Về trang sản phẩm
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container px-4 py-12 md:px-6 md:py-16">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Không tìm thấy sản phẩm
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Sản phẩm với slug "{slug}" không tồn tại hoặc đã bị xóa.
+          </p>
+          <div className="space-x-4">
+            <Link
+              to="/products"
+              className="bg-amber-800 text-white px-4 py-2 rounded-md hover:bg-amber-900"
+            >
+              Xem tất cả sản phẩm
+            </Link>
+            <button
+              onClick={() => window.history.back()}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            >
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -269,9 +429,8 @@ export default function ProductDetailPage() {
 
           <div className="text-2xl font-semibold text-amber-800">
             {selectedVariant
-              ? selectedVariant.price?.toLocaleString()
-              : product.base_price?.toLocaleString()}
-            ₫
+              ? selectedVariant.display_price
+              : product.display_price}
           </div>
 
           <p className="text-stone-600">
@@ -329,21 +488,13 @@ export default function ProductDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <button
-                className="flex-1 bg-amber-800 hover:bg-amber-900 text-white px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                  isOutOfStock() || !isProductAvailable(product.status)
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-amber-800 hover:bg-amber-900 text-white"
+                }`}
                 onClick={() => {
-                  // Kiểm tra số lượng tồn kho
-                  if (isOutOfStock()) {
-                    toast.error(
-                      `${
-                        product.has_variants && selectedVariant
-                          ? "Biến thể này"
-                          : "Sản phẩm"
-                      } đã hết hàng!`
-                    );
-                    return;
-                  }
-
-                  // Kiểm tra số lượng muốn mua
+                  // Kiểm tra số lượng muốn mua (chỉ cần kiểm tra này vì button đã disabled khi hết hàng)
                   if (quantity > getAvailableStock()) {
                     toast.error(
                       `Chỉ còn ${getAvailableStock()} sản phẩm trong kho!`
@@ -373,13 +524,16 @@ export default function ProductDetailPage() {
                 }}
                 disabled={
                   isOutOfStock() ||
-                  addCartMutation.isPending ||
                   !isProductAvailable(product.status) ||
-                  quantity > getAvailableStock()
+                  addCartMutation.isPending
                 }
               >
                 <ShoppingBag className="h-5 w-5" />
-                Thêm vào Giỏ Hàng
+                {isOutOfStock()
+                  ? "Hết Hàng"
+                  : !isProductAvailable(product.status)
+                  ? "Không Khả Dụng"
+                  : "Thêm vào Giỏ Hàng"}
               </button>
 
               {/* <SimpleBuyNowButton
@@ -430,53 +584,47 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Product Tabs */}
+      {/* Product Description */}
       <div className="mt-16">
-        <div className="border-b">
-          <div className="flex overflow-x-auto">
-            <button className="px-4 py-3 text-amber-800 border-b-2 border-amber-800 font-medium">
-              Mô Tả
-            </button>
-            <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Chi Tiết
-            </button>
-            <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Hướng Dẫn Pha Chế
-            </button>
-            <button className="px-4 py-3 text-stone-600 hover:text-stone-900 border-b-2 border-transparent">
-              Đánh Giá (124)
-            </button>
-          </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Mô tả sản phẩm
+        </h2>
+        <div className="prose max-w-none">
+          <p>
+            Ethiopian Yirgacheffe của chúng tôi là một loại cà phê đơn nguyên
+            thực sự xuất sắc, nổi bật với các ghi chú hoa nhài và cam chanh cùng
+            với vị ngọt mượt mà. Được trồng ở vùng cao nguyên Ethiopia, nơi khởi
+            nguồn của cà phê, những hạt cà phê này được thu hoạch và chế biến
+            cẩn thận để giữ nguyên đặc tính độc đáo của chúng.
+          </p>
+          <p>
+            Vùng Yirgacheffe nổi tiếng với những loại cà phê được săn lùng nhiều
+            nhất trên thế giới, và sản phẩm của chúng tôi cũng không phải ngoại
+            lệ. Độ cao cao, đất đai màu mỡ và khí hậu lý tưởng tạo ra những điều
+            kiện hoàn hảo để trồng cà phê với hương vị phức tạp.
+          </p>
+          <p>
+            Chúng tôi rang các hạt cà phê này ở mức độ vừa để làm nổi bật độ
+            sáng tự nhiên của chúng trong khi phát triển vị ngọt. Kết quả là một
+            tách cà phê với hương hoa nhài và bergamot, độ chua chanh sôi nổi,
+            và vị ngọt như mật ong lưu lại trên vòm miệng.
+          </p>
+          <p>
+            Dù bạn pha chế bằng phương pháp pour-over, French press hay máy pha
+            cà phê, bạn sẽ luôn cảm nhận được sự hoàn hảo trong từng ngụm cà
+            phê.
+          </p>
         </div>
+      </div>
 
-        <div className="pt-6">
-          <div className="prose max-w-none">
-            <p>
-              Ethiopian Yirgacheffe của chúng tôi là một loại cà phê đơn nguyên
-              thực sự xuất sắc, nổi bật với các ghi chú hoa nhài và cam chanh
-              cùng với vị ngọt mượt mà. Được trồng ở vùng cao nguyên Ethiopia,
-              nơi khởi nguồn của cà phê, những hạt cà phê này được thu hoạch và
-              chế biến cẩn thận để giữ nguyên đặc tính độc đáo của chúng.
-            </p>
-            <p>
-              Vùng Yirgacheffe nổi tiếng với những loại cà phê được săn lùng
-              nhiều nhất trên thế giới, và sản phẩm của chúng tôi cũng không
-              phải ngoại lệ. Độ cao cao, đất đai màu mỡ và khí hậu lý tưởng tạo
-              ra những điều kiện hoàn hảo để trồng cà phê với hương vị phức tạp.
-            </p>
-            <p>
-              Chúng tôi rang các hạt cà phê này ở mức độ vừa để làm nổi bật độ
-              sáng tự nhiên của chúng trong khi phát triển vị ngọt. Kết quả là
-              một tách cà phê với hương hoa nhài và bergamot, độ chua chanh sôi
-              nổi, và vị ngọt như mật ong lưu lại trên vòm miệng.
-            </p>
-            <p>
-              Dù bạn pha chế bằng phương pháp pour-over, French press hay máy
-              pha cà phê, bạn sẽ luôn cảm nhận được sự hoàn hảo trong từng ngụm
-              cà phê.
-            </p>
-          </div>
-        </div>
+      {/* Product Reviews Section */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Đánh giá sản phẩm
+        </h2>
+        {product && (
+          <ProductReviews productId={product.id} showCreateButton={false} />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Copy, CheckCircle, Clock, CreditCard } from "lucide-react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { useUltraPaymentTracking } from "../hooks/useUltraPaymentTracking";
 import PaymentStatus from "./PaymentStatus";
 
@@ -82,12 +83,15 @@ interface PaymentInfo {
 interface BankTransferInfoProps {
   paymentInfo: PaymentInfo;
   orderNumber: string;
+  orderData?: any; // Thông tin đơn hàng để lưu vào localStorage
 }
 
 const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
   paymentInfo,
   orderNumber,
+  orderData,
 }) => {
+  const navigate = useNavigate();
   const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   // Ultra-fast payment tracking nếu có payment_id
@@ -102,7 +106,17 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
   } = useUltraPaymentTracking(paymentInfo?.payment_id || null, {
     onPaymentCompleted: () => {
       setPaymentCompleted(true);
-      toast.success("🎉 Thanh toán thành công! Đơn hàng đã được xác nhận.");
+      toast.success("🎉 Thanh toán thành công! Đang chuyển trang...");
+
+      // Lưu thông tin đơn hàng vào localStorage
+      if (orderData) {
+        localStorage.setItem(`order_${orderNumber}`, JSON.stringify(orderData));
+      }
+
+      // Chuyển trang sau 2 giây
+      setTimeout(() => {
+        navigate(`/payment-success/${orderNumber}`);
+      }, 2000);
     },
     onPaymentFailed: () => {
       toast.error("❌ Thanh toán thất bại. Vui lòng thử lại.");
@@ -147,22 +161,14 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
 
       <div className="p-6 space-y-6">
         {/* Payment Status - Hiển thị khi có payment_id */}
-        {paymentInfo.payment_id && (
+        {paymentInfo.payment_id && !paymentCompleted && (
           <PaymentStatus
             status={paymentStatus}
-            phase={phase}
             phaseInfo={phaseInfo}
             checkCount={checkCount}
             timeElapsed={timeElapsed}
             loading={checkingPayment}
             onManualCheck={manualCheck}
-            onStatusUpdate={(data) => {
-              console.log("Payment status update from PaymentStatus:", data);
-              if (data.status === "completed") {
-                setPaymentCompleted(true);
-                toast.success("🎉 Thanh toán thành công!");
-              }
-            }}
           />
         )}
 

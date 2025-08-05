@@ -11,7 +11,6 @@ import {
   Space,
   Timeline,
   message,
-  Modal,
   Row,
   Col,
   Divider,
@@ -58,7 +57,7 @@ export default function OrderDetail() {
     queryFn: getOrderStatuses,
   });
 
-  // Mutation cập nhật trạng thái
+  // Mutation cập nhật trạng thái (giống ListOrder)
   const updateStatusMutation = useMutation({
     mutationFn: ({
       orderId,
@@ -66,25 +65,29 @@ export default function OrderDetail() {
     }: {
       orderId: number;
       statusId: number;
-    }) => updateOrderStatus(orderId, statusId),
-    onSuccess: () => {
+    }) => {
+      console.log("🚀 Mutation function called:", { orderId, statusId });
+      return updateOrderStatus(orderId, statusId);
+    },
+    onSuccess: (data) => {
+      console.log("✅ Mutation success:", data);
       message.success("Cập nhật trạng thái đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-order-detail", id] });
       setIsEditingStatus(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("❌ Mutation error:", error);
       message.error("Cập nhật trạng thái thất bại");
     },
   });
 
   const handleStatusChange = (statusId: number) => {
-    Modal.confirm({
-      title: "Xác nhận thay đổi trạng thái",
-      content: "Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng này?",
-      onOk: () => {
-        updateStatusMutation.mutate({ orderId: Number(id), statusId });
-      },
+    console.log("🔄 handleStatusChange called:", {
+      orderId: Number(id),
+      statusId,
     });
+    console.log("🚀 Calling mutation directly (no confirmation)");
+    updateStatusMutation.mutate({ orderId: Number(id), statusId });
   };
 
   const getStatusColor = (statusName: string) => {
@@ -99,6 +102,25 @@ export default function OrderDetail() {
       refunded: "magenta",
     };
     return colorMap[statusName] || "default";
+  };
+
+  // Function để chuyển đổi status sang tiếng Việt
+  const getStatusText = (statusName: string) => {
+    const statusMap: { [key: string]: string } = {
+      pending: "Chờ xử lý",
+      confirmed: "Đã xác nhận",
+      processing: "Đang xử lý",
+      preparing: "Đang chuẩn bị",
+      shipping: "Đang vận chuyển",
+      shipped: "Đã giao vận",
+      out_for_delivery: "Đang giao hàng",
+      delivered: "Đã giao hàng",
+      completed: "Hoàn thành",
+      cancelled: "Đã hủy",
+      refunded: "Đã hoàn tiền",
+      returned: "Đã trả hàng",
+    };
+    return statusMap[statusName.toLowerCase()] || statusName;
   };
 
   const getPaymentMethodText = (method: string) => {
@@ -216,7 +238,9 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái" span={1}>
                 <div className="flex items-center space-x-2">
-                  <Tag color={order.status.color}>{order.status.name}</Tag>
+                  <Tag color={order.status.color}>
+                    {getStatusText(order.status.name)}
+                  </Tag>
                   {!isEditingStatus ? (
                     <Button
                       size="small"
@@ -235,7 +259,9 @@ export default function OrderDetail() {
                       >
                         {orderStatuses?.map((status) => (
                           <Option key={status.id} value={status.id}>
-                            <Tag color={status.color}>{status.status_name}</Tag>
+                            <Tag color={status.color}>
+                              {getStatusText(status.status_name)}
+                            </Tag>
                           </Option>
                         ))}
                       </Select>
@@ -251,6 +277,20 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán" span={1}>
                 {getPaymentMethodText(order.payment_method)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Phương thức giao hàng" span={1}>
+                <div>
+                  <div className="font-medium">
+                    {order.shipping_method.name}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {order.shipping_method.description}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Thời gian giao hàng:{" "}
+                    {order.shipping_method.estimated_delivery}
+                  </div>
+                </div>
               </Descriptions.Item>
               <Descriptions.Item label="Ngày tạo" span={1}>
                 {new Date(order.dates.created_at).toLocaleString("vi-VN")}
@@ -325,9 +365,18 @@ export default function OrderDetail() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Phí vận chuyển:</span>
                 <span>
-                  {Number(order.order_totals.shipping_fee).toLocaleString()}₫
+                  Phí vận chuyển:
+                  <div className="text-xs text-gray-500">
+                    ({order.shipping_method.name})
+                  </div>
+                </span>
+                <span>
+                  {Number(order.order_totals.shipping_fee) === 0
+                    ? "Miễn phí"
+                    : `${Number(
+                        order.order_totals.shipping_fee
+                      ).toLocaleString()}₫`}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -355,7 +404,7 @@ export default function OrderDetail() {
                   children: (
                     <div>
                       <div className="font-medium">
-                        {history.new_status.name}
+                        {getStatusText(history.new_status.name)}
                       </div>
                       <div className="text-sm text-gray-500">
                         {new Date(history.created_at).toLocaleString("vi-VN")}

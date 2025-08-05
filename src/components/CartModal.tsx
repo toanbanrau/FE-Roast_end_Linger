@@ -30,7 +30,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   };
 
   const subtotal = cart?.subtotal || 0;
-  const shipping = subtotal > 50 ? 0 : 5.95;
+  const shipping = subtotal >= 500000 ? 0 : 30000; // Free ship for orders >= 500,000 VND
   const total = subtotal + shipping;
 
   if (!isOpen) return null;
@@ -167,8 +167,8 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
             {/* Free shipping notice */}
             {shipping > 0 && (
               <div className="text-xs text-stone-600 bg-amber-50 p-2 rounded">
-                Thêm {(50 - subtotal).toLocaleString("vi-VN")}₫ để được miễn phí
-                vận chuyển!
+                💡 Thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫ để được
+                miễn phí vận chuyển!
               </div>
             )}
 

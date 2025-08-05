@@ -5,6 +5,7 @@ import { login, register, getProfile, logout } from '../services/authService';
 import { isAxiosError } from 'axios';
 import { useCartStore } from './useCartStore';
 import toast from 'react-hot-toast';
+import { clearLocalDataOnTokenError } from '../utils/tokenUtils';
 
 interface UserState {
   user: IUser | null;
@@ -15,6 +16,7 @@ interface UserState {
   register: (payload: UserRegister) => Promise<void>;
   getProfile: () => Promise<void>;
   logout: () => Promise<void>;
+  handleTokenError: () => void;
   setUser: (user: IUser | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -55,8 +57,9 @@ export const useUserStore = create<UserState>()(
       register: async (payload) => {
         set({ loading: true, error: null });
         try {
-          const { user } = await register(payload);
-          set({ user, isAuthenticated: true, loading: false });
+          const data = await register(payload);
+          // data.user sẽ có đầy đủ thông tin IUser sau khi register thành công
+          set({ user: data.user, isAuthenticated: true, loading: false });
         } catch (error) {
           let errorMessage = 'Register failed';
 
@@ -78,12 +81,17 @@ export const useUserStore = create<UserState>()(
           const user = await getProfile();
           set({ user, isAuthenticated: true, loading: false });
         } catch (error) {
+          // Chỉ xử lý lỗi thông thường, không xử lý token error ở đây
           if (isAxiosError(error)) {
+            // Nếu là 401/403, để axios interceptor xử lý
+            if (error.response?.status === 401 || error.response?.status === 403) {
+              set({ user: null, isAuthenticated: false, loading: false });
+              return;
+            }
             set({ error: error.response?.data?.message || 'Get profile failed', loading: false });
           } else {
             set({ error: 'Get profile failed', loading: false });
           }
-          useCartStore.getState().clearLocalCart();
         }
       },
       logout: async () => {
@@ -107,7 +115,11 @@ export const useUserStore = create<UserState>()(
           }
         }
       },
-      setUser: (user) => set({ user }),
+      handleTokenError: () => {
+        clearLocalDataOnTokenError();
+        set({ user: null, isAuthenticated: false, loading: false, error: null });
+      },
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
     }),

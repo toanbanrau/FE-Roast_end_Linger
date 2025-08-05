@@ -97,3 +97,9 @@ export const getProductById = async (id: number): Promise<IProduct> => {
   const response = await clientAxios.get(`/products/${id}`);
   return response.data.data;
 };
+
+// Lấy sản phẩm theo slug (SEO-friendly)
+export const getProductBySlug = async (slug: string): Promise<IProduct> => {
+  const response = await clientAxios.get(`/products/slug/${slug}`);
+  return response.data.data;
+};

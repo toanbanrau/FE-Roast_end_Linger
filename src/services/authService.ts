@@ -1,5 +1,20 @@
 import { clientAxios } from "../configs/config";
-import type { UserRegister } from "../interfaces/user";
+import type { UserRegister, IUser } from "../interfaces/user";
+
+// Interface for token info response
+interface TokenInfo {
+  expires_at: string;
+  expires_in_minutes: number;
+  is_expired: boolean;
+  created_at: string;
+  last_used_at: string;
+}
+
+interface TokenInfoResponse {
+  current_token: TokenInfo;
+  all_tokens: (TokenInfo & { id: number; name: string })[];
+  total_tokens: number;
+}
 
 // Đăng nhập
 export interface LoginPayload {
@@ -17,9 +32,51 @@ export const register = async (data: UserRegister) => {
   return response.data;
 };
 
-export const getProfile = async (): Promise<UserRegister> => {
+export const getProfile = async (): Promise<IUser> => {
   const response = await clientAxios.get("/profile");
   return response.data.data;
+};
+
+// Check token validity
+export const checkTokenInfo = async (): Promise<boolean> => {
+  try {
+    const response = await clientAxios.get<{
+      success: boolean;
+      message: string;
+      data: TokenInfoResponse;
+    }>("/auth/token-info");
+
+    // Kiểm tra response thành công và token chưa hết hạn
+    if (response.data.success && response.data.data.current_token) {
+      return !response.data.data.current_token.is_expired;
+    }
+
+    return false;
+  } catch (error) {
+    // Nếu không gọi được API, coi như token hợp lệ để tránh logout nhầm
+    console.warn('Cannot check token via API, assuming valid:', error);
+    return true;
+  }
+};
+
+// Get detailed token information
+export const getTokenInfo = async (): Promise<TokenInfoResponse | null> => {
+  try {
+    const response = await clientAxios.get<{
+      success: boolean;
+      message: string;
+      data: TokenInfoResponse;
+    }>("/auth/token-info");
+
+    if (response.data.success) {
+      return response.data.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting token info:', error);
+    return null;
+  }
 };
 
 // Đăng xuất

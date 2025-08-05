@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Heart, ShoppingBag, Trash2, Filter } from "lucide-react"
-import { Link } from "react-router-dom"
-import AccountNav from "../../../../components/AccountNav"
+import { useState } from "react";
+import { Heart, ShoppingBag, Trash2, Filter } from "lucide-react";
+import { Link } from "react-router-dom";
+import AccountNav from "../../../../components/AccountNav";
 
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState([
@@ -51,19 +51,21 @@ export default function WishlistPage() {
       inStock: true,
       dateAdded: "20/03/2025",
     },
-  ])
+  ]);
 
   const removeFromWishlist = (id: number) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id))
-  }
+    setWishlistItems(wishlistItems.filter((item) => item.id !== id));
+  };
 
   const addToCart = (id: number) => {
-    console.log(`Thêm sản phẩm ${id} vào giỏ`)
-  }
+    console.log(`Thêm sản phẩm ${id} vào giỏ`);
+  };
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Danh sách yêu thích</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">
+        Danh sách yêu thích
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
@@ -74,7 +76,8 @@ export default function WishlistPage() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="flex items-center gap-4">
               <p className="text-stone-600">
-                {wishlistItems.length} {wishlistItems.length === 1 ? "sản phẩm" : "sản phẩm"}
+                {wishlistItems.length}{" "}
+                {wishlistItems.length === 1 ? "sản phẩm" : "sản phẩm"}
               </p>
               <select className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800">
                 <option value="recent">Mới thêm</option>
@@ -99,8 +102,12 @@ export default function WishlistPage() {
               <div className="flex justify-center mb-6">
                 <Heart className="h-16 w-16 text-stone-300" />
               </div>
-              <h2 className="text-2xl font-medium mb-4">Danh sách yêu thích trống</h2>
-              <p className="text-stone-600 mb-8">Hãy lưu lại các loại cà phê bạn yêu thích để dễ truy cập hơn.</p>
+              <h2 className="text-2xl font-medium mb-4">
+                Danh sách yêu thích trống
+              </h2>
+              <p className="text-stone-600 mb-8">
+                Hãy lưu lại các loại cà phê bạn yêu thích để dễ truy cập hơn.
+              </p>
               <Link
                 to="/products"
                 className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
@@ -116,7 +123,10 @@ export default function WishlistPage() {
                   className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                 >
                   <div className="relative">
-                    <Link to={`/products/${item.id}`} className="block">
+                    <Link
+                      to={`/product/${item.slug || item.id}`}
+                      className="block"
+                    >
                       <div className="aspect-square overflow-hidden">
                         <img
                           src={item.image}
@@ -148,15 +158,23 @@ export default function WishlistPage() {
                         {item.category}
                       </span>
                     </div>
-                    <Link to={`/products/${item.id}`}>
-                      <h3 className="text-lg font-medium text-stone-900 hover:text-amber-800 mb-2">{item.name}</h3>
+                    <Link to={`/product/${item.slug || item.id}`}>
+                      <h3 className="text-lg font-medium text-stone-900 hover:text-amber-800 mb-2">
+                        {item.name}
+                      </h3>
                     </Link>
-                    <p className="text-stone-600 text-sm mb-3">{item.description}</p>
+                    <p className="text-stone-600 text-sm mb-3">
+                      {item.description}
+                    </p>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold text-amber-800">{item.price}</span>
+                        <span className="text-lg font-semibold text-amber-800">
+                          {item.price}
+                        </span>
                         {item.originalPrice && (
-                          <span className="text-sm text-stone-500 line-through">{item.originalPrice}</span>
+                          <span className="text-sm text-stone-500 line-through">
+                            {item.originalPrice}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -180,7 +198,9 @@ export default function WishlistPage() {
                         <Trash2 className="h-4 w-4 text-stone-500" />
                       </button>
                     </div>
-                    <p className="text-xs text-stone-500 mt-2">Đã thêm: {item.dateAdded}</p>
+                    <p className="text-xs text-stone-500 mt-2">
+                      Đã thêm: {item.dateAdded}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -191,7 +211,9 @@ export default function WishlistPage() {
             <div className="bg-stone-50 p-6 rounded-lg">
               <h2 className="text-xl font-medium mb-4">Có thể bạn sẽ thích</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[/* sản phẩm gợi ý */].map((product) => (
+                {[
+                  /* sản phẩm gợi ý */
+                ].map((product) => (
                   <Link
                     key={product.id}
                     to={`/products/${product.id}`}
@@ -205,8 +227,12 @@ export default function WishlistPage() {
                       />
                     </div>
                     <div className="p-3">
-                      <h4 className="font-medium text-sm mb-1">{product.name}</h4>
-                      <p className="text-amber-800 font-semibold">{product.price}</p>
+                      <h4 className="font-medium text-sm mb-1">
+                        {product.name}
+                      </h4>
+                      <p className="text-amber-800 font-semibold">
+                        {product.price}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -216,5 +242,5 @@ export default function WishlistPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

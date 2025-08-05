@@ -20,4 +20,20 @@ export interface ShippingMethod {
   sort_order: number;
   created_at: string;
   updated_at: string;
-} 
+}
+
+// Interface for client API response from /api/shipping/methods
+export interface IShippingMethod {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  cost: number; // API trả về number như 30000
+  estimated_time: string;
+}
+
+export interface IShippingMethodsResponse {
+  success: boolean;
+  message: string;
+  data: IShippingMethod[];
+}

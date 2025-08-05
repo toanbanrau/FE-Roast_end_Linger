@@ -9,8 +9,8 @@ interface ApiResponse<T> {
 }
 
 export const checkout = async (order: IOrderCreate): Promise<IOrder> => {
-    const response = await clientAxios.post<ApiResponse<IOrder>>('/orders', order);
-    return response.data.data;
+    const response = await clientAxios.post<ApiResponse<{ order: IOrder }>>('/orders', order);
+    return response.data.data.order; // Lấy object order bên trong
 }
 
 export const getAllOrders = async (): Promise<IOrder[]> => {

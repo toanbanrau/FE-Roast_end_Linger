@@ -1,4 +1,6 @@
 import axios from "axios";
+import { handleTokenError } from "../utils/tokenUtils";
+import { useUserStore } from "../stores/useUserStore";
 
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -6,7 +8,7 @@ const BASE_URL = "http://127.0.0.1:8000";
 export const adminAxios = axios.create({
   baseURL: `${BASE_URL}/api/admin`,
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    "Content-Type": "application/json",
   },
 });
 
@@ -15,7 +17,6 @@ export const clientAxios = axios.create({
   baseURL: `${BASE_URL}/api`,
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
   },
 });
 
@@ -44,6 +45,26 @@ clientAxios.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Response interceptor cho clientAxios để xử lý token lỗi
+clientAxios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Xử lý token lỗi tự động
+    handleTokenError(error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor cho adminAxios để xử lý token lỗi
+adminAxios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Xử lý token lỗi tự động
+    handleTokenError(error);
+    return Promise.reject(error);
+  }
+);
 
 // Để tương thích ngược với code cũ
 export default adminAxios;

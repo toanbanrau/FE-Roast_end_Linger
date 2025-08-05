@@ -54,9 +54,8 @@ export default function CartPage() {
   if (isLoggedIn && error) return <div>Lỗi khi tải giỏ hàng</div>;
 
   // Calculate totals
-  const shipping = subtotal > 50 ? 0 : 5.95;
-  const tax = subtotal * 0.08; // 8% tax rate
-  const total = subtotal + shipping + tax;
+  const shipping = subtotal >= 500000 ? 0 : 30000; // Free ship for orders >= 500,000 VND
+  const total = subtotal + shipping;
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -223,10 +222,7 @@ export default function CartPage() {
                       : `${shipping.toLocaleString()}₫`}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-600">Thuế</span>
-                  <span className="font-medium">{tax.toLocaleString()}₫</span>
-                </div>
+
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium text-lg">
                     <span>Tổng cộng</span>
@@ -254,7 +250,10 @@ export default function CartPage() {
                     Bạn đã đủ điều kiện miễn phí vận chuyển!
                   </p>
                 ) : (
-                  <p>Miễn phí vận chuyển cho đơn hàng trên 50.000₫</p>
+                  <p>
+                    💡 Mua thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫
+                    để được miễn phí vận chuyển!
+                  </p>
                 )}
               </div>
 

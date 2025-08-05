@@ -17,6 +17,7 @@ import {
   Input,
   Select,
   Pagination,
+  Tag,
 } from "antd";
 import {
   EyeOutlined,
@@ -183,13 +184,13 @@ export default function ListProduct() {
       render: (status: string) => {
         switch (status) {
           case "active":
-            return <span style={{ color: "#52c41a" }}>Đang bán</span>;
+            return <Tag color="green">Đang bán</Tag>;
           case "inactive":
-            return <span style={{ color: "#ff4d4f" }}>Ngừng bán</span>;
+            return <Tag color="red">Ngừng bán</Tag>;
           case "out_of_stock":
-            return <span style={{ color: "#faad14" }}>Hết hàng</span>;
+            return <Tag color="orange">Hết hàng</Tag>;
           default:
-            return status;
+            return <Tag color="default">{status}</Tag>;
         }
       },
     },

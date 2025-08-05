@@ -1,175 +1,287 @@
-import React from 'react';
-import { Card, Col, Row, Statistic, Table, Typography } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, ShoppingOutlined, UserOutlined, GiftOutlined } from '@ant-design/icons';
-import { Column, Pie } from '@ant-design/charts';
+import React, { useState } from "react";
+import {
+  Card,
+  Col,
+  Row,
+  Statistic,
+  Table,
+  Typography,
+  Select,
+  DatePicker,
+  Space,
+  Spin,
+} from "antd";
+import {
+  ArrowUpOutlined,
+  ShoppingOutlined,
+  UserOutlined,
+  GiftOutlined,
+  DollarOutlined,
+} from "@ant-design/icons";
+import { Column, Pie } from "@ant-design/charts";
+import { useQuery } from "@tanstack/react-query";
+import { getOrderStats } from "../../../services/adminOrderService";
+import dayjs from "dayjs";
 
 const { Title } = Typography;
-
-const dataSource = [
-  {
-    key: '1',
-    name: 'Nguyễn Văn A',
-    order: 3,
-    total: 1200000,
-  },
-  {
-    key: '2',
-    name: 'Trần Thị B',
-    order: 2,
-    total: 800000,
-  },
-  {
-    key: '3',
-    name: 'Lê Văn C',
-    order: 1,
-    total: 400000,
-  },
-];
-
-const columns = [
-  {
-    title: 'Khách hàng',
-    dataIndex: 'name',
-    key: 'name',
-  },
-  {
-    title: 'Số đơn',
-    dataIndex: 'order',
-    key: 'order',
-  },
-  {
-    title: 'Tổng chi tiêu',
-    dataIndex: 'total',
-    key: 'total',
-    render: (value: number) => value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
-  },
-];
-
-// Data for Column chart (doanh thu theo tháng)
-const columnData = [
-  { month: 'Th1', value: 120 },
-  { month: 'Th2', value: 200 },
-  { month: 'Th3', value: 150 },
-  { month: 'Th4', value: 278 },
-  { month: 'Th5', value: 189 },
-  { month: 'Th6', value: 239 },
-  { month: 'Th7', value: 350 },
-  { month: 'Th8', value: 420 },
-  { month: 'Th9', value: 380 },
-  { month: 'Th10', value: 320 },
-  { month: 'Th11', value: 410 },
-  { month: 'Th12', value: 500 },
-];
-
-const columnConfig = {
-  data: columnData,
-  xField: 'month',
-  yField: 'value',
-  color: '#1890ff',
-  columnWidthRatio: 0.6,
-  label: {
-    position: 'middle',
-    style: {
-      fill: '#fff',
-      opacity: 0.6,
-    },
-  },
-  xAxis: {
-    label: {
-      autoHide: true,
-      autoRotate: false,
-    },
-  },
-  meta: {
-    value: { alias: 'Doanh thu (triệu)' },
-    month: { alias: 'Tháng' },
-  },
-};
-
-// Data for Pie chart (trạng thái đơn hàng)
-const pieData = [
-  { type: 'Đã giao', value: 60 },
-  { type: 'Đang xử lý', value: 25 },
-  { type: 'Đã huỷ', value: 15 },
-];
-
-const pieConfig = {
-  appendPadding: 10,
-  data: pieData,
-  angleField: 'value',
-  colorField: 'type',
-  radius: 1,
-  innerRadius: 0.6,
-  label: {
-    type: 'spider',
-    labelHeight: 28,
-    content: '{name}\n{percentage}',
-  },
-  legend: {
-    position: 'bottom',
-  },
-  color: ['#52c41a', '#1890ff', '#ff4d4f'],
-};
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const Dashboard: React.FC = () => {
+  const [period, setPeriod] = useState<string>("month");
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    null
+  );
+
+  // Lấy thống kê đơn hàng từ API
+  const { data: orderStats, isLoading } = useQuery({
+    queryKey: ["order-stats", period, dateRange],
+    queryFn: () => {
+      const params: {
+        period?: string;
+        date_from?: string;
+        date_to?: string;
+      } = {};
+
+      if (period !== "custom") {
+        params.period = period;
+      } else if (dateRange) {
+        params.date_from = dateRange[0].format("YYYY-MM-DD");
+        params.date_to = dateRange[1].format("YYYY-MM-DD");
+      }
+
+      return getOrderStats(params);
+    },
+  });
+
+  // Chuẩn bị dữ liệu cho biểu đồ cột (doanh thu theo ngày)
+  const columnData =
+    orderStats?.revenue_chart?.map((item) => ({
+      date: dayjs(item.date).format("DD/MM"),
+      revenue: item.revenue / 1000000, // Chuyển đổi sang triệu VNĐ
+      orders: item.orders,
+    })) || [];
+
+  const columnConfig = {
+    data: columnData,
+    xField: "date",
+    yField: "revenue",
+    color: "#1890ff",
+    columnWidthRatio: 0.6,
+    label: {
+      position: "middle" as const,
+      style: {
+        fill: "#fff",
+        opacity: 0.6,
+      },
+    },
+    xAxis: {
+      label: {
+        autoHide: true,
+        autoRotate: false,
+      },
+    },
+    meta: {
+      revenue: { alias: "Doanh thu (triệu VNĐ)" },
+      date: { alias: "Ngày" },
+    },
+  };
+
+  // Chuẩn bị dữ liệu cho biểu đồ tròn (trạng thái đơn hàng)
+  const pieData =
+    orderStats?.by_status?.map((item) => ({
+      type: item.status_name,
+      value: item.count,
+    })) || [];
+
+  const pieConfig = {
+    appendPadding: 10,
+    data: pieData,
+    angleField: "value",
+    colorField: "type",
+    radius: 1,
+    innerRadius: 0.6,
+    label: {
+      type: "spider" as const,
+      labelHeight: 28,
+      content: "{name}\n{percentage}",
+    },
+    legend: {
+      position: "bottom" as const,
+    },
+    color: ["#52c41a", "#1890ff", "#ff4d4f", "#faad14", "#722ed1"],
+  };
+
+  // Chuẩn bị dữ liệu cho bảng phương thức thanh toán
+  const paymentMethodData =
+    orderStats?.by_payment_method?.map((item, index) => ({
+      key: index.toString(),
+      method:
+        item.payment_method === "cod"
+          ? "Thanh toán khi nhận hàng"
+          : item.payment_method === "bank_transfer"
+          ? "Chuyển khoản ngân hàng"
+          : item.payment_method === "momo"
+          ? "Ví MoMo"
+          : item.payment_method,
+      count: item.count,
+      revenue: item.revenue,
+    })) || [];
+
+  const paymentColumns = [
+    {
+      title: "Phương thức thanh toán",
+      dataIndex: "method",
+      key: "method",
+    },
+    {
+      title: "Số đơn",
+      dataIndex: "count",
+      key: "count",
+    },
+    {
+      title: "Doanh thu",
+      dataIndex: "revenue",
+      key: "revenue",
+      render: (value: number) =>
+        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
   return (
     <div>
-      <Title level={3} style={{ marginBottom: 24 }}>Tổng quan hệ thống</Title>
+      {/* Header với bộ lọc thời gian */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={3} style={{ margin: 0 }}>
+            Thống kê đơn hàng
+          </Title>
+        </Col>
+        <Col>
+          <Space>
+            <Select value={period} onChange={setPeriod} style={{ width: 120 }}>
+              <Option value="today">Hôm nay</Option>
+              <Option value="week">Tuần này</Option>
+              <Option value="month">Tháng này</Option>
+              <Option value="year">Năm này</Option>
+              <Option value="custom">Tùy chọn</Option>
+            </Select>
+            {period === "custom" && (
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setDateRange([dates[0], dates[1]]);
+                  } else {
+                    setDateRange(null);
+                  }
+                }}
+                format="DD/MM/YYYY"
+              />
+            )}
+          </Space>
+        </Col>
+      </Row>
+
+      {/* Thống kê tổng quan */}
       <Row gutter={16}>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
               title="Tổng đơn hàng"
-              value={1128}
+              value={orderStats?.summary?.total_orders || 0}
               prefix={<ShoppingOutlined />}
-              valueStyle={{ color: '#3f8600' }}
+              valueStyle={{ color: "#3f8600" }}
               suffix={<ArrowUpOutlined />}
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
-              title="Tổng khách hàng"
-              value={321}
+              title="Tổng doanh thu"
+              value={orderStats?.summary?.total_revenue || 0}
+              prefix={<DollarOutlined />}
+              valueStyle={{ color: "#1890ff" }}
+              suffix={<ArrowUpOutlined />}
+              formatter={(value) =>
+                Number(value).toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })
+              }
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Giá trị đơn hàng TB"
+              value={orderStats?.summary?.average_order_value || 0}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-              suffix={<ArrowUpOutlined />}
+              valueStyle={{ color: "#faad14" }}
+              formatter={(value) =>
+                Number(value).toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })
+              }
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
-              title="Khuyến mãi đang chạy"
-              value={5}
+              title="Tổng sản phẩm bán"
+              value={orderStats?.summary?.total_items_sold || 0}
               prefix={<GiftOutlined />}
-              valueStyle={{ color: '#faad14' }}
-              suffix={<ArrowDownOutlined />}
+              valueStyle={{ color: "#722ed1" }}
+              suffix={<ArrowUpOutlined />}
             />
           </Card>
         </Col>
       </Row>
 
+      {/* Biểu đồ */}
       <Row gutter={16} style={{ marginTop: 24 }}>
         <Col span={16}>
-          <Card title="Doanh thu theo tháng" style={{ height: 350 }}>
-            <Column {...columnConfig} height={250} />
+          <Card title="Doanh thu theo ngày" style={{ height: 400 }}>
+            {columnData.length > 0 ? (
+              <Column {...columnConfig} height={300} />
+            ) : (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                Không có dữ liệu
+              </div>
+            )}
           </Card>
         </Col>
         <Col span={8}>
-          <Card title="Tỉ lệ trạng thái đơn hàng" style={{ height: 350 }}>
-            <Pie {...pieConfig} height={250} />
+          <Card title="Tỉ lệ trạng thái đơn hàng" style={{ height: 400 }}>
+            {pieData.length > 0 ? (
+              <Pie {...pieConfig} height={300} />
+            ) : (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                Không có dữ liệu
+              </div>
+            )}
           </Card>
         </Col>
       </Row>
 
+      {/* Bảng phương thức thanh toán */}
       <Row gutter={16} style={{ marginTop: 24 }}>
         <Col span={24}>
-          <Card title="Khách hàng nổi bật">
+          <Card title="Thống kê theo phương thức thanh toán">
             <Table
-              dataSource={dataSource}
-              columns={columns}
+              dataSource={paymentMethodData}
+              columns={paymentColumns}
               pagination={false}
               size="small"
             />

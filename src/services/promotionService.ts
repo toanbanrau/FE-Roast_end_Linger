@@ -1,4 +1,4 @@
-import { adminAxios } from "../configs/config";
+import { adminAxios, clientAxios } from "../configs/config";
 import type { IPromotion, IPromotionCreate, IPromotionUpdate } from "../interfaces/promotion";
 
 export const getAllPromotions = async (): Promise<IPromotion[]> => {
@@ -23,4 +23,21 @@ export const updatePromotion = async (id: number, promotion: IPromotionUpdate): 
 
 export const deletePromotion = async (id: number): Promise<void> => {
   await adminAxios.delete(`/promotions/${id}`);
+};
+
+// ================= CLIENT PROMOTION SERVICE =================
+
+// Lấy danh sách promotions có thể sử dụng cho client
+export const getAvailablePromotions = async (): Promise<{
+  data: IPromotion[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
+}> => {
+  const response = await clientAxios.get("/promotions");
+  return response.data.data;
 };

@@ -1,6 +1,7 @@
 import { useRoutes } from "react-router-dom";
 import LayoutClient from "./layouts/LayoutClient";
 import LayoutAdmin from "./layouts/LayoutAdmin";
+import { useTokenCheck } from "./hooks/useTokenCheck";
 import HomePage from "./pages/clients/home/HomePage";
 import ListBrand from "./pages/admins/brand/ListBrand";
 import AddBrand from "./pages/admins/brand/AddBrand";
@@ -18,7 +19,11 @@ import LoginPage from "./pages/clients/auth/LoginPage";
 import CartPage from "./pages/clients/cart/CartPage";
 import ProductDetailPage from "./pages/clients/productdetail/ProductDetail";
 import OrdersPage from "./pages/clients/account/order/OderPage";
+import MyReviews from "./pages/clients/account/MyReviews";
 import BlogPage from "./pages/clients/blog/BlogPage";
+import BlogDetail from "./pages/clients/blog/blogdetail/BlogDetail";
+import BlogCategoryPage from "./pages/clients/blog/category/BlogCategoryPage";
+import BlogTagPage from "./pages/clients/blog/tag/BlogTagPage";
 import ContactPage from "./pages/clients/contact/ContactPage";
 import AboutPage from "./pages/clients/about/AboutPage";
 import ListBlogCategory from "./pages/admins/blog-category/ListBlogCategory";
@@ -33,6 +38,7 @@ import AddContact from "./pages/admins/contact/AddContact";
 import ViewContact from "./pages/admins/contact/ViewContact";
 import Dashboard from "./pages/admins/dashboard/Dashboard";
 import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
+import PaymentSuccess from "./pages/clients/checkout/PaymentSuccess";
 import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
 import AddressPage from "./pages/clients/account/address/AddressPage";
 import EditProduct from "./pages/admins/product/EditProduct";
@@ -59,6 +65,9 @@ import ReturnInventory from "./pages/admins/inventory/ReturnInventory";
 import ExpiryManagement from "./pages/admins/inventory/ExpiryManagement";
 
 function App() {
+  // Kiểm tra token khi ứng dụng khởi động
+  useTokenCheck();
+  
   const element = useRoutes([
     {
       path: "/",
@@ -73,7 +82,7 @@ function App() {
           element: <ProductPage />,
         },
         {
-          path: "product/:id",
+          path: "product/:slug",
           element: <ProductDetailPage />,
         },
         {
@@ -85,8 +94,16 @@ function App() {
           element: <BlogPage />,
         },
         {
-          path: "blog/:id",
-          element: <div>BlogDetail</div>,
+          path: "blog/category/:categoryId",
+          element: <BlogCategoryPage />,
+        },
+        {
+          path: "blog/tag/:tagSlug",
+          element: <BlogTagPage />,
+        },
+        {
+          path: "blog/:slug",
+          element: <BlogDetail />,
         },
         {
           path: "contact",
@@ -109,6 +126,10 @@ function App() {
           element: <OrderDetailPage />,
         },
         {
+          path: "account/reviews",
+          element: <MyReviews />,
+        },
+        {
           path: "account/wishlist",
           element: <WishlistPage />,
         },
@@ -119,6 +140,10 @@ function App() {
         {
           path: "checkout",
           element: <CheckoutPage />,
+        },
+        {
+          path: "payment-success/:orderNumber",
+          element: <PaymentSuccess />,
         },
         {
           path: "auth/login",

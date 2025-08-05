@@ -1,28 +1,33 @@
-import type React from "react"
-import { useState } from "react"
+import type React from "react";
+import { useState } from "react";
 
-import { Mail, MapPin, Phone } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function ContactPage() {
-  const [formSubmitted, setFormSubmitted] = useState(false)
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormSubmitted(true)
-  }
+    e.preventDefault();
+    setFormSubmitted(true);
+  };
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Liên Hệ Với Chúng Tôi</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">
+        Liên Hệ Với Chúng Tôi
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {formSubmitted ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <h2 className="text-xl font-medium text-green-800 mb-2">Cảm Ơn!</h2>
+              <h2 className="text-xl font-medium text-green-800 mb-2">
+                Cảm Ơn!
+              </h2>
               <p className="text-green-700 mb-4">
-                Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.
+                Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi
+                sớm nhất có thể.
               </p>
               <button
                 className="border border-green-300 text-green-700 hover:bg-green-100 px-4 py-2 rounded-md font-medium mt-2"
@@ -35,7 +40,10 @@ export default function ContactPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="firstName" className="block text-sm font-medium">
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium"
+                  >
                     Tên
                   </label>
                   <input
@@ -45,7 +53,10 @@ export default function ContactPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="lastName" className="block text-sm font-medium">
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium"
+                  >
                     Họ
                   </label>
                   <input
@@ -178,7 +189,8 @@ export default function ContactPage() {
           <div className="bg-stone-50 p-6 rounded-lg">
             <h2 className="text-xl font-medium mb-4">Liên Hệ Phân Phối</h2>
             <p className="text-stone-600 mb-4">
-              Bạn muốn phục vụ Élite Coffee tại quán hoặc nhà hàng? Chúng tôi có giá ưu đãi và hỗ trợ riêng cho đối tác phân phối.
+              Bạn muốn phục vụ Élite Coffee tại quán hoặc nhà hàng? Chúng tôi có
+              giá ưu đãi và hỗ trợ riêng cho đối tác phân phối.
             </p>
             <Link
               to="/wholesale"
@@ -192,7 +204,9 @@ export default function ContactPage() {
 
       {/* Cửa hàng chính */}
       <div className="mt-12">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Thăm Cửa Hàng Chính Của Chúng Tôi</h2>
+        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">
+          Thăm Cửa Hàng Chính Của Chúng Tôi
+        </h2>
         <div className="aspect-video bg-stone-200 rounded-lg">
           <div className="h-full w-full flex items-center justify-center">
             <p className="text-stone-600">Bản đồ sẽ hiển thị ở đây</p>
@@ -202,7 +216,9 @@ export default function ContactPage() {
 
       {/* Các chi nhánh */}
       <div className="mt-12">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">Các Chi Nhánh</h2>
+        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">
+          Các Chi Nhánh
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             {
@@ -237,11 +253,15 @@ export default function ContactPage() {
               </div>
               <div className="p-4">
                 <h3 className="text-lg font-medium mb-2">{location.name}</h3>
-                <p className="text-stone-600 text-sm mb-1">{location.address}</p>
+                <p className="text-stone-600 text-sm mb-1">
+                  {location.address}
+                </p>
                 <p className="text-stone-600 text-sm mb-1">{location.phone}</p>
                 <p className="text-stone-600 text-sm">{location.hours}</p>
                 <Link
-                  to={`/locations/${location.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  to={`/locations/${location.name
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
                   className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-3 inline-block"
                 >
                   Xem Chi Tiết
@@ -255,16 +275,19 @@ export default function ContactPage() {
       {/* Câu hỏi thường gặp */}
       <div className="mt-12 bg-stone-50 p-8 rounded-lg">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-serif font-bold tracking-tight mb-4">Câu Hỏi Thường Gặp</h2>
+          <h2 className="text-2xl font-serif font-bold tracking-tight mb-4">
+            Câu Hỏi Thường Gặp
+          </h2>
           <p className="text-stone-600 mb-8">
-            Tìm câu trả lời nhanh cho các thắc mắc phổ biến. Nếu không tìm thấy, hãy liên hệ với chúng tôi.
+            Tìm câu trả lời nhanh cho các thắc mắc phổ biến. Nếu không tìm thấy,
+            hãy liên hệ với chúng tôi.
           </p>
           <div className="space-y-4 text-left">
             {[
               {
                 question: "Phí vận chuyển như thế nào?",
                 answer:
-                  "Miễn phí vận chuyển với đơn hàng trên $50 trong nội địa Hoa Kỳ. Dưới $50 sẽ tính phí cố định $5.95.",
+                  "Miễn phí vận chuyển với đơn hàng từ 500,000₫ trở lên. Dưới 500,000₫ sẽ tính phí cố định 30,000₫.",
               },
               {
                 question: "Cà phê có tươi mới không?",
@@ -297,5 +320,5 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

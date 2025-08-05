@@ -17,18 +17,18 @@ const ViewBlogPost = () => {
 
   const getStatusColor = (status: string) => {
     const colorMap: { [key: string]: string } = {
-      'draft': 'orange',
-      'published': 'green',
-      'archived': 'red',
+      draft: "orange",
+      published: "green",
+      archived: "red",
     };
-    return colorMap[status] || 'default';
+    return colorMap[status] || "default";
   };
 
   const getStatusText = (status: string) => {
     const textMap: { [key: string]: string } = {
-      'draft': 'Bản nháp',
-      'published': 'Đã xuất bản',
-      'archived': 'Lưu trữ',
+      draft: "Bản nháp",
+      published: "Đã xuất bản",
+      archived: "Lưu trữ",
     };
     return textMap[status] || status;
   };
@@ -64,8 +64,12 @@ const ViewBlogPost = () => {
             Quay lại
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Chi tiết bài viết</h1>
-            <p className="text-gray-600">Xem thông tin chi tiết bài viết blog</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Chi tiết bài viết
+            </h1>
+            <p className="text-gray-600">
+              Xem thông tin chi tiết bài viết blog
+            </p>
           </div>
         </div>
         <Button
@@ -93,19 +97,21 @@ const ViewBlogPost = () => {
             <h2 className="text-lg font-semibold">{blogPost.title}</h2>
           </Descriptions.Item>
           <Descriptions.Item label="Slug" span={2}>
-            <code className="bg-gray-100 px-2 py-1 rounded">{blogPost.slug}</code>
+            <code className="bg-gray-100 px-2 py-1 rounded">
+              {blogPost.slug}
+            </code>
           </Descriptions.Item>
           <Descriptions.Item label="Danh mục" span={1}>
-            {blogPost.category?.category_name || 'Chưa phân loại'}
+            {blogPost.category?.category_name || "Chưa phân loại"}
           </Descriptions.Item>
           <Descriptions.Item label="Lượt xem" span={1}>
             {blogPost.view_count?.toLocaleString() || 0}
           </Descriptions.Item>
           <Descriptions.Item label="Tác giả" span={1}>
-            {blogPost.author?.name || 'Không xác định'}
+            {blogPost.author?.name || "Không xác định"}
           </Descriptions.Item>
           <Descriptions.Item label="Ngày tạo" span={1}>
-            {new Date(blogPost.created_at).toLocaleString('vi-VN')}
+            {new Date(blogPost.created_at).toLocaleString("vi-VN")}
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -117,7 +123,7 @@ const ViewBlogPost = () => {
             src={blogPost.featured_image}
             alt={blogPost.title}
             className="max-w-full h-auto rounded-lg shadow-md"
-            style={{ maxHeight: '400px' }}
+            style={{ maxHeight: "400px" }}
           />
         </Card>
       )}
@@ -125,16 +131,38 @@ const ViewBlogPost = () => {
       {/* Tóm tắt */}
       <Card title="Tóm tắt" className="mb-6">
         <p className="text-gray-700 leading-relaxed">
-          {blogPost.excerpt || 'Không có tóm tắt'}
+          {blogPost.summary || "Không có tóm tắt"}
         </p>
       </Card>
+
+      {/* SEO Information */}
+      {(blogPost.meta_title || blogPost.meta_description) && (
+        <Card title="Thông tin SEO" className="mb-6">
+          {blogPost.meta_title && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Title:
+              </label>
+              <p className="text-gray-700">{blogPost.meta_title}</p>
+            </div>
+          )}
+          {blogPost.meta_description && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Description:
+              </label>
+              <p className="text-gray-700">{blogPost.meta_description}</p>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Nội dung */}
       <Card title="Nội dung">
         <div className="prose max-w-none">
-          <div 
+          <div
             className="text-gray-700 leading-relaxed whitespace-pre-wrap"
-            style={{ lineHeight: '1.8' }}
+            style={{ lineHeight: "1.8" }}
           >
             {blogPost.content}
           </div>

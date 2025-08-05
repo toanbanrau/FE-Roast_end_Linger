@@ -57,6 +57,9 @@ export const getStatusMessage = (statusName: string): string => {
     [ORDER_STATUS.DELIVERED]: 'Đã giao hàng thành công',
     [ORDER_STATUS.CANCELLED]: 'Đơn hàng đã bị hủy',
     [ORDER_STATUS.REFUNDED]: 'Đã hoàn tiền',
+    'completed': 'Hoàn thành',
+    'processing': 'Đang xử lý',
+    'shipped': 'Đang giao hàng',
   };
   
   return messages[statusName.toLowerCase()] || 'Trạng thái không xác định';
@@ -105,3 +108,4 @@ export const getOrderActions = (status: any) => {
   
   return actions;
 };
+

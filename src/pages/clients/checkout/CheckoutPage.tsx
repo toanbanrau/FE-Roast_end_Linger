@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ChevronRight, Lock, Plus, MapPin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../../../stores/useCartStore";
@@ -17,13 +17,17 @@ import type {
 import { useQuery } from "@tanstack/react-query";
 import { addressQueryOptions } from "../../../services/addressUserServices";
 import type { UserAddress } from "../../../interfaces/address";
+import { getAvailablePromotions } from "../../../services/promotionService";
+import type { IPromotion } from "../../../interfaces/promotion";
+import { getShippingMethods } from "../../../services/shippingMethodService";
+import type { IShippingMethod } from "../../../interfaces/shippingMethod";
 
 interface IFormCheckout {
   customer_name: string;
   customer_email: string;
   delivery_address: string;
   customer_phone: string;
-  shippingMethod: string;
+  shipping_method_id: number;
   payment_method: string;
   city?: string;
   district?: string;
@@ -36,6 +40,11 @@ export default function CheckoutPage() {
   const [step, setStep] = useState(1);
   const [orderResult, setOrderResult] = useState<any>(null);
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
+  const [showPromotions, setShowPromotions] = useState(false);
+  const [appliedPromotion, setAppliedPromotion] = useState<IPromotion | null>(
+    null
+  );
+  const [promotionDiscount, setPromotionDiscount] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(
     null
   );
@@ -43,6 +52,8 @@ export default function CheckoutPage() {
     null
   );
   const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
+  const [currentShippingFee, setCurrentShippingFee] = useState(0);
+  const [renderKey, setRenderKey] = useState(0);
 
   // Address selection states
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(
@@ -61,14 +72,58 @@ export default function CheckoutPage() {
     enabled: !!user, // Only fetch if user is logged in
   });
 
+  // Fetch available promotions
+  const { data: promotionsResponse } = useQuery({
+    queryKey: ["available-promotions"],
+    queryFn: getAvailablePromotions,
+  });
+
+  // Fetch shipping methods
+  const { data: shippingMethodsResponse } = useQuery({
+    queryKey: ["shipping-methods"],
+    queryFn: getShippingMethods,
+  });
+
+  const availablePromotions = promotionsResponse?.data || [];
+  const shippingMethods = useMemo(
+    () => shippingMethodsResponse?.data || [],
+    [shippingMethodsResponse?.data]
+  );
+
   const {
     register,
     handleSubmit,
     setValue,
     trigger,
     getValues,
+    watch,
     formState: { errors },
   } = useForm<IFormCheckout>();
+
+  // Set default shipping method when data loads
+  useEffect(() => {
+    if (shippingMethods.length > 0 && !watch("shipping_method_id")) {
+      setValue("shipping_method_id", shippingMethods[0].id);
+      setCurrentShippingFee(shippingMethods[0].cost);
+    }
+  }, [shippingMethods, setValue, watch, setCurrentShippingFee]);
+
+  // Update shipping fee when method changes
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === "shipping_method_id" && value.shipping_method_id) {
+        const selectedMethod = shippingMethods.find(
+          (method: IShippingMethod) => method.id === value.shipping_method_id
+        );
+        if (selectedMethod) {
+          console.log("🚚 Updating shipping fee:", selectedMethod.cost);
+          setCurrentShippingFee(selectedMethod.cost);
+          setRenderKey((prev) => prev + 1); // Force re-render
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, shippingMethods]);
 
   useEffect(() => {
     if (user) {
@@ -96,7 +151,7 @@ export default function CheckoutPage() {
         "customer_email",
         "customer_phone",
         "delivery_address",
-        "shippingMethod",
+        "shipping_method_id",
       ];
     } else if (step === 2) {
       // Step 2: Payment method
@@ -151,9 +206,108 @@ export default function CheckoutPage() {
   const cartItems = cart?.items || [];
 
   const subtotal = cart?.subtotal || 0;
-  const shippingFee = subtotal > 1000000 ? 0 : 30000; // Free ship for orders > 1,000,000 VND
-  const tax = subtotal * 0.08; // 8% tax rate
-  const total = subtotal + shippingFee + tax;
+
+  // Use shipping fee from state (updated by onChange)
+  // Apply free shipping for orders >= 500,000 VND
+  const shippingFee = subtotal >= 500000 ? 0 : currentShippingFee;
+
+  // Get selected shipping method for display purposes
+  const selectedShippingMethodId = watch("shipping_method_id");
+  const selectedShippingMethod = shippingMethods.find(
+    (method: IShippingMethod) => method.id === selectedShippingMethodId
+  );
+
+  // Debug logs
+  console.log("🔍 Debug shipping:", {
+    selectedShippingMethodId,
+    selectedShippingMethod,
+    shippingFee,
+    subtotal,
+    currentShippingFee,
+  });
+
+  // selectedShippingMethod is already defined above
+
+  const total = (subtotal || 0) + (shippingFee || 0) - (promotionDiscount || 0);
+
+  // Debug log
+  console.log(
+    "💰 Current shipping fee:",
+    shippingFee,
+    "Selected method ID:",
+    selectedShippingMethodId
+  );
+
+  // Function để áp dụng promotion code
+  const applyPromotionCode = () => {
+    const promotionCode = watch("promotion_code");
+    if (!promotionCode?.trim()) {
+      toast.error("Vui lòng nhập mã khuyến mãi!");
+      return;
+    }
+
+    // Kiểm tra nếu mã đã được áp dụng
+    if (
+      appliedPromotion &&
+      appliedPromotion.promotion_code === promotionCode.trim()
+    ) {
+      toast.info("Mã khuyến mãi này đã được áp dụng!");
+      return;
+    }
+
+    // Tìm promotion trong danh sách available
+    const promotion = availablePromotions.find(
+      (promo: IPromotion) => promo.promotion_code === promotionCode.trim()
+    );
+
+    if (!promotion) {
+      toast.error("Mã khuyến mãi không tồn tại!");
+      return;
+    }
+
+    if (!promotion.is_usable) {
+      toast.error("Mã khuyến mãi không thể sử dụng!");
+      return;
+    }
+
+    // Kiểm tra đơn hàng tối thiểu
+    const minOrderValue = parseFloat(promotion.minimum_order_value);
+    if (subtotal < minOrderValue) {
+      toast.error(
+        `Đơn hàng tối thiểu ${promotion.formatted_minimum_order} để sử dụng mã này!`
+      );
+      return;
+    }
+
+    // Tính toán discount
+    let discount = 0;
+    if (promotion.discount_type === "percentage") {
+      discount = (subtotal * parseFloat(promotion.discount_value)) / 100;
+      // Áp dụng giới hạn discount tối đa
+      const maxDiscount = parseFloat(promotion.maximum_discount_amount);
+      if (discount > maxDiscount) {
+        discount = maxDiscount;
+      }
+    } else {
+      discount = parseFloat(promotion.discount_value);
+    }
+
+    setAppliedPromotion(promotion);
+    setPromotionDiscount(discount);
+    toast.success(
+      `Áp dụng mã ${
+        promotion.promotion_code
+      } thành công! Giảm ${discount.toLocaleString("vi-VN")}₫`
+    );
+  };
+
+  // Function để xóa promotion code
+  const removePromotionCode = () => {
+    setAppliedPromotion(null);
+    setPromotionDiscount(0);
+    setValue("promotion_code", "");
+    toast.info("Đã xóa mã khuyến mãi");
+  };
 
   if (!cart || cartItems.length === 0) {
     return (
@@ -189,6 +343,7 @@ export default function CheckoutPage() {
           customer_phone: data.customer_phone,
           delivery_address: `${data.delivery_address}, ${data.ward}, ${data.district}, ${data.city}`,
           payment_method: data.payment_method,
+          shipping_method_id: data.shipping_method_id,
           promotion_code: data.promotion_code,
           notes: data.notes,
           items: orderItems,
@@ -196,7 +351,7 @@ export default function CheckoutPage() {
 
         const result = await checkout(orderData);
 
-        // Kiểm tra nếu là bank_transfer thì hiển thị thông tin thanh toán
+        // Kiểm tra phương thức thanh toán
         if (data.payment_method === "bank_transfer") {
           setOrderResult(result);
           setShowPaymentInfo(true);
@@ -204,9 +359,18 @@ export default function CheckoutPage() {
             "Đặt hàng thành công! Vui lòng thanh toán theo thông tin bên dưới."
           );
         } else {
+          // COD và các phương thức khác chuyển đến trang success
           toast.success("Đặt hàng thành công!");
           clearCart();
-          navigate("/");
+
+          // Lấy order_number từ result
+          const orderNumber = result.order_number;
+
+          // Lưu thông tin đơn hàng vào localStorage
+          localStorage.setItem(`order_${orderNumber}`, JSON.stringify(result));
+
+          // Chuyển đến trang PaymentSuccess
+          navigate(`/payment-success/${orderNumber}`);
         }
       }
     } catch (error) {
@@ -484,33 +648,111 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <h2 className="text-xl font-medium">Phương Thức Giao Hàng</h2>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between border p-4 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id="standard"
-                        value="standard"
-                        {...register("shippingMethod", {
-                          required: "Vui lòng chọn phương thức vận chuyển",
-                        })}
-                        defaultChecked
-                        className="text-amber-800 focus:ring-amber-800"
-                      />
-                      <label htmlFor="standard" className="font-medium">
-                        Giao Hàng Tiết Kiệm (3-5 Ngày)
-                      </label>
+                  {shippingMethods.map((method, index) => (
+                    <div
+                      key={method.id}
+                      className="flex items-center justify-between border p-4 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          id={method.id.toString()}
+                          value={method.id}
+                          {...register("shipping_method_id", {
+                            required: "Vui lòng chọn phương thức vận chuyển",
+                            valueAsNumber: true,
+                          })}
+                          defaultChecked={index === 0} // Set first method as default
+                          className="text-amber-800 focus:ring-amber-800"
+                          onChange={(e) => {
+                            console.log(
+                              "📦 Shipping method changed:",
+                              e.target.value
+                            );
+                            const methodId = Number(e.target.value);
+                            const selectedMethod = shippingMethods.find(
+                              (m) => m.id === methodId
+                            );
+                            if (selectedMethod) {
+                              console.log(
+                                "✅ Found method:",
+                                selectedMethod.name,
+                                "Cost:",
+                                selectedMethod.cost
+                              );
+                              setCurrentShippingFee(
+                                Number(selectedMethod.cost) || 0
+                              );
+                              setRenderKey((prev) => prev + 1);
+                            } else {
+                              console.log(
+                                "❌ Method not found for ID:",
+                                methodId
+                              );
+                            }
+                          }}
+                        />
+                        <div>
+                          <label
+                            htmlFor={method.id.toString()}
+                            className="font-medium block"
+                          >
+                            {method.name}
+                          </label>
+                          <p className="text-sm text-stone-600">
+                            {method.description}
+                          </p>
+                          <p className="text-xs text-stone-500">
+                            Thời gian: {method.estimated_time}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="font-medium">
+                        {(method.cost || 0) === 0 ? (
+                          "Miễn phí"
+                        ) : (subtotal || 0) >= 500000 ? (
+                          <div className="text-right">
+                            <span className="line-through text-stone-400 text-sm">
+                              {(method.cost || 0).toLocaleString("vi-VN")}₫
+                            </span>
+                            <div className="text-green-600 font-bold">
+                              Miễn phí
+                            </div>
+                          </div>
+                        ) : (
+                          `${(method.cost || 0).toLocaleString("vi-VN")}₫`
+                        )}
+                      </div>
                     </div>
-                    <div className="font-medium">
-                      {shippingFee === 0
-                        ? "Miễn phí"
-                        : `${shippingFee.toLocaleString("vi-VN")}₫`}
-                    </div>
-                  </div>
-                  {/* Option for express shipping can be added here */}
+                  ))}
                 </div>
-                {errors.shippingMethod && (
+
+                {/* Thông báo điều kiện miễn phí ship */}
+                {subtotal < 500000 && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      💡{" "}
+                      <strong>
+                        Mua thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫
+                      </strong>{" "}
+                      để được miễn phí vận chuyển!
+                    </p>
+                  </div>
+                )}
+
+                {/* Thông báo đã đủ điều kiện miễn phí ship */}
+                {subtotal >= 500000 && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      🎉 Chúc mừng! Đơn hàng của bạn được{" "}
+                      <strong>miễn phí vận chuyển</strong>
+                    </p>
+                  </div>
+                )}
+
+                {errors.shipping_method_id && (
                   <p className="text-red-500 text-sm mt-2">
-                    {errors.shippingMethod.message}
+                    {errors.shipping_method_id.message}
                   </p>
                 )}
               </div>
@@ -664,19 +906,70 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <h3 className="font-medium">Thông Tin Vận Chuyển</h3>
                   <div className="text-stone-600">
-                    <p>John Doe</p>
-                    <p>123 Main St, Apt 4B</p>
-                    <p>New York, NY 10001</p>
-                    <p>United States</p>
-                    <p>johndoe@example.com</p>
-                    <p>(555) 123-4567</p>
+                    <p>
+                      <strong>Họ tên:</strong> {watch("customer_name")}
+                    </p>
+                    <p>
+                      <strong>Email:</strong> {watch("customer_email")}
+                    </p>
+                    <p>
+                      <strong>Điện thoại:</strong> {watch("customer_phone")}
+                    </p>
+                    <p>
+                      <strong>Địa chỉ:</strong> {watch("delivery_address")}
+                    </p>
+                    <p>
+                      <strong>Phường/Xã:</strong> {watch("ward")}
+                    </p>
+                    <p>
+                      <strong>Quận/Huyện:</strong> {watch("district")}
+                    </p>
+                    <p>
+                      <strong>Tỉnh/Thành phố:</strong> {watch("city")}
+                    </p>
+                    <div className="mt-3 pt-3 border-t">
+                      <p>
+                        <strong>Phương thức vận chuyển:</strong>
+                      </p>
+                      {selectedShippingMethod && (
+                        <>
+                          <p className="text-sm">
+                            🚚 {selectedShippingMethod.name}
+                          </p>
+                          <p className="text-xs text-stone-500">
+                            {selectedShippingMethod.description}
+                          </p>
+                          <p className="text-xs text-stone-500">
+                            Thời gian: {selectedShippingMethod.estimated_time}
+                          </p>
+                        </>
+                      )}
+                      <p className="text-sm">
+                        <strong>Phí vận chuyển:</strong>{" "}
+                        {(shippingFee || 0) === 0
+                          ? "Miễn phí"
+                          : `${(shippingFee || 0).toLocaleString("vi-VN")}₫`}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-medium">Phương Thức Thanh Toán</h3>
                   <div className="text-stone-600">
-                    <p>Visa ending in 4242</p>
-                    <p>Expires 12/25</p>
+                    <p>
+                      {watch("payment_method") === "cod" &&
+                        "💰 Thanh Toán Khi Nhận Hàng (COD)"}
+                      {watch("payment_method") === "bank_transfer" &&
+                        "🏦 Chuyển Khoản Ngân Hàng"}
+                      {watch("payment_method") === "online" &&
+                        "💳 Thanh Toán Online (VNPAY)"}
+                    </p>
+                    {watch("payment_method") === "bank_transfer" && (
+                      <div className="mt-2 text-sm">
+                        <p>• Nhận QR Code VietQR sau khi đặt hàng</p>
+                        <p>• Thông tin tài khoản Techcombank</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -701,7 +994,10 @@ export default function CheckoutPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="border rounded-lg p-6 bg-stone-50 space-y-6 sticky top-6">
+          <div
+            key={`summary-${renderKey}`}
+            className="border rounded-lg p-6 bg-stone-50 space-y-6 sticky top-6"
+          >
             <h2 className="text-xl font-medium">Tóm Tắt Đơn Hàng</h2>
 
             <div className="border-b pb-4">
@@ -729,21 +1025,38 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <span className="text-stone-600">Phí Vận Chuyển</span>
                 <span className="font-medium">
-                  {shippingFee === 0
+                  {(shippingFee || 0) === 0
                     ? "Miễn phí"
-                    : `${shippingFee.toLocaleString("vi-VN")}₫`}
+                    : `${(shippingFee || 0).toLocaleString("vi-VN")}₫`}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-stone-600">Thuế (8%)</span>
-                <span className="font-medium">
-                  {tax.toLocaleString("vi-VN")}₫
-                </span>
-              </div>
+
+              {/* Hiển thị discount nếu có */}
+              {appliedPromotion && promotionDiscount > 0 && (
+                <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600">
+                      Khuyến mãi ({appliedPromotion.promotion_code})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removePromotionCode}
+                      className="text-red-500 hover:text-red-700 text-xs"
+                      title="Xóa mã khuyến mãi"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <span className="font-medium text-green-600">
+                    -{promotionDiscount.toLocaleString("vi-VN")}₫
+                  </span>
+                </div>
+              )}
+
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between font-medium text-lg">
                   <span>Tổng Tiền</span>
-                  <span>{total.toLocaleString("vi-VN")}₫</span>
+                  <span>{(total || 0).toLocaleString("vi-VN")}₫</span>
                 </div>
               </div>
             </div>
@@ -758,11 +1071,95 @@ export default function CheckoutPage() {
                 />
                 <button
                   type="button"
+                  onClick={applyPromotionCode}
                   className="border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md font-medium text-sm"
                 >
                   Áp dụng
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Kiểm tra có mã khả dụng không
+                    const usablePromotions = availablePromotions.filter(
+                      (promo: IPromotion) => promo.is_usable
+                    );
+
+                    if (usablePromotions.length === 0) {
+                      toast.info("Không có mã khuyến mãi khả dụng");
+                      return;
+                    }
+
+                    setShowPromotions(!showPromotions);
+                  }}
+                  className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium text-sm"
+                >
+                  Xem mã
+                </button>
               </div>
+
+              {/* Danh sách promotion codes */}
+              {showPromotions && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-3">
+                    Mã khuyến mãi có thể sử dụng:
+                  </h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {availablePromotions
+                      .filter((promo: IPromotion) => promo.is_usable)
+                      .map((promo: IPromotion) => (
+                        <div
+                          key={promo.id}
+                          className="border border-gray-200 rounded-lg p-3 bg-white hover:border-amber-300 cursor-pointer transition-colors"
+                          onClick={() => {
+                            setValue("promotion_code", promo.promotion_code);
+                            setShowPromotions(false);
+                          }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-mono text-sm font-bold text-amber-800 bg-amber-100 px-2 py-1 rounded">
+                                  {promo.promotion_code}
+                                </span>
+                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                                  {promo.formatted_discount_value}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-1">
+                                {promo.promotion_name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {promo.description}
+                              </p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                <span>
+                                  Đơn tối thiểu: {promo.formatted_minimum_order}
+                                </span>
+                                <span>
+                                  Còn lại: {promo.remaining_usage}/
+                                  {promo.usage_limit}
+                                </span>
+                                {promo.days_remaining !== undefined &&
+                                  promo.days_remaining < 7 && (
+                                    <span className="text-red-500 font-medium">
+                                      Còn {Math.ceil(promo.days_remaining)} ngày
+                                    </span>
+                                  )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                  {availablePromotions.filter(
+                    (promo: IPromotion) => promo.is_usable
+                  ).length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      Không có mã khuyến mãi khả dụng
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="text-sm text-stone-600 flex items-center gap-2">
@@ -791,7 +1188,8 @@ export default function CheckoutPage() {
         <div className="mt-8">
           <BankTransferInfo
             paymentInfo={orderResult.payment_info}
-            orderNumber={orderResult.order.order_number}
+            orderNumber={orderResult.order_number}
+            orderData={orderResult}
           />
           <div className="text-center mt-6">
             <button

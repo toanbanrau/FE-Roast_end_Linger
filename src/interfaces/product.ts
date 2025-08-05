@@ -121,7 +121,10 @@ export interface IProductVariant {
     product_id: number;
     sku_code: string;
     variant_name: string;
+    full_name?: string;
     price: string;
+    formatted_price?: string;
+    display_price?: string;
     stock_quantity: number;
     image_url: string | null;
     image?: string | null;

@@ -20,8 +20,14 @@ export const addToCart = async (values: IAddProductToCartPayload): Promise<IAddT
 /**
  * Update the quantity of a specific item in the cart.
  */
-export const updateCartItem = async (itemId: number, payload: IUpdateCartItemPayload): Promise<ICartResponse> => {
-    const response = await clientAxios.put(`/cart/items/${itemId}`, payload);
+export const updateCartItem = async (
+    itemId: number,
+    payload: IUpdateCartItemPayload,
+    signal?: AbortSignal
+): Promise<ICartResponse> => {
+    const response = await clientAxios.put(`/cart/items/${itemId}`, payload, {
+        signal
+    });
     return response.data;
 };
 

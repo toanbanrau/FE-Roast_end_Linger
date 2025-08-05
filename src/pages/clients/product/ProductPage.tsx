@@ -1,14 +1,20 @@
-import { Filter } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAllProductsClient } from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
 import { getAllCategories } from "../../../services/categoryService";
 import type { ICategory } from "../../../interfaces/category";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
+import ProductListSkeleton from "../../../components/ProductListSkeleton";
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // State cho search input với debounce
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
+  );
 
   // Lấy các query params theo format API
   const page = parseInt(searchParams.get("page") || "1");
@@ -20,6 +26,23 @@ export default function ProductsPage() {
   const sortBy = searchParams.get("sort_by") || "created_at";
   const sortOrder = searchParams.get("sort_order") || "desc";
   const search = searchParams.get("search") || "";
+
+  // Sync searchInput với URL params khi URL thay đổi
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (urlSearch !== searchInput) {
+      setSearchInput(urlSearch);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounce search input
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updateSearchParams({ search: searchInput });
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tạo query params cho API
   const queryParams = useMemo(() => {
@@ -109,8 +132,13 @@ export default function ProductsPage() {
       </div>
     );
 
-  if (isLoading)
-    return <div className="text-center py-12">Đang tải sản phẩm...</div>;
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <ProductListSkeleton count={12} />
+      </div>
+    );
+  }
   if (isError)
     return (
       <div className="text-center py-12 text-red-500">
@@ -129,6 +157,50 @@ export default function ProductsPage() {
           Explore our curated selection of premium coffee beans from around the
           world.
         </p>
+
+        {/* Search Input */}
+        <div className="mt-6 max-w-md">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-stone-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Tìm kiếm sản phẩm..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-stone-300 rounded-md leading-5 bg-white placeholder-stone-500 focus:outline-none focus:placeholder-stone-400 focus:ring-1 focus:ring-amber-800 focus:border-amber-800 sm:text-sm"
+            />
+            {searchInput && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  className="text-stone-400 hover:text-stone-600"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+          {searchInput && (
+            <div className="mt-2 text-sm text-stone-500">
+              Đang tìm kiếm: "{searchInput}"
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -294,7 +366,7 @@ export default function ProductsPage() {
               }
               return (
                 <Link
-                  to={`/product/${product.id}`}
+                  to={`/product/${product.slug}`}
                   key={product.id}
                   className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
                 >

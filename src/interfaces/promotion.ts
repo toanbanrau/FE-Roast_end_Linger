@@ -18,9 +18,13 @@ export interface IPromotion {
   status_text?: string;
   discount_type_text?: string;
   formatted_discount_value?: string;
+  formatted_minimum_order?: string;
+  formatted_maximum_discount?: string;
   is_usable?: boolean;
   is_expired?: boolean;
   is_used_up?: boolean;
+  remaining_usage?: number;
+  days_remaining?: number;
 }
 
 export type IPromotionCreate = Omit<IPromotion, "id" | "created_at" | "updated_at" | "used_count" | "status_text" | "discount_type_text" | "formatted_discount_value" | "is_usable" | "is_expired" | "is_used_up">;

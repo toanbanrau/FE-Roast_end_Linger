@@ -1,262 +1,662 @@
-# Hệ Thống Quản Lý Kho - Inventory Management System
+# ⭐ Product Reviews API
 
-## 📋 Tổng Quan
+> Comprehensive API for product review and rating system
 
-Hệ thống quản lý kho được thiết kế để quản lý tồn kho sản phẩm một cách chuyên nghiệp với các tính năng:
+## Base URL
 
-- **Quản lý lô hàng**: Theo dõi từng lô hàng nhập kho với thông tin chi tiết
-- **Logic FIFO**: Xuất kho theo nguyên tắc "Nhập trước, xuất trước"
-- **Quản lý hạn sử dụng**: Cảnh báo sản phẩm sắp hết hạn và xử lý hàng hết hạn
-- **Thống kê lợi nhuận**: Báo cáo lợi nhuận theo tuần, tháng, năm
-- **Tự động hóa**: Xử lý hàng hết hạn và tính toán thống kê tự động
-
-## 🏗️ Cấu Trúc Database
-
-### 1. Bảng `inventory_lots` - Quản lý lô hàng
-```sql
-- id: Khóa chính
-- lot_number: Mã lô hàng (unique)
-- product_id: ID sản phẩm
-- product_variant_id: ID variant (nullable)
-- supplier_name: Tên nhà cung cấp
-- supplier_code: Mã nhà cung cấp
-- quantity: Số lượng nhập
-- unit_cost: Giá nhập đơn vị
-- total_cost: Tổng giá nhập
-- manufacturing_date: Ngày sản xuất
-- expiry_date: Ngày hết hạn
-- import_date: Ngày nhập kho
-- storage_location: Vị trí lưu trữ
-- notes: Ghi chú
-- status: Trạng thái (active, expired, depleted)
-- remaining_quantity: Số lượng còn lại
+```
+/api/products/{productId}/reviews
 ```
 
-### 2. Bảng `inventory_transactions` - Giao dịch kho
-```sql
-- id: Khóa chính
-- transaction_code: Mã giao dịch (unique)
-- type: Loại giao dịch (import, export, adjustment, return, expiry)
-- product_id: ID sản phẩm
-- product_variant_id: ID variant (nullable)
-- inventory_lot_id: ID lô hàng (nullable)
-- order_id: ID đơn hàng (nullable)
-- quantity: Số lượng
-- unit_cost: Giá đơn vị
-- total_cost: Tổng giá trị
-- notes: Ghi chú
-- reference_number: Số tham chiếu
-- created_by: Người tạo
-```
+---
 
-### 3. Bảng `profit_statistics` - Thống kê lợi nhuận
-```sql
-- id: Khóa chính
-- period_type: Loại kỳ (daily, weekly, monthly, yearly)
-- period_date: Ngày bắt đầu kỳ
-- total_import_cost: Tổng chi phí nhập kho
-- total_sales_revenue: Tổng doanh thu bán hàng
-- total_profit: Tổng lợi nhuận
-- profit_margin: Tỷ lệ lợi nhuận (%)
-- total_import_quantity: Tổng số lượng nhập
-- total_sales_quantity: Tổng số lượng bán
-```
+## 📋 Endpoints Overview
 
-## 🔄 Logic Nghiệp Vụ
+| Method | Endpoint                                               | Auth | Description         |
+| ------ | ------------------------------------------------------ | ---- | ------------------- |
+| GET    | `/api/products/{productId}/reviews`                    | No   | Get product reviews |
+| POST   | `/api/products/{productId}/reviews`                    | Yes  | Create review       |
+| GET    | `/api/products/{productId}/reviews/{reviewId}`         | No   | Get review details  |
+| PUT    | `/api/products/{productId}/reviews/{reviewId}`         | Yes  | Update review       |
+| DELETE | `/api/products/{productId}/reviews/{reviewId}`         | Yes  | Delete review       |
+| POST   | `/api/products/{productId}/reviews/{reviewId}/helpful` | Yes  | Mark helpful        |
 
-### 1. Logic FIFO (First In, First Out)
-- Khi xuất kho, hệ thống sẽ ưu tiên xuất từ lô hàng cũ nhất
-- Đảm bảo hàng hóa không bị tồn đọng quá lâu
-- Tự động tính toán giá vốn chính xác
+---
 
-### 2. Quản lý Hạn Sử Dụng
-- **Cảnh báo sắp hết hạn**: Sản phẩm trong vòng 30 ngày sẽ được đưa lên đầu với màu đỏ
-- **Xử lý hàng hết hạn**: Tự động đánh dấu và xử lý hàng đã hết hạn
-- **Trạng thái lô hàng**: active → expired → depleted
+## 📖 Get Product Reviews
 
-### 3. Tính Toán Lợi Nhuận
-```
-Lợi nhuận = Doanh thu bán hàng - Chi phí nhập kho
-Tỷ lệ lợi nhuận = (Lợi nhuận / Doanh thu) × 100%
-```
+**GET** `/api/products/{productId}/reviews`
 
-## 🚀 API Endpoints
+### Query Parameters
 
-### Quản Lý Lô Hàng
-```http
-GET /api/admin/inventory/lots - Lấy danh sách lô hàng
-POST /api/admin/inventory/import - Nhập kho
-POST /api/admin/inventory/export - Xuất kho thủ công
-POST /api/admin/inventory/return - Hoàn trả hàng về kho
-```
+| Parameter     | Type    | Description             | Example  |
+| ------------- | ------- | ----------------------- | -------- |
+| rating        | integer | Filter by rating (1-5)  | `5`      |
+| verified_only | boolean | Only verified purchases | `true`   |
+| sort_by       | string  | Sort order              | `newest` |
+| per_page      | integer | Items per page          | `10`     |
 
-### Quản Lý Hạn Sử Dụng
-```http
-GET /api/admin/inventory/expiring - Sản phẩm sắp hết hạn
-GET /api/admin/inventory/expired - Sản phẩm đã hết hạn
-POST /api/admin/inventory/process-expired - Xử lý hàng hết hạn
-```
+### Sort Options
 
-### Thống Kê & Báo Cáo
-```http
-GET /api/admin/inventory/statistics - Thống kê tồn kho
-GET /api/admin/inventory/transactions - Lấy danh sách giao dịch kho
-GET /api/admin/inventory/profit-report - Báo cáo lợi nhuận
-GET /api/admin/inventory/weekly-profit - Lợi nhuận theo tuần
-GET /api/admin/inventory/monthly-profit - Lợi nhuận theo tháng
-GET /api/admin/inventory/yearly-profit - Lợi nhuận theo năm
-GET /api/admin/inventory/product-profit - Lợi nhuận theo sản phẩm
-GET /api/admin/inventory/profit-comparison - So sánh lợi nhuận
-```
+-   `newest` - Newest first (default)
+-   `oldest` - Oldest first
+-   `rating_high` - Highest rating first
+-   `rating_low` - Lowest rating first
+-   `helpful` - Most helpful first
 
-## 💻 Console Commands
+### Response Success (200)
 
-### 1. Xử lý hàng hết hạn
-```bash
-# Xem hàng hết hạn (không thay đổi dữ liệu)
-php artisan inventory:process-expired --dry-run
-
-# Xử lý hàng hết hạn thực tế
-php artisan inventory:process-expired
-```
-
-### 2. Tính toán thống kê lợi nhuận
-```bash
-# Tính toán tất cả thống kê
-php artisan profit:calculate
-
-# Tính toán theo ngày cụ thể
-php artisan profit:calculate --type=daily --date=2024-01-15
-
-# Tính toán theo tuần
-php artisan profit:calculate --type=weekly --date=2024-01-15
-
-# Tính toán theo tháng
-php artisan profit:calculate --type=monthly --date=2024-01-15
-
-# Tính toán theo năm
-php artisan profit:calculate --type=yearly --year=2024
-```
-
-## 📊 Ví Dụ Sử Dụng
-
-### 1. Nhập Kho
-```php
-// Nhập kho sản phẩm
-$data = [
-    'product_id' => 1,
-    'product_variant_id' => 5, // nullable
-    'supplier_name' => 'Nhà cung cấp ABC',
-    'supplier_code' => 'ABC001',
-    'quantity' => 100,
-    'unit_cost' => 50000,
-    'manufacturing_date' => '2024-01-01',
-    'expiry_date' => '2024-12-31',
-    'import_date' => '2024-01-15',
-    'storage_location' => 'Khu A - Kệ 1',
-    'notes' => 'Lô hàng chất lượng cao'
-];
-
-$lot = $inventoryService->importInventory($data);
-```
-
-### 2. Xuất Kho Tự Động
-```php
-// Khi có đơn hàng, hệ thống tự động xuất kho
-$order = Order::find(1);
-$inventoryService->processOrder($order);
-```
-
-### 3. Lấy Sản Phẩm Sắp Hết Hạn
-```php
-// Lấy sản phẩm sắp hết hạn trong 30 ngày
-$expiringProducts = $inventoryService->getExpiringProducts(30);
-
-foreach ($expiringProducts as $product) {
-    echo "Sản phẩm: {$product['product_name']}";
-    echo "Còn lại: {$product['days_until_expiry']} ngày";
-    echo "Giá trị: {$product['total_value']} VNĐ";
-}
-```
-
-### 4. Báo Cáo Lợi Nhuận
-```php
-// Báo cáo lợi nhuận theo tháng
-$report = $profitService->getMonthlyProfitReport(2024);
-
-foreach ($report['statistics'] as $stat) {
-    echo "Tháng: {$stat['period_date']}";
-    echo "Doanh thu: {$stat['total_sales_revenue']} VNĐ";
-    echo "Lợi nhuận: {$stat['total_profit']} VNĐ";
-    echo "Tỷ lệ: {$stat['profit_margin']}%";
-}
-```
-
-## 🔧 Cấu Hình Tự Động
-
-### 1. Cron Jobs (Thêm vào crontab)
-```bash
-# Xử lý hàng hết hạn hàng ngày lúc 2:00 AM
-0 2 * * * cd /path/to/project && php artisan inventory:process-expired
-
-# Tính toán thống kê lợi nhuận hàng ngày lúc 3:00 AM
-0 3 * * * cd /path/to/project && php artisan profit:calculate
-```
-
-### 2. Kernel Schedule (app/Console/Kernel.php)
-```php
-protected function schedule(Schedule $schedule)
+```json
 {
-    // Xử lý hàng hết hạn hàng ngày
-    $schedule->command('inventory:process-expired')
-             ->daily()
-             ->at('02:00');
-
-    // Tính toán thống kê lợi nhuận hàng ngày
-    $schedule->command('profit:calculate')
-             ->daily()
-             ->at('03:00');
+    "success": true,
+    "message": "Reviews retrieved successfully",
+    "data": {
+        "reviews": {
+            "data": [
+                {
+                    "id": 1,
+                    "rating": 5,
+                    "title": "Excellent coffee!",
+                    "comment": "Great taste and aroma. Highly recommended!",
+                    "images": ["reviews/review_1.jpg"],
+                    "is_verified_purchase": true,
+                    "helpful_count": 12,
+                    "not_helpful_count": 1,
+                    "helpfulness_ratio": 92.3,
+                    "user_helpfulness": null,
+                    "time_ago": "2 days ago",
+                    "created_at": "2024-06-20T10:30:00.000000Z",
+                    "user": {
+                        "id": 1,
+                        "name": "John",
+                        "full_name": "John Doe"
+                    }
+                }
+            ],
+            "current_page": 1,
+            "per_page": 10,
+            "total": 25
+        },
+        "statistics": {
+            "average_rating": 4.5,
+            "total_reviews": 25,
+            "verified_purchase_count": 20,
+            "rating_distribution": {
+                "1": { "count": 1, "percentage": 4.0 },
+                "2": { "count": 2, "percentage": 8.0 },
+                "3": { "count": 3, "percentage": 12.0 },
+                "4": { "count": 7, "percentage": 28.0 },
+                "5": { "count": 12, "percentage": 48.0 }
+            }
+        }
+    }
 }
 ```
 
-## 🎯 Tính Năng Nổi Bật
+---
 
-### 1. Cảnh Báo Thông Minh
-- Sản phẩm sắp hết hạn được đưa lên đầu với màu đỏ
-- Thông báo số ngày còn lại đến hết hạn
-- Tính toán giá trị hàng hết hạn
+## 📋 Get Reviewable Products
 
-### 2. Báo Cáo Chi Tiết
-- Lợi nhuận theo tuần, tháng, năm
-- So sánh lợi nhuận giữa các kỳ
-- Phân tích lợi nhuận theo sản phẩm
-- Thống kê tồn kho real-time
+**GET** `/api/reviews/reviewable-products`
 
-### 3. Tự Động Hóa
-- Xuất kho tự động khi có đơn hàng
-- Xử lý hàng hết hạn tự động
-- Tính toán thống kê định kỳ
-- Đồng bộ stock giữa product và variants
+> Get list of products that user can review (from completed orders, not yet reviewed)
 
-### 4. Bảo Mật & Kiểm Soát
-- Ghi log tất cả giao dịch kho
-- Kiểm tra quyền truy cập
-- Validation dữ liệu chặt chẽ
-- Transaction để đảm bảo tính nhất quán
+### Headers
 
-## 📈 Lợi Ích
+```json
+{
+    "Authorization": "Bearer {token}"
+}
+```
 
-1. **Quản lý kho chuyên nghiệp**: Theo dõi từng lô hàng chi tiết
-2. **Tối ưu hóa chi phí**: Logic FIFO giúp giảm thiểu tồn kho
-3. **Cảnh báo sớm**: Phát hiện sản phẩm sắp hết hạn kịp thời
-4. **Báo cáo chính xác**: Thống kê lợi nhuận real-time
-5. **Tự động hóa**: Giảm thiểu công việc thủ công
-6. **Tính minh bạch**: Theo dõi được mọi giao dịch kho
+### Response Success (200)
 
-## 🔮 Phát Triển Tương Lai
+```json
+{
+    "success": true,
+    "message": "Lấy danh sách sản phẩm có thể đánh giá thành công.",
+    "data": [
+        {
+            "order_item_id": 123,
+            "order_number": "ORD-20240101-001",
+            "order_id": 15,
+            "product": {
+                "id": 1,
+                "name": "Cà Phê Arabica Premium",
+                "slug": "ca-phe-arabica-premium-1234",
+                "image": {
+                    "url": "http://localhost:8000/storage/products/coffee.jpg",
+                    "alt_text": "Cà phê Arabica"
+                },
+                "category": {
+                    "id": 1,
+                    "name": "Cà phê rang xay"
+                }
+            },
+            "variant": {
+                "id": 1,
+                "name": "250g - Ground",
+                "sku": "CA-250G-GR-001"
+            },
+            "quantity": 2,
+            "unit_price": 150000,
+            "formatted_unit_price": "150,000 VND",
+            "purchased_at": "2024-01-01T10:00:00.000000Z",
+            "days_since_purchase": 15,
+            "can_review": true
+        }
+    ]
+}
+```
 
-1. **Tích hợp barcode/QR code**: Quét mã để nhập/xuất kho
-2. **Mobile app**: Quản lý kho trên điện thoại
-3. **AI/ML**: Dự đoán nhu cầu tồn kho
-4. **Tích hợp ERP**: Kết nối với hệ thống ERP
-5. **Báo cáo nâng cao**: Dashboard với biểu đồ trực quan 
+### Usage Example
+
+```javascript
+// Get products user can review
+const response = await fetch("/api/reviews/reviewable-products", {
+    headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+    },
+});
+
+const data = await response.json();
+if (data.success) {
+    // Display reviewable products
+    data.data.forEach((item) => {
+        console.log(`Can review: ${item.product.name}`);
+        console.log(`Order Item ID: ${item.order_item_id}`); // Use this for review creation
+    });
+}
+```
+
+---
+
+## ✍️ Create Product Review
+
+**POST** `/api/products/{productId}/reviews`
+
+> **⚠️ Important**: Only users who have purchased and received the product (order status = 'completed') can create reviews.
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "multipart/form-data"
+}
+```
+
+### Request Body (FormData)
+
+```javascript
+const formData = new FormData();
+formData.append("rating", "5"); // Required: 1-5
+formData.append("title", "Excellent coffee!"); // Optional
+formData.append("comment", "Great taste and aroma. Highly recommended!"); // Optional
+formData.append("order_item_id", "123"); // Required: From completed order
+formData.append("images[]", imageFile1); // Optional: Review images
+formData.append("images[]", imageFile2); // Optional: Multiple images
+```
+
+### Field Requirements
+
+#### Required Fields
+
+| Field           | Type    | Description                | Example |
+| --------------- | ------- | -------------------------- | ------- |
+| `rating`        | integer | Rating score (1-5)         | `5`     |
+| `order_item_id` | integer | ID of purchased order item | `123`   |
+
+#### Optional Fields
+
+| Field      | Type   | Description                            | Example                  |
+| ---------- | ------ | -------------------------------------- | ------------------------ |
+| `title`    | string | Review title (max: 200 chars)          | `"Excellent coffee!"`    |
+| `comment`  | string | Review content (max: 1000 chars)       | `"Great taste..."`       |
+| `images[]` | file[] | Review images (max: 5 files, 2MB each) | `[file1.jpg, file2.jpg]` |
+
+### Prerequisites for Creating Review
+
+#### ✅ Required Conditions
+
+1. **User must be authenticated** - Valid Bearer token
+2. **Must have purchased the product** - Order item exists
+3. **Order must be completed** - Order status = 'completed'
+4. **Haven't reviewed yet** - One review per user per product
+5. **Valid order_item_id** - Must belong to user's completed order
+
+### Validation Rules
+
+| Field         | Type    | Required | Rules                                   |
+| ------------- | ------- | -------- | --------------------------------------- |
+| rating        | integer | ✅ Yes   | Required, between 1-5                   |
+| title         | string  | ⚪ No    | Max 200 characters                      |
+| comment       | string  | ⚪ No    | Max 1000 characters                     |
+| images[]      | file[]  | ⚪ No    | Max 5 files, 2MB each, image types      |
+| order_item_id | integer | ✅ Yes   | Required, must exist and belong to user |
+
+### Response Success (201)
+
+```json
+{
+    "success": true,
+    "message": "Review created successfully",
+    "data": {
+        "id": 1,
+        "product_id": 1,
+        "user_id": 1,
+        "order_id": 15,
+        "order_item_id": 123,
+        "rating": 5,
+        "title": "Excellent coffee!",
+        "comment": "Great taste and aroma. Highly recommended!",
+        "images": [
+            "http://localhost:8000/storage/reviews/image1.jpg",
+            "http://localhost:8000/storage/reviews/image2.jpg"
+        ],
+        "is_verified_purchase": true,
+        "is_approved": true,
+        "helpful_count": 0,
+        "reviewed_at": "2024-01-01T00:00:00.000000Z",
+        "created_at": "2024-01-01T00:00:00.000000Z",
+        "user": {
+            "id": 1,
+            "name": "John Doe"
+        }
+    }
+}
+```
+
+### Error Responses
+
+#### 400 Bad Request - Already Reviewed
+
+```json
+{
+    "success": false,
+    "message": "You have already reviewed this product"
+}
+```
+
+#### 400 Bad Request - Not Purchased
+
+```json
+{
+    "success": false,
+    "message": "You can only review products you have purchased"
+}
+```
+
+#### 422 Validation Error
+
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "rating": ["The rating field is required."],
+        "order_item_id": ["The order item id field is required."],
+        "images.0": ["The image must be a file of type: jpeg, png, jpg, gif."]
+    }
+}
+```
+
+#### 404 Not Found
+
+```json
+{
+    "success": false,
+    "message": "Product not found"
+}
+```
+
+---
+
+## 👍 Mark Review Helpfulness
+
+**POST** `/api/products/{productId}/reviews/{reviewId}/helpful`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Request Body
+
+```json
+{
+    "is_helpful": true
+}
+```
+
+### Parameters
+
+| Field      | Type    | Required | Description                         |
+| ---------- | ------- | -------- | ----------------------------------- |
+| is_helpful | boolean | Yes      | true = helpful, false = not helpful |
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Marked as helpful",
+    "data": {
+        "helpful_count": 13,
+        "not_helpful_count": 1,
+        "user_vote": true
+    }
+}
+```
+
+---
+
+## 📝 Update Review
+
+**PUT** `/api/products/{productId}/reviews/{reviewId}`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "multipart/form-data"
+}
+```
+
+### Request Body
+
+```json
+{
+    "rating": 4,
+    "title": "Good coffee",
+    "comment": "Updated review content",
+    "images": ["new_file.jpg"]
+}
+```
+
+### Business Rules
+
+-   ✅ Only review owner can update
+-   ✅ Can only edit within 7 days of creation
+-   ✅ All fields are optional
+-   ✅ New images replace old ones
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Review updated successfully",
+    "data": {
+        "id": 1,
+        "rating": 4,
+        "title": "Good coffee",
+        "comment": "Updated review content"
+    }
+}
+```
+
+---
+
+## 🗑️ Delete Review
+
+**DELETE** `/api/products/{productId}/reviews/{reviewId}`
+
+### Headers
+
+```json
+{
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json"
+}
+```
+
+### Business Rules
+
+-   ✅ Only review owner can delete
+-   ✅ Soft delete (keeps data for analytics)
+-   ✅ Updates product rating statistics
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Review deleted successfully",
+    "data": null
+}
+```
+
+---
+
+## 🔍 Get Review Details
+
+**GET** `/api/products/{productId}/reviews/{reviewId}`
+
+### Response Success (200)
+
+```json
+{
+    "success": true,
+    "message": "Review retrieved successfully",
+    "data": {
+        "id": 1,
+        "rating": 5,
+        "title": "Excellent coffee!",
+        "comment": "Great taste and aroma. Highly recommended!",
+        "images": ["reviews/review_1.jpg"],
+        "is_verified_purchase": true,
+        "helpful_count": 12,
+        "not_helpful_count": 1,
+        "helpfulness_ratio": 92.3,
+        "user_helpfulness": true,
+        "time_ago": "2 days ago",
+        "created_at": "2024-06-20T10:30:00.000000Z",
+        "user": {
+            "id": 1,
+            "name": "John",
+            "full_name": "John Doe"
+        }
+    }
+}
+```
+
+---
+
+## 🎯 Business Logic
+
+### **Review Eligibility**
+
+-   ✅ Must have purchased the product
+-   ✅ One review per product per user
+-   ✅ Can review specific variants
+-   ✅ Order must be completed
+
+### **Verification System**
+
+-   ✅ Verified purchase badge
+-   ✅ Links to specific order item
+-   ✅ Prevents fake reviews
+
+### **Helpfulness System**
+
+-   ✅ Users can vote helpful/not helpful
+-   ✅ Cannot vote on own reviews
+-   ✅ Can change vote or remove vote
+-   ✅ Real-time count updates
+
+### **Image Management**
+
+-   ✅ Max 5 images per review
+-   ✅ 2MB per image limit
+-   ✅ JPEG, PNG, JPG, GIF formats
+-   ✅ Automatic storage management
+
+### **Rating Calculation**
+
+-   ✅ Real-time average rating
+-   ✅ Rating distribution statistics
+-   ✅ Verified vs unverified breakdown
+-   ✅ Product search ranking impact
+
+---
+
+## 📊 Integration Points
+
+### **Product Model Integration**
+
+```php
+$product->average_rating        // 4.5
+$product->review_count         // 25
+$product->rating_distribution  // Array of 1-5 star counts
+$product->hasUserReviewed($userId)  // Boolean
+$product->canUserReview($userId)    // Boolean
+```
+
+### **Order Integration**
+
+-   Links reviews to specific order items
+-   Enables verified purchase badges
+-   Prevents duplicate reviews
+
+### **User Experience**
+
+-   Review prompts after delivery
+-   Email notifications for helpful votes
+-   Review management in user profile
+
+---
+
+## 🔒 Security Features
+
+-   ✅ Authentication required for actions
+-   ✅ Authorization checks (own reviews only)
+-   ✅ Input validation and sanitization
+-   ✅ Image upload security
+-   ✅ Rate limiting on review creation
+-   ✅ Spam detection ready
+
+---
+
+## � Complete Usage Examples
+
+### Full Review Creation Flow
+
+```javascript
+// Step 1: Get products user can review
+async function getReviewableProducts() {
+    const response = await fetch("/api/reviews/reviewable-products", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+        },
+    });
+
+    const data = await response.json();
+    return data.success ? data.data : [];
+}
+
+// Step 2: Create review with images
+async function createReview(productId, orderItemId, reviewData, imageFiles) {
+    const formData = new FormData();
+
+    // Required fields
+    formData.append("rating", reviewData.rating.toString());
+    formData.append("order_item_id", orderItemId.toString());
+
+    // Optional fields
+    if (reviewData.title) formData.append("title", reviewData.title);
+    if (reviewData.comment) formData.append("comment", reviewData.comment);
+
+    // Images
+    imageFiles.forEach((file, index) => {
+        formData.append("images[]", file);
+    });
+
+    const response = await fetch(`/api/products/${productId}/reviews`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            // Don't set Content-Type for FormData
+        },
+        body: formData,
+    });
+
+    return await response.json();
+}
+
+// Step 3: Complete usage example
+async function handleReviewSubmission() {
+    try {
+        // Get reviewable products
+        const reviewableProducts = await getReviewableProducts();
+
+        if (reviewableProducts.length === 0) {
+            console.log("No products to review");
+            return;
+        }
+
+        // Create review for first product
+        const product = reviewableProducts[0];
+        const reviewData = {
+            rating: 5,
+            title: "Excellent coffee!",
+            comment: "Great taste and aroma. Highly recommended!",
+        };
+
+        const imageFiles = []; // Array of File objects from input
+
+        const result = await createReview(
+            product.product.id,
+            product.order_item_id,
+            reviewData,
+            imageFiles
+        );
+
+        if (result.success) {
+            console.log("Review created successfully!", result.data);
+        } else {
+            console.error("Failed to create review:", result.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+```
+
+---
+
+## 🔗 Related APIs
+
+-   [Orders API](order_management.md) - For order status and tracking
+-   [Products API](phase1-product-browse-apis.md) - For product information
+-   [Authentication API](authentication.md) - For user login/logout
+
+---
+
+## 📊 Response Status Codes
+
+| Code | Description          |
+| ---- | -------------------- |
+| 200  | Success              |
+| 201  | Review created       |
+| 400  | Business logic error |
+| 401  | Unauthorized         |
+| 404  | Not found            |
+| 422  | Validation error     |
+| 500  | Server error         |
+
+---
+
+## �📈 Analytics Ready
+
+-   Review conversion rates
+-   Average rating trends
+-   Most helpful reviewers
+-   Product improvement insights
+-   Customer satisfaction metrics

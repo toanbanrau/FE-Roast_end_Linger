@@ -13,11 +13,16 @@ import AccountNav from "../../../../components/AccountNav";
 import { getMyOrderById } from "../../../../services/checkoutService";
 import type { IOrder } from "../../../../interfaces/order";
 import CancelOrderModal from "../../../../components/order/CancelOrderModal";
+import CreateReviewModal from "../../../../components/CreateReviewModal";
 import { canCancelOrder } from "../../../../utils/orderStatus";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<
+    number | undefined
+  >();
 
   const {
     data: order,
@@ -28,6 +33,27 @@ export default function OrderDetailPage() {
     queryFn: () => getMyOrderById(Number(id)),
     enabled: !!id,
   });
+
+  // Debug order status
+  console.log("🔍 Order Status Debug:", {
+    statusName: order?.status.name,
+    statusId: order?.status.id,
+    fullStatus: order?.status,
+  });
+
+  const isOrderCompleted = [
+    "delivered",
+    "completed",
+    "Delivered",
+    "Completed",
+  ].includes(order?.status.name || "");
+
+  console.log("✅ isOrderCompleted:", isOrderCompleted);
+
+  const handleCreateReview = (productId: number) => {
+    setSelectedProductId(productId);
+    setShowReviewModal(true);
+  };
 
   // Format date function
   const formatDate = (dateString: string) => {
@@ -250,12 +276,15 @@ export default function OrderDetailPage() {
                     <div className="font-medium">
                       {item.formatted_total_price}
                     </div>
-                    <Link
-                      to={`/products/${item.product.slug}/review`}
-                      className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-1 inline-block"
-                    >
-                      Viết đánh giá
-                    </Link>
+                    {/* Show review button only if order is completed */}
+                    {isOrderCompleted && (
+                      <button
+                        onClick={() => handleCreateReview(item.product.id)}
+                        className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-1 inline-block"
+                      >
+                        Viết đánh giá
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -376,6 +405,13 @@ export default function OrderDetailPage() {
         onSuccess={() => {
           // Modal will handle the success toast and query invalidation
         }}
+      />
+
+      {/* Create Review Modal */}
+      <CreateReviewModal
+        visible={showReviewModal}
+        onCancel={() => setShowReviewModal(false)}
+        productId={selectedProductId}
       />
     </div>
   );

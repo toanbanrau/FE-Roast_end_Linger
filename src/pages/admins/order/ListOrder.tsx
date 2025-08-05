@@ -119,6 +119,25 @@ export default function ListOrder() {
     return textMap[method] || method;
   };
 
+  // Function để chuyển đổi status sang tiếng Việt
+  const getStatusText = (statusName: string) => {
+    const statusMap: { [key: string]: string } = {
+      pending: "Chờ xử lý",
+      confirmed: "Đã xác nhận",
+      processing: "Đang xử lý",
+      preparing: "Đang chuẩn bị",
+      shipping: "Đang vận chuyển",
+      shipped: "Đã giao vận",
+      out_for_delivery: "Đang giao hàng",
+      delivered: "Đã giao hàng",
+      completed: "Hoàn thành",
+      cancelled: "Đã hủy",
+      refunded: "Đã hoàn tiền",
+      returned: "Đã trả hàng",
+    };
+    return statusMap[statusName.toLowerCase()] || statusName;
+  };
+
   const columns: ColumnsType<IOrder> = [
     {
       title: "STT",
@@ -183,7 +202,9 @@ export default function ListOrder() {
         >
           {orderStatuses?.map((status) => (
             <Option key={status.id} value={status.id}>
-              <Tag color={status.color}>{status.status_name}</Tag>
+              <Tag color={status.color}>
+                {getStatusText(status.status_name)}
+              </Tag>
             </Option>
           ))}
         </Select>
@@ -279,7 +300,7 @@ export default function ListOrder() {
           >
             {orderStatuses?.map((status) => (
               <Option key={status.id} value={status.id}>
-                {status.status_name}
+                {getStatusText(status.status_name)}
               </Option>
             ))}
           </Select>
