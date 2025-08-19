@@ -5,7 +5,7 @@ import { login, register, getProfile, logout } from '../services/authService';
 import { isAxiosError } from 'axios';
 import { useCartStore } from './useCartStore';
 import toast from 'react-hot-toast';
-import { clearLocalDataOnTokenError } from '../utils/tokenUtils';
+import { clearLocalDataOnTokenError, setManualLogout } from '../utils/tokenUtils';
 
 interface UserState {
   user: IUser | null;
@@ -18,6 +18,7 @@ interface UserState {
   logout: () => Promise<void>;
   handleTokenError: () => void;
   setUser: (user: IUser | null) => void;
+  setToken: (token: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -96,6 +97,10 @@ export const useUserStore = create<UserState>()(
       },
       logout: async () => {
         set({ loading: true, error: null });
+
+        // Set flag để không hiển thị "phiên đăng nhập hết hạn" khi logout thủ công
+        setManualLogout(true);
+
         try {
           await logout();
           localStorage.removeItem('token');
@@ -119,7 +124,14 @@ export const useUserStore = create<UserState>()(
         clearLocalDataOnTokenError();
         set({ user: null, isAuthenticated: false, loading: false, error: null });
       },
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: (user) => {
+        console.log("UserStore: Setting user data:", user);
+        set({ user, isAuthenticated: !!user });
+      },
+      setToken: (token) => {
+        localStorage.setItem("token", token); // Consistent với login/logout
+        set({ isAuthenticated: true });
+      },
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
     }),

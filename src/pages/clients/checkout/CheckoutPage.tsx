@@ -6,7 +6,11 @@ import { useUserStore } from "../../../stores/useUserStore";
 import { useForm } from "react-hook-form";
 import { checkout } from "../../../services/checkoutService";
 import { toast } from "react-toastify";
-import type { IOrderCreate, OrderItem } from "../../../interfaces/order";
+import type {
+  IOrderCreate,
+  OrderItem,
+  PaymentInfo,
+} from "../../../interfaces/order";
 import BankTransferInfo from "../../../components/BankTransferInfo";
 import LocationSelector from "../../../components/LocationSelector";
 import type {
@@ -38,7 +42,10 @@ interface IFormCheckout {
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(1);
-  const [orderResult, setOrderResult] = useState<any>(null);
+  const [orderResult, setOrderResult] = useState<{
+    order: IOrder;
+    payment_info?: PaymentInfo;
+  } | null>(null);
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
   const [showPromotions, setShowPromotions] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<IPromotion | null>(
@@ -364,10 +371,13 @@ export default function CheckoutPage() {
           clearCart();
 
           // Lấy order_number từ result
-          const orderNumber = result.order_number;
+          const orderNumber = result.order.order_number;
 
           // Lưu thông tin đơn hàng vào localStorage
-          localStorage.setItem(`order_${orderNumber}`, JSON.stringify(result));
+          localStorage.setItem(
+            `order_${orderNumber}`,
+            JSON.stringify(result.order)
+          );
 
           // Chuyển đến trang PaymentSuccess
           navigate(`/payment-success/${orderNumber}`);
@@ -1188,8 +1198,8 @@ export default function CheckoutPage() {
         <div className="mt-8">
           <BankTransferInfo
             paymentInfo={orderResult.payment_info}
-            orderNumber={orderResult.order_number}
-            orderData={orderResult}
+            orderNumber={orderResult.order.order_number}
+            orderData={orderResult.order}
           />
           <div className="text-center mt-6">
             <button

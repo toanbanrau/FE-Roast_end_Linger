@@ -1,5 +1,10 @@
+// Lấy đơn hàng theo order_number (dùng cho PaymentPage)
+export const getOrderDetail = async (orderNumber: string) => {
+    const response = await clientAxios.get<ApiResponse<{ order: IOrder }>>(`/orders/by-number/${orderNumber}`);
+    return response.data;
+};
 import { adminAxios, clientAxios } from "../configs/config";
-import type { IOrder, IOrderCreate, CancelOrderRequest, CancelOrderResponse } from "../interfaces/order";
+import type { IOrder, IOrderCreate, CancelOrderRequest, CancelOrderResponse, PaymentInfo } from "../interfaces/order";
 
 // API Response wrapper interface
 interface ApiResponse<T> {
@@ -8,9 +13,9 @@ interface ApiResponse<T> {
   data: T;
 }
 
-export const checkout = async (order: IOrderCreate): Promise<IOrder> => {
-    const response = await clientAxios.post<ApiResponse<{ order: IOrder }>>('/orders', order);
-    return response.data.data.order; // Lấy object order bên trong
+export const checkout = async (order: IOrderCreate): Promise<{ order: IOrder; payment_info?: PaymentInfo }> => {
+    const response = await clientAxios.post<ApiResponse<{ order: IOrder; payment_info?: PaymentInfo }>>('/orders', order);
+    return response.data.data; // Trả về cả order và payment_info
 }
 
 export const getAllOrders = async (): Promise<IOrder[]> => {

@@ -166,7 +166,7 @@ interface QRCodeInfo {
 }
 
 // Enhanced Payment Info Interface (supports both legacy and SEPAY)
-interface PaymentInfo {
+export interface PaymentInfo {
   // SEPAY fields
   payment_id?: number;
   method: string;
@@ -176,6 +176,13 @@ interface PaymentInfo {
   transaction_id?: string;
   tracking_content?: string;
   qr_code?: string | QRCodeInfo;
+  qr_data?: {
+    account_number: string;
+    account_name: string;
+    amount: number;
+    content: string;
+    bank_code: string;
+  };
   bank_info: SepayBankInfo;
   auto_confirm?: boolean;
   expires_at?: string;

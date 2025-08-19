@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 // Global flags để control token handling
 let isTokenExpiredToastShown = false;
 let tokenCheckInProgress = false;
+let isManualLogout = false; // Flag để track logout thủ công
 
 // Reset toast flag sau 10 giây
 const resetToastFlag = () => {
@@ -64,10 +65,10 @@ export const handleTokenError = (error: any): boolean => {
   // Chỉ xử lý 401/403 errors
   const isTokenError = error?.response?.status === 401 || error?.response?.status === 403;
 
-  if (isTokenError && !isTokenExpiredToastShown) {
+  if (isTokenError && !isTokenExpiredToastShown && !isManualLogout) {
     isTokenExpiredToastShown = true;
 
-    // Clear data và show toast
+    // Clear data và show toast CHỈ KHI KHÔNG PHẢI logout thủ công
     clearLocalDataOnTokenError();
     toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
 
@@ -101,5 +102,16 @@ export const showTokenExpiredMessage = () => {
     isTokenExpiredToastShown = true;
     toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
     resetToastFlag();
+  }
+};
+
+// Set flag khi user logout thủ công
+export const setManualLogout = (value: boolean) => {
+  isManualLogout = value;
+  if (value) {
+    // Reset flag sau 2 giây để tránh ảnh hưởng đến login tiếp theo
+    setTimeout(() => {
+      isManualLogout = false;
+    }, 2000);
   }
 };

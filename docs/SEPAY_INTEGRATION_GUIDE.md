@@ -1,662 +1,246 @@
-# ⭐ Product Reviews API
+# 📝 Review Management API (Admin)
 
-> Comprehensive API for product review and rating system
+> API endpoints for admin to view and manage product reviews
 
 ## Base URL
 
 ```
-/api/products/{productId}/reviews
+/api/admin/reviews
 ```
+
+## Authentication
+
+All admin endpoints require authentication via Bearer token with admin role.
 
 ---
 
 ## 📋 Endpoints Overview
 
-| Method | Endpoint                                               | Auth | Description         |
-| ------ | ------------------------------------------------------ | ---- | ------------------- |
-| GET    | `/api/products/{productId}/reviews`                    | No   | Get product reviews |
-| POST   | `/api/products/{productId}/reviews`                    | Yes  | Create review       |
-| GET    | `/api/products/{productId}/reviews/{reviewId}`         | No   | Get review details  |
-| PUT    | `/api/products/{productId}/reviews/{reviewId}`         | Yes  | Update review       |
-| DELETE | `/api/products/{productId}/reviews/{reviewId}`         | Yes  | Delete review       |
-| POST   | `/api/products/{productId}/reviews/{reviewId}/helpful` | Yes  | Mark helpful        |
+| Method | Endpoint             | Description                                 |
+| ------ | -------------------- | ------------------------------------------- |
+| GET    | `/api/admin/reviews` | Get all reviews with filters and statistics |
 
 ---
 
-## 📖 Get Product Reviews
+## 📖 API Details
 
-**GET** `/api/products/{productId}/reviews`
+### 1. Get All Reviews
 
-### Query Parameters
+**GET** `/api/admin/reviews`
 
-| Parameter     | Type    | Description             | Example  |
-| ------------- | ------- | ----------------------- | -------- |
-| rating        | integer | Filter by rating (1-5)  | `5`      |
-| verified_only | boolean | Only verified purchases | `true`   |
-| sort_by       | string  | Sort order              | `newest` |
-| per_page      | integer | Items per page          | `10`     |
+Lấy danh sách tất cả đánh giá sản phẩm với khả năng lọc và tìm kiếm.
 
-### Sort Options
+#### Query Parameters
 
--   `newest` - Newest first (default)
--   `oldest` - Oldest first
--   `rating_high` - Highest rating first
--   `rating_low` - Lowest rating first
--   `helpful` - Most helpful first
+| Parameter       | Type    | Required | Description                                                          | Example           |
+| --------------- | ------- | -------- | -------------------------------------------------------------------- | ----------------- |
+| `page`          | integer | No       | Trang hiện tại                                                       | `1`               |
+| `per_page`      | integer | No       | Số items per page (max 50)                                           | `15`              |
+| `status`        | string  | No       | Lọc theo trạng thái (`approved`, `pending`)                          | `pending`         |
+| `rating`        | integer | No       | Lọc theo rating (1-5)                                                | `5`               |
+| `verified_only` | boolean | No       | Chỉ lấy review đã xác thực mua hàng                                  | `true`            |
+| `search`        | string  | No       | Tìm kiếm theo tên user, sản phẩm, nội dung                           | `"great product"` |
+| `product_id`    | integer | No       | Lọc theo sản phẩm                                                    | `1`               |
+| `user_id`       | integer | No       | Lọc theo user                                                        | `1`               |
+| `date_from`     | string  | No       | Từ ngày (Y-m-d)                                                      | `"2024-01-01"`    |
+| `date_to`       | string  | No       | Đến ngày (Y-m-d)                                                     | `"2024-12-31"`    |
+| `sort_by`       | string  | No       | Sắp xếp (`newest`, `oldest`, `rating_high`, `rating_low`, `helpful`) | `"newest"`        |
 
-### Response Success (200)
+#### Response
 
-```json
-{
-    "success": true,
-    "message": "Reviews retrieved successfully",
-    "data": {
-        "reviews": {
-            "data": [
-                {
-                    "id": 1,
-                    "rating": 5,
-                    "title": "Excellent coffee!",
-                    "comment": "Great taste and aroma. Highly recommended!",
-                    "images": ["reviews/review_1.jpg"],
-                    "is_verified_purchase": true,
-                    "helpful_count": 12,
-                    "not_helpful_count": 1,
-                    "helpfulness_ratio": 92.3,
-                    "user_helpfulness": null,
-                    "time_ago": "2 days ago",
-                    "created_at": "2024-06-20T10:30:00.000000Z",
-                    "user": {
-                        "id": 1,
-                        "name": "John",
-                        "full_name": "John Doe"
-                    }
-                }
-            ],
-            "current_page": 1,
-            "per_page": 10,
-            "total": 25
-        },
-        "statistics": {
-            "average_rating": 4.5,
-            "total_reviews": 25,
-            "verified_purchase_count": 20,
-            "rating_distribution": {
-                "1": { "count": 1, "percentage": 4.0 },
-                "2": { "count": 2, "percentage": 8.0 },
-                "3": { "count": 3, "percentage": 12.0 },
-                "4": { "count": 7, "percentage": 28.0 },
-                "5": { "count": 12, "percentage": 48.0 }
-            }
-        }
-    }
-}
-```
-
----
-
-## 📋 Get Reviewable Products
-
-**GET** `/api/reviews/reviewable-products`
-
-> Get list of products that user can review (from completed orders, not yet reviewed)
-
-### Headers
+**Success Response (200)**
 
 ```json
 {
-    "Authorization": "Bearer {token}"
-}
-```
-
-### Response Success (200)
-
-```json
-{
-    "success": true,
-    "message": "Lấy danh sách sản phẩm có thể đánh giá thành công.",
-    "data": [
+  "success": true,
+  "message": "Reviews retrieved successfully",
+  "data": {
+    "reviews": {
+      "data": [
         {
-            "order_item_id": 123,
-            "order_number": "ORD-20240101-001",
-            "order_id": 15,
-            "product": {
-                "id": 1,
-                "name": "Cà Phê Arabica Premium",
-                "slug": "ca-phe-arabica-premium-1234",
-                "image": {
-                    "url": "http://localhost:8000/storage/products/coffee.jpg",
-                    "alt_text": "Cà phê Arabica"
-                },
-                "category": {
-                    "id": 1,
-                    "name": "Cà phê rang xay"
-                }
-            },
-            "variant": {
-                "id": 1,
-                "name": "250g - Ground",
-                "sku": "CA-250G-GR-001"
-            },
-            "quantity": 2,
-            "unit_price": 150000,
-            "formatted_unit_price": "150,000 VND",
-            "purchased_at": "2024-01-01T10:00:00.000000Z",
-            "days_since_purchase": 15,
-            "can_review": true
-        }
-    ]
-}
-```
-
-### Usage Example
-
-```javascript
-// Get products user can review
-const response = await fetch("/api/reviews/reviewable-products", {
-    headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-    },
-});
-
-const data = await response.json();
-if (data.success) {
-    // Display reviewable products
-    data.data.forEach((item) => {
-        console.log(`Can review: ${item.product.name}`);
-        console.log(`Order Item ID: ${item.order_item_id}`); // Use this for review creation
-    });
-}
-```
-
----
-
-## ✍️ Create Product Review
-
-**POST** `/api/products/{productId}/reviews`
-
-> **⚠️ Important**: Only users who have purchased and received the product (order status = 'completed') can create reviews.
-
-### Headers
-
-```json
-{
-    "Authorization": "Bearer {token}",
-    "Content-Type": "multipart/form-data"
-}
-```
-
-### Request Body (FormData)
-
-```javascript
-const formData = new FormData();
-formData.append("rating", "5"); // Required: 1-5
-formData.append("title", "Excellent coffee!"); // Optional
-formData.append("comment", "Great taste and aroma. Highly recommended!"); // Optional
-formData.append("order_item_id", "123"); // Required: From completed order
-formData.append("images[]", imageFile1); // Optional: Review images
-formData.append("images[]", imageFile2); // Optional: Multiple images
-```
-
-### Field Requirements
-
-#### Required Fields
-
-| Field           | Type    | Description                | Example |
-| --------------- | ------- | -------------------------- | ------- |
-| `rating`        | integer | Rating score (1-5)         | `5`     |
-| `order_item_id` | integer | ID of purchased order item | `123`   |
-
-#### Optional Fields
-
-| Field      | Type   | Description                            | Example                  |
-| ---------- | ------ | -------------------------------------- | ------------------------ |
-| `title`    | string | Review title (max: 200 chars)          | `"Excellent coffee!"`    |
-| `comment`  | string | Review content (max: 1000 chars)       | `"Great taste..."`       |
-| `images[]` | file[] | Review images (max: 5 files, 2MB each) | `[file1.jpg, file2.jpg]` |
-
-### Prerequisites for Creating Review
-
-#### ✅ Required Conditions
-
-1. **User must be authenticated** - Valid Bearer token
-2. **Must have purchased the product** - Order item exists
-3. **Order must be completed** - Order status = 'completed'
-4. **Haven't reviewed yet** - One review per user per product
-5. **Valid order_item_id** - Must belong to user's completed order
-
-### Validation Rules
-
-| Field         | Type    | Required | Rules                                   |
-| ------------- | ------- | -------- | --------------------------------------- |
-| rating        | integer | ✅ Yes   | Required, between 1-5                   |
-| title         | string  | ⚪ No    | Max 200 characters                      |
-| comment       | string  | ⚪ No    | Max 1000 characters                     |
-| images[]      | file[]  | ⚪ No    | Max 5 files, 2MB each, image types      |
-| order_item_id | integer | ✅ Yes   | Required, must exist and belong to user |
-
-### Response Success (201)
-
-```json
-{
-    "success": true,
-    "message": "Review created successfully",
-    "data": {
-        "id": 1,
-        "product_id": 1,
-        "user_id": 1,
-        "order_id": 15,
-        "order_item_id": 123,
-        "rating": 5,
-        "title": "Excellent coffee!",
-        "comment": "Great taste and aroma. Highly recommended!",
-        "images": [
-            "http://localhost:8000/storage/reviews/image1.jpg",
-            "http://localhost:8000/storage/reviews/image2.jpg"
-        ],
-        "is_verified_purchase": true,
-        "is_approved": true,
-        "helpful_count": 0,
-        "reviewed_at": "2024-01-01T00:00:00.000000Z",
-        "created_at": "2024-01-01T00:00:00.000000Z",
-        "user": {
-            "id": 1,
-            "name": "John Doe"
-        }
-    }
-}
-```
-
-### Error Responses
-
-#### 400 Bad Request - Already Reviewed
-
-```json
-{
-    "success": false,
-    "message": "You have already reviewed this product"
-}
-```
-
-#### 400 Bad Request - Not Purchased
-
-```json
-{
-    "success": false,
-    "message": "You can only review products you have purchased"
-}
-```
-
-#### 422 Validation Error
-
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "rating": ["The rating field is required."],
-        "order_item_id": ["The order item id field is required."],
-        "images.0": ["The image must be a file of type: jpeg, png, jpg, gif."]
-    }
-}
-```
-
-#### 404 Not Found
-
-```json
-{
-    "success": false,
-    "message": "Product not found"
-}
-```
-
----
-
-## 👍 Mark Review Helpfulness
-
-**POST** `/api/products/{productId}/reviews/{reviewId}/helpful`
-
-### Headers
-
-```json
-{
-    "Authorization": "Bearer {token}",
-    "Content-Type": "application/json"
-}
-```
-
-### Request Body
-
-```json
-{
-    "is_helpful": true
-}
-```
-
-### Parameters
-
-| Field      | Type    | Required | Description                         |
-| ---------- | ------- | -------- | ----------------------------------- |
-| is_helpful | boolean | Yes      | true = helpful, false = not helpful |
-
-### Response Success (200)
-
-```json
-{
-    "success": true,
-    "message": "Marked as helpful",
-    "data": {
-        "helpful_count": 13,
-        "not_helpful_count": 1,
-        "user_vote": true
-    }
-}
-```
-
----
-
-## 📝 Update Review
-
-**PUT** `/api/products/{productId}/reviews/{reviewId}`
-
-### Headers
-
-```json
-{
-    "Authorization": "Bearer {token}",
-    "Content-Type": "multipart/form-data"
-}
-```
-
-### Request Body
-
-```json
-{
-    "rating": 4,
-    "title": "Good coffee",
-    "comment": "Updated review content",
-    "images": ["new_file.jpg"]
-}
-```
-
-### Business Rules
-
--   ✅ Only review owner can update
--   ✅ Can only edit within 7 days of creation
--   ✅ All fields are optional
--   ✅ New images replace old ones
-
-### Response Success (200)
-
-```json
-{
-    "success": true,
-    "message": "Review updated successfully",
-    "data": {
-        "id": 1,
-        "rating": 4,
-        "title": "Good coffee",
-        "comment": "Updated review content"
-    }
-}
-```
-
----
-
-## 🗑️ Delete Review
-
-**DELETE** `/api/products/{productId}/reviews/{reviewId}`
-
-### Headers
-
-```json
-{
-    "Authorization": "Bearer {token}",
-    "Content-Type": "application/json"
-}
-```
-
-### Business Rules
-
--   ✅ Only review owner can delete
--   ✅ Soft delete (keeps data for analytics)
--   ✅ Updates product rating statistics
-
-### Response Success (200)
-
-```json
-{
-    "success": true,
-    "message": "Review deleted successfully",
-    "data": null
-}
-```
-
----
-
-## 🔍 Get Review Details
-
-**GET** `/api/products/{productId}/reviews/{reviewId}`
-
-### Response Success (200)
-
-```json
-{
-    "success": true,
-    "message": "Review retrieved successfully",
-    "data": {
-        "id": 1,
-        "rating": 5,
-        "title": "Excellent coffee!",
-        "comment": "Great taste and aroma. Highly recommended!",
-        "images": ["reviews/review_1.jpg"],
-        "is_verified_purchase": true,
-        "helpful_count": 12,
-        "not_helpful_count": 1,
-        "helpfulness_ratio": 92.3,
-        "user_helpfulness": true,
-        "time_ago": "2 days ago",
-        "created_at": "2024-06-20T10:30:00.000000Z",
-        "user": {
-            "id": 1,
-            "name": "John",
+          "id": 1,
+          "rating": 5,
+          "title": "Excellent product!",
+          "comment": "Really love this coffee. Great taste and aroma.",
+          "images": [
+            "reviews/coffee-review-1.jpg",
+            "reviews/coffee-review-2.jpg"
+          ],
+          "is_verified_purchase": true,
+          "is_approved": true,
+          "helpful_count": 15,
+          "not_helpful_count": 2,
+          "reviewed_at": "2024-01-15T10:30:00.000000Z",
+          "created_at": "2024-01-15T10:30:00.000000Z",
+          "user": {
+            "id": 123,
+            "name": "john_doe",
+            "email": "john@example.com",
             "full_name": "John Doe"
+          },
+          "product": {
+            "id": 45,
+            "name": "Premium Arabica Coffee",
+            "slug": "premium-arabica-coffee",
+            "image": "products/coffee-arabica.jpg"
+          },
+          "order": {
+            "id": 789,
+            "order_number": "ORD-2024-001",
+            "status": "delivered"
+          }
         }
+      ],
+      "current_page": 1,
+      "last_page": 10,
+      "per_page": 15,
+      "total": 150,
+      "from": 1,
+      "to": 15
+    },
+    "statistics": {
+      "total_reviews": 450,
+      "approved_reviews": 420,
+      "pending_reviews": 30,
+      "average_rating": 4.3
     }
+  }
+}
+```
+
+**Error Response (500)**
+
+```json
+{
+  "success": false,
+  "message": "Failed to get reviews",
+  "error": "Database connection error"
 }
 ```
 
 ---
 
-## 🎯 Business Logic
+## 🔍 Usage Examples
 
-### **Review Eligibility**
+### Get All Reviews (Default)
 
--   ✅ Must have purchased the product
--   ✅ One review per product per user
--   ✅ Can review specific variants
--   ✅ Order must be completed
-
-### **Verification System**
-
--   ✅ Verified purchase badge
--   ✅ Links to specific order item
--   ✅ Prevents fake reviews
-
-### **Helpfulness System**
-
--   ✅ Users can vote helpful/not helpful
--   ✅ Cannot vote on own reviews
--   ✅ Can change vote or remove vote
--   ✅ Real-time count updates
-
-### **Image Management**
-
--   ✅ Max 5 images per review
--   ✅ 2MB per image limit
--   ✅ JPEG, PNG, JPG, GIF formats
--   ✅ Automatic storage management
-
-### **Rating Calculation**
-
--   ✅ Real-time average rating
--   ✅ Rating distribution statistics
--   ✅ Verified vs unverified breakdown
--   ✅ Product search ranking impact
-
----
-
-## 📊 Integration Points
-
-### **Product Model Integration**
-
-```php
-$product->average_rating        // 4.5
-$product->review_count         // 25
-$product->rating_distribution  // Array of 1-5 star counts
-$product->hasUserReviewed($userId)  // Boolean
-$product->canUserReview($userId)    // Boolean
+```bash
+curl -X GET "https://api.example.com/api/admin/reviews" \
+  -H "Authorization: Bearer {admin_token}" \
+  -H "Accept: application/json"
 ```
 
-### **Order Integration**
+### Get Pending Reviews Only
 
--   Links reviews to specific order items
--   Enables verified purchase badges
--   Prevents duplicate reviews
-
-### **User Experience**
-
--   Review prompts after delivery
--   Email notifications for helpful votes
--   Review management in user profile
-
----
-
-## 🔒 Security Features
-
--   ✅ Authentication required for actions
--   ✅ Authorization checks (own reviews only)
--   ✅ Input validation and sanitization
--   ✅ Image upload security
--   ✅ Rate limiting on review creation
--   ✅ Spam detection ready
-
----
-
-## � Complete Usage Examples
-
-### Full Review Creation Flow
-
-```javascript
-// Step 1: Get products user can review
-async function getReviewableProducts() {
-    const response = await fetch("/api/reviews/reviewable-products", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-        },
-    });
-
-    const data = await response.json();
-    return data.success ? data.data : [];
-}
-
-// Step 2: Create review with images
-async function createReview(productId, orderItemId, reviewData, imageFiles) {
-    const formData = new FormData();
-
-    // Required fields
-    formData.append("rating", reviewData.rating.toString());
-    formData.append("order_item_id", orderItemId.toString());
-
-    // Optional fields
-    if (reviewData.title) formData.append("title", reviewData.title);
-    if (reviewData.comment) formData.append("comment", reviewData.comment);
-
-    // Images
-    imageFiles.forEach((file, index) => {
-        formData.append("images[]", file);
-    });
-
-    const response = await fetch(`/api/products/${productId}/reviews`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            // Don't set Content-Type for FormData
-        },
-        body: formData,
-    });
-
-    return await response.json();
-}
-
-// Step 3: Complete usage example
-async function handleReviewSubmission() {
-    try {
-        // Get reviewable products
-        const reviewableProducts = await getReviewableProducts();
-
-        if (reviewableProducts.length === 0) {
-            console.log("No products to review");
-            return;
-        }
-
-        // Create review for first product
-        const product = reviewableProducts[0];
-        const reviewData = {
-            rating: 5,
-            title: "Excellent coffee!",
-            comment: "Great taste and aroma. Highly recommended!",
-        };
-
-        const imageFiles = []; // Array of File objects from input
-
-        const result = await createReview(
-            product.product.id,
-            product.order_item_id,
-            reviewData,
-            imageFiles
-        );
-
-        if (result.success) {
-            console.log("Review created successfully!", result.data);
-        } else {
-            console.error("Failed to create review:", result.message);
-        }
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
+```bash
+curl -X GET "https://api.example.com/api/admin/reviews?status=pending" \
+  -H "Authorization: Bearer {admin_token}" \
+  -H "Accept: application/json"
 ```
+
+### Get Reviews for Specific Product
+
+```bash
+curl -X GET "https://api.example.com/api/admin/reviews?product_id=45" \
+  -H "Authorization: Bearer {admin_token}" \
+  -H "Accept: application/json"
+```
+
+### Search Reviews
+
+```bash
+curl -X GET "https://api.example.com/api/admin/reviews?search=excellent&rating=5" \
+  -H "Authorization: Bearer {admin_token}" \
+  -H "Accept: application/json"
+```
+
+### Get Reviews with Date Range
+
+```bash
+curl -X GET "https://api.example.com/api/admin/reviews?date_from=2024-01-01&date_to=2024-01-31" \
+  -H "Authorization: Bearer {admin_token}" \
+  -H "Accept: application/json"
+```
+
+---
+
+## 📊 Response Data Structure
+
+### Review Object
+
+| Field                  | Type     | Description                  |
+| ---------------------- | -------- | ---------------------------- |
+| `id`                   | integer  | Review ID                    |
+| `rating`               | integer  | Rating (1-5 stars)           |
+| `title`                | string   | Review title                 |
+| `comment`              | string   | Review comment               |
+| `images`               | array    | Array of image paths         |
+| `is_verified_purchase` | boolean  | Whether purchase is verified |
+| `is_approved`          | boolean  | Whether review is approved   |
+| `helpful_count`        | integer  | Number of helpful votes      |
+| `not_helpful_count`    | integer  | Number of not helpful votes  |
+| `reviewed_at`          | datetime | When review was created      |
+| `created_at`           | datetime | Record creation time         |
+
+### User Object
+
+| Field       | Type    | Description      |
+| ----------- | ------- | ---------------- |
+| `id`        | integer | User ID          |
+| `name`      | string  | Username         |
+| `email`     | string  | User email       |
+| `full_name` | string  | User's full name |
+
+### Product Object
+
+| Field   | Type    | Description        |
+| ------- | ------- | ------------------ |
+| `id`    | integer | Product ID         |
+| `name`  | string  | Product name       |
+| `slug`  | string  | Product slug       |
+| `image` | string  | Product image path |
+
+### Order Object
+
+| Field          | Type    | Description  |
+| -------------- | ------- | ------------ |
+| `id`           | integer | Order ID     |
+| `order_number` | string  | Order number |
+| `status`       | string  | Order status |
+
+### Statistics Object
+
+| Field              | Type    | Description                       |
+| ------------------ | ------- | --------------------------------- |
+| `total_reviews`    | integer | Total number of reviews           |
+| `approved_reviews` | integer | Number of approved reviews        |
+| `pending_reviews`  | integer | Number of pending reviews         |
+| `average_rating`   | float   | Average rating across all reviews |
+
+---
+
+## 🔒 Security & Permissions
+
+- **Authentication Required**: All endpoints require valid admin authentication token
+- **Admin Role Required**: Only users with admin role can access these endpoints
+- **Rate Limiting**: Standard API rate limits apply
+- **Data Privacy**: User email addresses are included for admin management purposes
+
+---
+
+## 📝 Notes
+
+- Reviews are paginated with a maximum of 50 items per page
+- Search functionality covers review title, comment, user name/email, and product name
+- Date filters use the review creation date (`created_at`)
+- Sorting by "helpful" orders by `helpful_count` in descending order
+- Images are returned as relative paths from the storage directory
+- Verified purchases are automatically marked when review is linked to a completed order
 
 ---
 
 ## 🔗 Related APIs
 
--   [Orders API](order_management.md) - For order status and tracking
--   [Products API](phase1-product-browse-apis.md) - For product information
--   [Authentication API](authentication.md) - For user login/logout
-
----
-
-## 📊 Response Status Codes
-
-| Code | Description          |
-| ---- | -------------------- |
-| 200  | Success              |
-| 201  | Review created       |
-| 400  | Business logic error |
-| 401  | Unauthorized         |
-| 404  | Not found            |
-| 422  | Validation error     |
-| 500  | Server error         |
-
----
-
-## �📈 Analytics Ready
-
--   Review conversion rates
--   Average rating trends
--   Most helpful reviewers
--   Product improvement insights
--   Customer satisfaction metrics
+- [Review Statistics API](statistics.md#6-review-statistics) - Get detailed review statistics
+- [Product Management API](product_management.md) - Manage products that have reviews
+- [User Management API](user_management.md) - Manage users who create reviews

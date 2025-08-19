@@ -14,6 +14,10 @@ export interface IUser {
     updated_at?: string;
     avatar?: string | null;
     password?: string;
+    // Google OAuth fields
+    google_id?: string | null;
+    provider?: string | null;
+    provider_verified_at?: string | null;
 }
 
 export interface UserLogin {

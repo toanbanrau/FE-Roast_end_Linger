@@ -114,3 +114,17 @@ export const resendVerification = async () => {
   const response = await clientAxios.post("/auth/resend-verification");
   return response.data;
 };
+
+// ================= GOOGLE OAUTH =================
+
+// Google OAuth - Get auth URL
+export const getGoogleAuthUrl = async () => {
+  const response = await clientAxios.get("/auth/google");
+  return response.data;
+};
+
+// Google OAuth - Handle callback (if needed for manual handling)
+export const handleGoogleCallback = async (code: string) => {
+  const response = await clientAxios.get(`/auth/google/callback?code=${code}`);
+  return response.data;
+};

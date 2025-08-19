@@ -38,8 +38,11 @@ export const createAdminProduct = async (formData: FormData): Promise<IProductCr
 
 // Cập nhật sản phẩm (multipart/form-data)
 export const updateAdminProduct = async (id: number, formData: FormData): Promise<IProductCreate> => {
-  // Backend yêu cầu sử dụng POST thay vì PUT cho multipart/form-data
-  const res = await adminAxios.post(`/products/${id}/with-variants`, formData);
+  // Sử dụng method override để Laravel treat POST như PUT
+  formData.append('_method', 'PUT');
+  
+  // Sử dụng POST với _method override thay vì PUT trực tiếp
+  const res = await adminAxios.post(`/products/${id}`, formData);
   return res.data.data;
 };
 
@@ -102,4 +105,19 @@ export const getProductById = async (id: number): Promise<IProduct> => {
 export const getProductBySlug = async (slug: string): Promise<IProduct> => {
   const response = await clientAxios.get(`/products/slug/${slug}`);
   return response.data.data;
+};
+
+// Lấy sản phẩm nổi bật
+export const getFeaturedProducts = async (limit?: number): Promise<{
+  data: IProduct[];
+  meta: {
+    total: number;
+    limit: number;
+    total_featured: number;
+    has_more: boolean;
+  };
+}> => {
+  const url = limit ? `/products/featured?limit=${limit}` : "/products/featured";
+  const response = await clientAxios.get(url);
+  return response.data;
 };

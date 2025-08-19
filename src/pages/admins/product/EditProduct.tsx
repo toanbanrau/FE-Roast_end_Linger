@@ -1,3 +1,15 @@
+/**
+ * EditProduct Component
+ *
+ * Implements product update API according to docs/product_edit_api_guide.md
+ *
+ * New Image Management Format (API v2.0):
+ * - images.new[] = { image_file: File, alt_text: "text", is_primary: true }
+ * - images.keep[] = [1, 2, 3] (array of image IDs to keep)
+ * - images.delete[] = [4, 5] (array of image IDs to delete)
+ * - images.update[] = { id: 6, alt_text: "new text", sort_order: 2 }
+ */
+
 import {
   Form,
   Input,
@@ -11,19 +23,20 @@ import {
   Col,
   Upload,
   Card,
+  Modal,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   UploadOutlined,
   PlusOutlined,
   MinusCircleOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
 import {
   getAdminProductDetail,
-  getProductById,
   updateAdminProduct,
 } from "../../../services/productService";
 import { getAllCategories } from "../../../services/categoryService";
@@ -50,6 +63,15 @@ const EditProduct = () => {
   const [selectedAttributeTypes, setSelectedAttributeTypes] = useState<
     string[]
   >([]);
+
+  // Track deleted image IDs
+  const deletedImageIdsRef = useRef<number[]>([]);
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
+
+  // Track which images are being replaced (for album images)
+  const [replacedImageIds, setReplacedImageIds] = useState<Set<number>>(
+    new Set()
+  );
 
   const hasVariants = Form.useWatch("has_variants", form);
 
@@ -78,7 +100,53 @@ const EditProduct = () => {
   });
 
   useEffect(() => {
+    // Handle image removal via global click listener
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Check if this is a Form.List remove button
+      if (target.textContent?.includes('Xóa')) {
+
+        try {
+          const card = target.closest('.ant-card');
+          if (card) {
+            const currentValues = form.getFieldsValue();
+            const albumImages = currentValues.album_images || [];
+            const allCards = Array.from(document.querySelectorAll('.ant-card'));
+            const cardIndex = allCards.indexOf(card);
+
+            if (cardIndex >= 0 && albumImages[cardIndex]) {
+              const imageData = albumImages[cardIndex];
+
+              if (imageData?.image?.[0]?.uid && !isNaN(Number(imageData.image[0].uid))) {
+                const imageId = Number(imageData.image[0].uid);
+
+                if (!deletedImageIdsRef.current.includes(imageId)) {
+                  deletedImageIdsRef.current.push(imageId);
+                  setDeletedImageIds([...deletedImageIdsRef.current]);
+                  message.success("Ảnh phụ sẽ được xóa khi lưu sản phẩm");
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error in remove handler:", error);
+        }
+
+
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, []);
+
+  useEffect(() => {
     if (product) {
+      // Reset tracking arrays when product changes
+      deletedImageIdsRef.current = [];
+      setReplacedImageIds(new Set());
+
       // Chuẩn bị ảnh chính để hiển thị
       const primaryImageFile = product.primary_image
         ? [
@@ -95,7 +163,7 @@ const EditProduct = () => {
       const albumImages =
         product.images
           ?.filter((img) => !img.is_primary)
-          .map((img, index) => ({
+          .map((img) => ({
             image: [
               {
                 uid: img.id.toString(),
@@ -110,7 +178,6 @@ const EditProduct = () => {
 
       form.setFieldsValue({
         ...product,
-        // ✅ Extract IDs từ nested objects
         category_id: product.category?.id,
         brand_id: product.brand?.id,
         origin_id: product.origin?.id,
@@ -126,18 +193,18 @@ const EditProduct = () => {
             ? (product as any).variants.map((variant: any) => ({
                 ...variant,
                 // Map attributes để có thể edit
-                ...variant.attributes?.reduce((acc: any, attr: any) => {
+                ...(variant.attributes || []).reduce((acc: any, attr: any) => {
                   acc[attr.attribute_name] = attr.id;
                   return acc;
                 }, {}),
-                // Xử lý ảnh variant - chỉ sử dụng image_url
+                // Xử lý ảnh variant
                 image: variant.image
                   ? [
                       {
                         uid: variant.id.toString(),
                         name: `variant-${variant.id}`,
                         status: "done" as const,
-                        url: variant.image, // ← Đổi từ variant.image_url sang variant.image
+                        url: variant.image,
                       },
                     ]
                   : [],
@@ -153,7 +220,7 @@ const EditProduct = () => {
       ) {
         const attributeNames = new Set<string>();
         (product as any).variants.forEach((variant: any) => {
-          variant.attributes?.forEach((attr: any) => {
+          (variant.attributes || []).forEach((attr: any) => {
             attributeNames.add(attr.attribute_name);
           });
         });
@@ -161,6 +228,23 @@ const EditProduct = () => {
       }
     }
   }, [product, form]);
+
+  // Handle image removal
+  const handleImageRemove = (
+    file: UploadFile,
+    imageType: "primary" | "album" | "variant"
+  ) => {
+    // Check if this is an existing image (numeric uid)
+    if (file.uid && !isNaN(Number(file.uid))) {
+      const imageId = Number(file.uid);
+
+      // Add to deleted list if not already there
+      if (!deletedImageIdsRef.current.includes(imageId)) {
+        deletedImageIdsRef.current.push(imageId);
+        message.success(`Ảnh ${imageType === "primary" ? "chính" : "phụ"} sẽ được xóa khi lưu sản phẩm`);
+      }
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: (formData: FormData) =>
@@ -171,39 +255,67 @@ const EditProduct = () => {
       navigate("/admin/product");
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", id] });
+      // Reset tracking arrays
+      deletedImageIdsRef.current = [];
+      setReplacedImageIds(new Set());
     },
     onError: (err: any) => {
       console.error("=== UPDATE ERROR ===", err);
-      const errorMessage =
-        err?.response?.data?.message || err.message || "Có lỗi xảy ra";
+      let errorMessage = "Có lỗi xảy ra";
+
+      if (err?.response?.data?.errors) {
+        // Validation errors (422)
+        const errors = err.response.data.errors;
+        const errorList = Object.entries(errors).map(([field, messages]: [string, any]) =>
+          `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
+        );
+        errorMessage = `Validation errors:\n${errorList.join('\n')}`;
+        console.error("Validation errors:", errors);
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
       message.error("Lỗi cập nhật: " + errorMessage);
     },
   });
 
-  const onFinish = async (values: unknown) => {
-    const v = values as Record<string, unknown>;
+  const onFinish = async (values: any) => {
+    /*
+    NEW API FORMAT (theo docs/product_edit_api_guide.md v2.0):
+    - images.new[] = { image_file: File, alt_text: "text", is_primary: true }
+    - images.keep[] = [1, 2, 3] (array of image IDs to keep)
+    - images.delete[] = [4, 5] (array of image IDs to delete)
+    - images.update[] = { id: 6, alt_text: "new text", sort_order: 2 }
+    */
 
-    // Validation trước khi submit
-    if (!v.product_name) {
+    // Validation
+    if (!values.product_name) {
       message.error("Tên sản phẩm là bắt buộc!");
       return;
     }
-    if (!v.category_id) {
+    if (!values.category_id) {
       message.error("Danh mục là bắt buộc!");
       return;
     }
-    if (v.has_variants && (!v.variants || (v.variants as any[]).length === 0)) {
+    if (
+      values.has_variants &&
+      (!values.variants || values.variants.length === 0)
+    ) {
       message.error("Cần có ít nhất 1 variant khi bật has_variants!");
       return;
     }
 
-    // Validation cho variants khi edit
-    if (v.has_variants && v.variants && Array.isArray(v.variants)) {
-      const variants = v.variants as any[];
-      for (let i = 0; i < variants.length; i++) {
-        const variant = variants[i];
+    // Validation cho variants
+    if (
+      values.has_variants &&
+      values.variants &&
+      Array.isArray(values.variants)
+    ) {
+      for (let i = 0; i < values.variants.length; i++) {
+        const variant = values.variants[i];
 
-        // Kiểm tra các field bắt buộc
         if (!variant.variant_name?.trim()) {
           message.error(`Variant ${i + 1}: Tên variant là bắt buộc!`);
           return;
@@ -217,7 +329,6 @@ const EditProduct = () => {
           return;
         }
 
-        // Kiểm tra attribute values
         const hasAllAttributes = selectedAttributeTypes.every(
           (attrName) => variant[attrName] && variant[attrName] !== ""
         );
@@ -228,53 +339,50 @@ const EditProduct = () => {
       }
     }
 
-    console.log("=== FORM VALUES ===", v); // Debug form values
-
     const formData = new FormData();
 
-    // Thêm các trường bắt buộc - KHÔNG bỏ qua nếu undefined
-    formData.append("product_name", String(v.product_name || ""));
-    formData.append("description", String(v.description || ""));
-    formData.append("short_description", String(v.short_description || ""));
-    formData.append("category_id", String(v.category_id || ""));
-    formData.append("brand_id", String(v.brand_id || ""));
-    formData.append("origin_id", String(v.origin_id || ""));
-    formData.append("coffee_type", String(v.coffee_type || ""));
-    formData.append("roast_level", String(v.roast_level || ""));
-    formData.append("flavor_profile", String(v.flavor_profile || ""));
-    formData.append("strength_score", String(v.strength_score || ""));
-    formData.append("meta_title", String(v.meta_title || ""));
-    formData.append("meta_description", String(v.meta_description || ""));
-    formData.append("has_variants", v.has_variants ? "1" : "0");
-    formData.append("status", String(v.status || "active"));
-    formData.append("is_featured", v.is_featured ? "1" : "0");
+    // 1. THÔNG TIN SẢN PHẨM CƠ BẢN
+    formData.append("product_name", String(values.product_name || ""));
+    formData.append("description", String(values.description || ""));
+    formData.append(
+      "short_description",
+      String(values.short_description || "")
+    );
+    formData.append("category_id", String(values.category_id || ""));
+    formData.append("brand_id", String(values.brand_id || ""));
+    formData.append("origin_id", String(values.origin_id || ""));
+    formData.append("coffee_type", String(values.coffee_type || ""));
+    formData.append("roast_level", String(values.roast_level || ""));
+    formData.append("flavor_profile", String(values.flavor_profile || ""));
+    formData.append("strength_score", String(values.strength_score || ""));
+    formData.append("meta_title", String(values.meta_title || ""));
+    formData.append("meta_description", String(values.meta_description || ""));
+    formData.append("has_variants", values.has_variants ? "1" : "0");
+    formData.append("status", String(values.status || "active"));
+    formData.append("is_featured", values.is_featured ? "1" : "0");
 
-    // Xử lý base_price và stock_quantity cho sản phẩm không có variants
-    if (!v.has_variants) {
-      formData.append("base_price", String(v.base_price || "0"));
-      formData.append("stock_quantity", String(v.stock_quantity || "0"));
+    if (!values.has_variants) {
+      formData.append("base_price", String(values.base_price || "0"));
+      formData.append("stock_quantity", String(values.stock_quantity || "0"));
     }
 
-    // ===== XỬ LÝ VARIANTS =====
+    // 2. XỬ LÝ VARIANTS
     if (
-      v.has_variants &&
-      v.variants &&
-      Array.isArray(v.variants) &&
-      v.variants.length > 0
+      values.has_variants &&
+      values.variants &&
+      Array.isArray(values.variants) &&
+      values.variants.length > 0
     ) {
       console.log("=== PROCESSING VARIANTS FOR EDIT ===");
 
-      (v.variants as any[]).forEach((variant, idx) => {
+      values.variants.forEach((variant: any, idx: number) => {
         console.log(`Variant ${idx}:`, {
           id: variant.id,
           variant_name: variant.variant_name,
           sku_code: variant.sku_code,
-          hasId: !!variant.id,
           action: variant.id ? "UPDATE" : "CREATE",
         });
 
-        // ⭐ QUAN TRỌNG: Gửi ID để backend biết UPDATE hay CREATE
-        // Theo API docs: Nếu có ID → UPDATE existing, không có ID → CREATE new
         if (variant.id) {
           formData.append(`variants[${idx}][id]`, String(variant.id));
         }
@@ -297,7 +405,7 @@ const EditProduct = () => {
         );
         formData.append(`variants[${idx}][status]`, variant.status ? "1" : "0");
 
-        // Attribute values - cần gửi dưới dạng array theo API format
+        // Attribute values
         const attributeValues: string[] = [];
         selectedAttributeTypes.forEach((attrName) => {
           const attrValue = variant[attrName];
@@ -306,7 +414,6 @@ const EditProduct = () => {
           }
         });
 
-        // Gửi attribute_values dưới dạng array
         attributeValues.forEach((value, attrIdx) => {
           formData.append(
             `variants[${idx}][attribute_values][${attrIdx}]`,
@@ -316,97 +423,208 @@ const EditProduct = () => {
       });
     }
 
-    // ===== XỬ LÝ ẢNH =====
-    const processedImages: {
-      image_file: File;
-      alt_text: string;
-      is_primary: boolean;
-    }[] = [];
+    // 3. XỬ LÝ ẢNH THEO FORMAT API MỚI (docs/product_edit_api_guide.md v2.0)
 
-    let hasPrimaryImage = false;
+    // Prepare images object for new API format
+    const imagesData: any = {};
 
-    // Thêm ảnh chính nếu có file mới
-    if (
-      v.primary_image &&
-      Array.isArray(v.primary_image) &&
-      v.primary_image.length > 0 &&
-      (v.primary_image[0] as UploadFile).originFileObj
-    ) {
-      const primaryImageFile = (v.primary_image[0] as UploadFile)
-        .originFileObj as File;
-      const primaryAltText = (v.primary_alt_text as string) || "Ảnh chính";
-
-      processedImages.push({
-        image_file: primaryImageFile,
-        alt_text: primaryAltText,
-        is_primary: true,
-      });
-      hasPrimaryImage = true;
+    // 3.1. Images to DELETE
+    const finalDeletedIds = deletedImageIds.length > 0 ? deletedImageIds : deletedImageIdsRef.current;
+    if (finalDeletedIds.length > 0) {
+      imagesData.delete = finalDeletedIds;
     }
 
-    // Thêm album ảnh phụ nếu có file mới
-    if (v.album_images && Array.isArray(v.album_images)) {
-      (v.album_images as unknown[]).forEach((imgRaw, index) => {
-        const img = imgRaw as {
-          image: UploadFile[];
-          alt_text?: string;
-        };
+    // Check if uploading new primary image (needed for update logic)
+    const hasNewPrimaryUpload = !!(
+      values.primary_image &&
+      Array.isArray(values.primary_image) &&
+      values.primary_image.length > 0 &&
+      values.primary_image[0].originFileObj
+    );
 
+    // 3.2. Images to KEEP (existing images not being deleted)
+    const imagesToKeep: number[] = [];
+    const imagesToUpdate: any[] = [];
+
+    // BACKUP: Always check for deleted images by comparing form vs original
+    if (product?.images) {
+      const currentAlbumImages = values.album_images || [];
+      const originalImageIds = product.images.filter(img => !img.is_primary).map(img => img.id);
+      const currentImageIds = currentAlbumImages
+        .filter((albumImg: any) => albumImg.image?.[0]?.uid && !isNaN(Number(albumImg.image[0].uid)))
+        .map((albumImg: any) => Number(albumImg.image[0].uid));
+
+      const deletedIds = originalImageIds.filter(id => !currentImageIds.includes(id));
+
+      if (deletedIds.length > 0) {
+        imagesData.delete = deletedIds; // Use detected deleted IDs
+      } else if (finalDeletedIds.length > 0) {
+        // finalDeletedIds already set in imagesData.delete above
+      }
+    }
+
+    if (product?.images) {
+      // Use the actual deleted IDs (either from tracking or backup detection)
+      const actualDeletedIds = imagesData.delete || [];
+
+      product.images.forEach((img) => {
+        // Skip deleted images
+        if (!actualDeletedIds.includes(img.id)) {
+
+          // Check if this is old primary image and we're uploading new primary
+          if (img.is_primary && hasNewPrimaryUpload) {
+            // DELETE old primary image completely
+            if (!imagesData.delete) imagesData.delete = [];
+            if (!imagesData.delete.includes(img.id)) {
+              imagesData.delete.push(img.id);
+            }
+            return; // Skip adding to keep/update lists
+          }
+
+          imagesToKeep.push(img.id);
+
+          // Check if we need to update metadata (alt_text, sort_order)
+          let needsUpdate = false;
+          let newAltText = img.alt_text;
+          let newSortOrder = img.sort_order;
+
+          if (img.is_primary) {
+            // Primary image updates (only if not uploading new primary)
+            if (values.primary_alt_text && values.primary_alt_text !== img.alt_text) {
+              needsUpdate = true;
+              newAltText = values.primary_alt_text;
+            }
+            if (values.primary_sort_order && values.primary_sort_order !== img.sort_order) {
+              needsUpdate = true;
+              newSortOrder = values.primary_sort_order;
+            }
+          } else {
+            // Album image updates - check form values
+            if (values.album_images && Array.isArray(values.album_images)) {
+              const albumImage = values.album_images.find((albumImg: any) =>
+                albumImg.image &&
+                albumImg.image[0] &&
+                albumImg.image[0].uid === img.id.toString()
+              );
+
+              if (albumImage) {
+                if (albumImage.alt_text && albumImage.alt_text !== img.alt_text) {
+                  needsUpdate = true;
+                  newAltText = albumImage.alt_text;
+                }
+                if (albumImage.sort_order && albumImage.sort_order !== img.sort_order) {
+                  needsUpdate = true;
+                  newSortOrder = albumImage.sort_order;
+                }
+              }
+            }
+          }
+
+          if (needsUpdate) {
+            const updateData: any = {
+              id: img.id,
+              alt_text: newAltText,
+              sort_order: newSortOrder
+            };
+
+
+
+            imagesToUpdate.push(updateData);
+          }
+        }
+      });
+    }
+
+    if (imagesToKeep.length > 0) {
+      imagesData.keep = imagesToKeep;
+    }
+
+    if (imagesToUpdate.length > 0) {
+      imagesData.update = imagesToUpdate;
+    }
+
+    // 3.3. NEW images to upload
+    const newImages: any[] = [];
+
+    // New primary image
+    if (hasNewPrimaryUpload) {
+      const primaryImageFile = values.primary_image[0].originFileObj;
+      const primaryAltText = values.primary_alt_text || "Ảnh chính";
+
+      newImages.push({
+        image_file: primaryImageFile,
+        alt_text: primaryAltText,
+        is_primary: true
+      });
+    }
+
+    // New album images
+    if (values.album_images && Array.isArray(values.album_images)) {
+      values.album_images.forEach((img: any, index: number) => {
         if (
           img.image &&
           Array.isArray(img.image) &&
           img.image.length > 0 &&
           img.image[0].originFileObj
         ) {
-          const albumImageFile = img.image[0].originFileObj as File;
+          const albumImageFile = img.image[0].originFileObj;
           const albumAltText = img.alt_text || `Ảnh phụ ${index + 1}`;
 
-          processedImages.push({
+          newImages.push({
             image_file: albumImageFile,
             alt_text: albumAltText,
-            is_primary: false,
+            is_primary: false
           });
         }
       });
     }
 
-    // Thêm ảnh vào FormData
-    processedImages.forEach((img, idx) => {
-      formData.append(`images[${idx}][image_file]`, img.image_file);
-      formData.append(`images[${idx}][alt_text]`, img.alt_text);
-      formData.append(`images[${idx}][is_primary]`, img.is_primary ? "1" : "0");
-    });
-
-    // Nếu không có ảnh mới nào, thêm flag để backend giữ ảnh cũ
-    if (processedImages.length === 0) {
-      formData.append("keep_existing_images", "1");
+    if (newImages.length > 0) {
+      imagesData.new = newImages;
     }
 
-    // Thêm flag để backend biết đây là edit
-    formData.append("is_edit", "1");
+    // 4. ADD IMAGES DATA TO FORMDATA (New API Format)
+    if (Object.keys(imagesData).length > 0) {
+      // Convert images object to FormData format
+      if (imagesData.delete && imagesData.delete.length > 0) {
+        imagesData.delete.forEach((imageId: number, index: number) => {
+          formData.append(`images[delete][${index}]`, String(imageId));
+        });
+      }
 
-    // Debug FormData
-    console.log("=== FORMDATA ENTRIES ===");
-    for (const pair of formData.entries()) {
-      console.log(pair[0] + ":", pair[1]);
+      if (imagesData.keep && imagesData.keep.length > 0) {
+        imagesData.keep.forEach((imageId: number, index: number) => {
+          formData.append(`images[keep][${index}]`, String(imageId));
+        });
+      }
+
+      if (imagesData.update) {
+        imagesData.update.forEach((img: any, index: number) => {
+          formData.append(`images[update][${index}][id]`, String(img.id));
+          formData.append(`images[update][${index}][alt_text]`, img.alt_text || "");
+          if (img.sort_order) {
+            formData.append(`images[update][${index}][sort_order]`, String(img.sort_order));
+          }
+          if (img.hasOwnProperty('is_primary')) {
+            formData.append(`images[update][${index}][is_primary]`, img.is_primary ? "1" : "0");
+          }
+        });
+      }
+
+      if (imagesData.new) {
+        imagesData.new.forEach((img: any, index: number) => {
+          formData.append(`images[new][${index}][image_file]`, img.image_file);
+          formData.append(`images[new][${index}][alt_text]`, img.alt_text || "");
+          formData.append(`images[new][${index}][is_primary]`, img.is_primary ? "1" : "0");
+        });
+      }
     }
 
-    // Thêm debug log để kiểm tra
-    console.log("=== SENDING REQUEST TO API ===");
-    console.log("Endpoint:", `/products/${id}/with-variants`);
-    console.log("Method:", "POST"); // Backend yêu cầu POST thay vì PUT
-    console.log("FormData size:", [...formData.entries()].length, "entries");
-
-    // Thêm timeout để đảm bảo console log hiển thị trước khi gửi request
-    setTimeout(() => {
-      mutation.mutate(formData);
-    }, 100);
+    // Submit
+    mutation.mutate(formData);
   };
 
-  // Thêm hàm normFile
-  const normFile = (
-    e: { file: UploadFile; fileList: UploadFile[] } | UploadFile[]
-  ) => {
+  const normFile = (e: any) => {
     if (Array.isArray(e)) {
       return e;
     }
@@ -496,7 +714,6 @@ const EditProduct = () => {
                   />
                 </Form.Item>
               )}
-
               {!hasVariants && (
                 <Form.Item
                   name="stock_quantity"
@@ -516,6 +733,7 @@ const EditProduct = () => {
                 </Form.Item>
               )}
             </Card>
+
             {/* Hình ảnh sản phẩm */}
             <Card title="Hình ảnh sản phẩm" className="mb-4">
               {/* Ảnh chính */}
@@ -530,6 +748,19 @@ const EditProduct = () => {
                   maxCount={1}
                   accept="image/*"
                   beforeUpload={() => false}
+                  onRemove={(file) => {
+                    // Handle existing image deletion
+                    if (file.uid && !isNaN(Number(file.uid))) {
+                      const imageId = Number(file.uid);
+
+                      if (!deletedImageIdsRef.current.includes(imageId)) {
+                        deletedImageIdsRef.current.push(imageId);
+                        message.success("Ảnh chính sẽ được xóa khi lưu sản phẩm");
+                      }
+                    }
+
+                    return false; // Prevent Antd from removing the field
+                  }}
                   showUploadList={{
                     showPreviewIcon: true,
                     showRemoveIcon: true,
@@ -551,6 +782,7 @@ const EditProduct = () => {
               >
                 <InputNumber min={1} className="w-full" />
               </Form.Item>
+
               {/* Album ảnh phụ */}
               <Form.List name="album_images">
                 {(fields, { add, remove }) => (
@@ -571,6 +803,19 @@ const EditProduct = () => {
                                 maxCount={1}
                                 accept="image/*"
                                 beforeUpload={() => false}
+                                onRemove={(file) => {
+                                  // Handle existing image deletion
+                                  if (file.uid && !isNaN(Number(file.uid))) {
+                                    const imageId = Number(file.uid);
+
+                                    if (!deletedImageIdsRef.current.includes(imageId)) {
+                                      deletedImageIdsRef.current.push(imageId);
+                                      message.success("Ảnh phụ sẽ được xóa khi lưu sản phẩm");
+                                    }
+                                  }
+
+                                  return false; // Prevent Antd from removing the field
+                                }}
                                 showUploadList={{
                                   showPreviewIcon: true,
                                   showRemoveIcon: true,
@@ -594,7 +839,7 @@ const EditProduct = () => {
                               <Input placeholder="Mô tả ảnh phụ" />
                             </Form.Item>
                           </Col>
-                          <Col span={4}>
+                          <Col span={6}>
                             <Form.Item
                               {...restField}
                               name={[name, "sort_order"]}
@@ -604,11 +849,12 @@ const EditProduct = () => {
                               <InputNumber min={2} className="w-full" />
                             </Form.Item>
                           </Col>
-                          <Col span={4}>
+                          <Col span={2}>
                             <Button
                               danger
                               type="text"
                               onClick={() => remove(name)}
+                              style={{ marginTop: 30 }}
                             >
                               Xóa
                             </Button>
@@ -630,24 +876,43 @@ const EditProduct = () => {
                 )}
               </Form.List>
             </Card>
+
             {/* Biến thể sản phẩm */}
             <Card
               title="Biến thể sản phẩm"
               className="mb-4"
               extra={
-                <Form.Item name="has_variants" valuePropName="checked" noStyle>
-                  <Switch
-                    checkedChildren="Có biến thể"
-                    unCheckedChildren="Không biến thể"
-                  />
-                </Form.Item>
+                <div className="flex items-center gap-4">
+                  {hasVariants && (
+                    <div className="text-sm text-gray-500">
+                      {form.getFieldValue('variants')?.length || 0} variants
+                      {form.getFieldValue('variants')?.length > 0 && (
+                        <span className="ml-2">
+                          (<span className="text-green-600">
+                            {form.getFieldValue('variants')?.filter((v: any) => v?.status !== false)?.length || 0} hoạt động
+                          </span>)
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <Form.Item name="has_variants" valuePropName="checked" noStyle>
+                    <Switch
+                      checkedChildren="Có biến thể"
+                      unCheckedChildren="Không biến thể"
+                    />
+                  </Form.Item>
+                </div>
               }
             >
               {hasVariants && (
                 <Form.List name="variants">
                   {(fields, { add, remove }) => (
                     <>
-                      {fields.map(({ key, name, ...restField }) => (
+                      {fields.map(({ key, name, ...restField }) => {
+                        const currentVariant = form.getFieldValue(['variants', name]);
+                        const isExistingVariant = currentVariant?.id;
+
+                        return (
                         <Card key={key} className="mb-4" size="small">
                           <Row gutter={16}>
                             <Col span={12}>
@@ -683,12 +948,15 @@ const EditProduct = () => {
 
                             {/* Attribute fields */}
                             {selectedAttributeTypes.map((attrName: string) => {
-                              const attrGroup = (
-                                attributeGroups as any
-                              )?.attributes?.find(
+                              const attrGroups = attributeGroups as any;
+                              const attributes = attrGroups?.attributes;
+                              const attrGroup = attributes?.find(
                                 (g: any) => g.attribute_name === attrName
                               );
-                              return attrGroup?.values ? (
+
+                              if (!attrGroup || !attrGroup.values) return null;
+
+                              return (
                                 <Col span={12} key={attrName}>
                                   <Form.Item
                                     {...restField}
@@ -710,7 +978,7 @@ const EditProduct = () => {
                                     </Select>
                                   </Form.Item>
                                 </Col>
-                              ) : null;
+                              );
                             })}
 
                             <Col span={12}>
@@ -770,6 +1038,10 @@ const EditProduct = () => {
                                   accept="image/*"
                                   beforeUpload={() => false}
                                   maxCount={1}
+                                  onRemove={(file) => {
+                                    handleImageRemove(file, "variant");
+                                    return false; // Prevent Antd from removing the field
+                                  }}
                                   showUploadList={{
                                     showPreviewIcon: true,
                                     showRemoveIcon: true,
@@ -785,21 +1057,79 @@ const EditProduct = () => {
                               </Form.Item>
                             </Col>
                           </Row>
+
+                          {/* Status và Actions Row */}
+                          <Row gutter={16} className="mt-4">
+                            <Col span={12}>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "status"]}
+                                label="Trạng thái variant"
+                                valuePropName="checked"
+                                tooltip="Bật/tắt variant này. Variant bị tắt sẽ không hiển thị trên website"
+                              >
+                                <Switch
+                                  checkedChildren="Hoạt động"
+                                  unCheckedChildren="Tạm dừng"
+                                  defaultChecked={true}
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                              <div className="text-right pt-6">
+                                {isExistingVariant && (
+                                  <div className="text-xs text-gray-500 mb-2">
+                                    ID: {currentVariant.id}
+                                  </div>
+                                )}
+                                <div className="text-xs text-gray-500">
+                                  {isExistingVariant ? 'Variant hiện có' : 'Variant mới'}
+                                </div>
+                              </div>
+                            </Col>
+                          </Row>
+
                           <Button
                             type="text"
                             danger
-                            onClick={() => remove(name)}
+                            onClick={() => {
+                              // Get current form values to find the image ID
+                              const currentValues = form.getFieldsValue();
+                              const albumImages = currentValues.album_images || [];
+                              const imageToRemove = albumImages[name];
+
+                              // If this is an existing image, add to delete list
+                              if (imageToRemove?.image?.[0]?.uid && !isNaN(Number(imageToRemove.image[0].uid))) {
+                                const imageId = Number(imageToRemove.image[0].uid);
+
+                                if (!deletedImageIdsRef.current.includes(imageId)) {
+                                  deletedImageIdsRef.current.push(imageId);
+                                  setDeletedImageIds([...deletedImageIdsRef.current]);
+                                  message.success("Ảnh phụ sẽ được xóa khi lưu sản phẩm");
+                                }
+                              }
+
+                              // Remove from form
+                              remove(name);
+                            }}
                             icon={<MinusCircleOutlined />}
                             className="absolute top-2 right-2"
                           >
                             Xóa
                           </Button>
                         </Card>
-                      ))}
+                        );
+                      })}
                       <Form.Item>
                         <Button
                           type="dashed"
-                          onClick={() => add()}
+                          onClick={() => {
+                            add({
+                              status: true, // Default status = active
+                              stock_quantity: 0,
+                              price: 0,
+                            });
+                          }}
                           block
                           icon={<PlusOutlined />}
                         >
@@ -943,15 +1273,23 @@ const EditProduct = () => {
               </Form.Item>
             </Card>
 
+            {/* Hidden field to track deleted images */}
+            <Form.Item name="deleted_image_ids" style={{ display: 'none' }}>
+              <input type="hidden" value={JSON.stringify(deletedImageIds)} />
+            </Form.Item>
+
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={mutation.isPending}
-                block
-              >
-                Sửa Sản Phẩm
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={mutation.isPending}
+                  block
+                >
+                  Sửa Sản Phẩm
+                </Button>
+
+              </div>
             </Form.Item>
           </Col>
         </Row>

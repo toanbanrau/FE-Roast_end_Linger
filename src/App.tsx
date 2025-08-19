@@ -16,6 +16,9 @@ import EditPromotion from "./pages/admins/promotion/EditPromotion";
 import ProductPage from "./pages/clients/product/ProductPage";
 import RegisterPage from "./pages/clients/auth/RegisterPage";
 import LoginPage from "./pages/clients/auth/LoginPage";
+import ForgotPasswordPage from "./pages/clients/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/clients/auth/ResetPasswordPage";
+import GoogleCallbackPage from "./pages/clients/auth/GoogleCallbackPage";
 import CartPage from "./pages/clients/cart/CartPage";
 import ProductDetailPage from "./pages/clients/productdetail/ProductDetail";
 import OrdersPage from "./pages/clients/account/order/OderPage";
@@ -39,6 +42,7 @@ import ViewContact from "./pages/admins/contact/ViewContact";
 import Dashboard from "./pages/admins/dashboard/Dashboard";
 import CheckoutPage from "./pages/clients/checkout/CheckoutPage";
 import PaymentSuccess from "./pages/clients/checkout/PaymentSuccess";
+import PaymentPage from "./pages/clients/payment/PaymentPage";
 import WishlistPage from "./pages/clients/account/wishlist/WishlistPage";
 import AddressPage from "./pages/clients/account/address/AddressPage";
 import EditProduct from "./pages/admins/product/EditProduct";
@@ -63,11 +67,17 @@ import ImportInventory from "./pages/admins/inventory/ImportInventory";
 import ExportInventory from "./pages/admins/inventory/ExportInventory";
 import ReturnInventory from "./pages/admins/inventory/ReturnInventory";
 import ExpiryManagement from "./pages/admins/inventory/ExpiryManagement";
+import AddCategory from "./pages/admins/category/AddCategory";
+import EditCategory from "./pages/admins/category/EditCategory";
+import ListUser from "./pages/admins/user/ListUser";
+import UserForm from "./pages/admins/user/UserForm";
+import UserDetail from "./pages/admins/user/UserDetail";
+import ListReview from "./pages/admins/reviews/ListReview";
 
 function App() {
   // Kiểm tra token khi ứng dụng khởi động
   useTokenCheck();
-  
+
   const element = useRoutes([
     {
       path: "/",
@@ -82,7 +92,7 @@ function App() {
           element: <ProductPage />,
         },
         {
-          path: "product/:slug",
+          path: "products/:slug",
           element: <ProductDetailPage />,
         },
         {
@@ -146,12 +156,32 @@ function App() {
           element: <PaymentSuccess />,
         },
         {
+          path: "payment/:orderNumber",
+          element: <PaymentPage />,
+        },
+        {
           path: "auth/login",
           element: <LoginPage />,
         },
         {
           path: "auth/register",
           element: <RegisterPage />,
+        },
+        {
+          path: "auth/forgot-password",
+          element: <ForgotPasswordPage />,
+        },
+        {
+          path: "auth/reset-password",
+          element: <ResetPasswordPage />,
+        },
+        {
+          path: "auth/google/callback",
+          element: <GoogleCallbackPage />,
+        },
+        {
+          path: "auth/callback",
+          element: <GoogleCallbackPage />,
         },
       ],
     },
@@ -208,21 +238,33 @@ function App() {
         },
         {
           path: "category/add",
-          element: <div>Brand</div>,
+          element: <AddCategory />,
         },
         {
           path: "category/edit/:id",
-          element: <div>Brand</div>,
+          element: <EditCategory />,
         },
         //Route User
         {
           path: "user",
-          element: <div>Brand</div>,
+          element: <ListUser />,
+        },
+        {
+          path: "user/add",
+          element: <UserForm mode="add" />,
+        },
+        {
+          path: "user/edit/:id",
+          element: <UserForm mode="edit" />,
+        },
+        {
+          path: "user/:id",
+          element: <UserDetail />,
         },
         //Route Comment
         {
           path: "comment",
-          element: <div>Brand</div>,
+          element: <ListReview/>,
         },
         //Route Promotion
         {

@@ -1,7 +1,22 @@
 import { ShoppingBag, ChevronRight, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getFeaturedProducts } from "../../../services/productService";
+import type { IProduct } from "../../../interfaces/product";
 
 export default function HomePage() {
+  // Lấy sản phẩm nổi bật từ API
+  const {
+    data: featuredProductsData,
+    isLoading: isLoadingFeatured,
+    isError: isErrorFeatured,
+  } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: () => getFeaturedProducts(6), // Lấy 6 sản phẩm nổi bật
+  });
+
+  const featuredProducts = featuredProductsData?.data || [];
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Phần chính (Hero Section) */}
@@ -37,68 +52,87 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bộ sưu tập nổi bật */}
+      {/* Sản phẩm nổi bật */}
       <section className="py-20 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
-              Bộ Sưu Tập Nổi Bật
+              Sản Phẩm Nổi Bật
             </h2>
             <div className="w-20 h-1 bg-amber-800 my-6"></div>
             <p className="text-lg text-stone-600 max-w-2xl">
-              Khám phá những hạt cà phê đặc biệt nhất được chúng tôi tuyển chọn kỹ lưỡng từ khắp nơi trên thế giới.
+              Khám phá những sản phẩm cà phê đặc biệt nhất được chúng tôi tuyển chọn kỹ lưỡng từ khắp nơi trên thế giới.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Ethiopian Yirgacheffe",
-                price: "$24.95",
-                image: "/placeholder.svg?height=400&width=400",
-                description: "Hương hoa và cam chanh, hậu vị mượt mà",
-              },
-              {
-                name: "Colombian Supremo",
-                price: "$22.95",
-                image: "/placeholder.svg?height=400&width=400",
-                description: "Ngọt dịu như caramel với chút hương hạt rang",
-              },
-              {
-                name: "Sumatra Mandheling",
-                price: "$26.95",
-                image: "/placeholder.svg?height=400&width=400",
-                description: "Đậm đà, đất và socola đen",
-              },
-            ].map((product, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src="https://product.hstatic.net/1000075078/product/1737357663_cpg-cfsd-tui_f866066067b44f9b9258c2240a54b9ac_large.png"
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-medium text-stone-900">
-                    {product.name}
-                  </h3>
-                  <p className="mt-2 text-stone-600">{product.description}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-amber-800">
-                      {product.price}
-                    </span>
-                    <button className="text-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium">
-                      Thêm Vào Giỏ
-                    </button>
+          {/* Loading State */}
+          {isLoadingFeatured && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-xl mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-8 bg-gray-200 rounded w-24"></div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {isErrorFeatured && (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">Không thể tải sản phẩm nổi bật</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-amber-800 hover:text-amber-900 font-medium"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {!isLoadingFeatured && !isErrorFeatured && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProducts.map((product: IProduct) => (
+                <div
+                  key={product.id}
+                  className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
+                >
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={product.primary_image?.image_url || "/placeholder.svg?height=400&width=400"}
+                      alt={product.primary_image?.alt_text || product.product_name}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-medium text-stone-900">
+                      {product.product_name}
+                    </h3>
+                    <p className="mt-2 text-stone-600 line-clamp-2">
+                      {product.short_description || product.flavor_profile || "Cà phê chất lượng cao"}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-lg font-semibold text-amber-800">
+                        {product.display_price}
+                      </span>
+                      <Link
+                        to={`/product/${product.slug}`}
+                        className="text-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Xem Chi Tiết
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-12 text-center">
             <Link

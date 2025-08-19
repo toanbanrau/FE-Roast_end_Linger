@@ -190,39 +190,37 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
         )}
 
         {/* QR Code Section */}
-        {(paymentInfo.qr_code_enabled || paymentInfo.qr_code) &&
-          !paymentCompleted && (
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center justify-center gap-2">
-                📱 Quét QR Code để thanh toán
-                {paymentInfo.payment_id && (
-                  <span className="text-sm font-normal text-blue-600">
-                    (Tự động phát hiện thanh toán)
-                  </span>
-                )}
-              </h3>
-              <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
-                <img
-                  src={
-                    typeof paymentInfo.qr_code === "string"
-                      ? paymentInfo.qr_code
-                      : paymentInfo.qr_code?.viet_qr_url
-                  }
-                  alt="VietQR Code"
-                  className="w-64 h-64 mx-auto"
-                />
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Sử dụng app ngân hàng để quét mã QR
-              </p>
+        {paymentInfo.qr_code && !paymentCompleted && (
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center justify-center gap-2">
+              📱 Quét QR Code để thanh toán
               {paymentInfo.payment_id && (
-                <div className="mt-3 text-xs text-blue-600 bg-blue-50 rounded-lg p-2">
-                  💡 Hệ thống sẽ tự động phát hiện thanh toán trong vòng 5-15
-                  giây
-                </div>
+                <span className="text-sm font-normal text-blue-600">
+                  (Tự động phát hiện thanh toán)
+                </span>
               )}
+            </h3>
+            <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
+              <img
+                src={
+                  typeof paymentInfo.qr_code === "string"
+                    ? paymentInfo.qr_code
+                    : paymentInfo.qr_code?.viet_qr_url
+                }
+                alt="VietQR Code"
+                className="w-64 h-64 mx-auto"
+              />
             </div>
-          )}
+            <p className="text-sm text-gray-600 mt-2">
+              Sử dụng app ngân hàng để quét mã QR
+            </p>
+            {paymentInfo.payment_id && (
+              <div className="mt-3 text-xs text-blue-600 bg-blue-50 rounded-lg p-2">
+                💡 Hệ thống sẽ tự động phát hiện thanh toán trong vòng 5-15 giây
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bank Information */}
         {paymentInfo.bank_info && (

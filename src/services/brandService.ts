@@ -1,4 +1,4 @@
-import adminAxios from "../configs/config";
+import adminAxios, { clientAxios } from "../configs/config";
 import type { IBrand } from "../interfaces/brand";
 
 
@@ -32,4 +32,12 @@ export const updateBrand = async (id: number, formData: FormData): Promise<IBran
 
 export const deleteBrand = async (id: number): Promise<void> => {
   await adminAxios.delete(`/brands/${id}`);
+};
+
+// ================= CLIENT BRAND SERVICE =================
+
+// Lấy tất cả brands cho client (public API)
+export const getAllBrandsClient = async (): Promise<IBrand[]> => {
+  const response = await clientAxios.get("/brands");
+  return response.data.data;
 };

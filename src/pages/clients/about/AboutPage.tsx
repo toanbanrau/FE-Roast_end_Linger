@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
-import { ArrowRight } from "lucide-react"
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -7,17 +7,18 @@ export default function AboutPage() {
       {/* Phần mở đầu */}
       <section className="relative h-[60vh] flex items-center">
         <img
-          src="/placeholder.svg?height=1080&width=1920"
+          src="https://media.istockphoto.com/id/1371315270/vi/anh/h%E1%BA%A1t-c%C3%A0-ph%C3%AA-trong-tay-m%E1%BB%99t-c%C3%B4ng-nh%C3%A2n.jpg?s=612x612&w=0&k=20&c=U1fYGg5t4WPyKKazgb6YKyiZyM2EwRC6YPM42MLzlxg="
           alt="Đồn điền cà phê"
           className="object-cover brightness-50"
         />
         <div className="container relative z-10 px-4 md:px-6">
           <div className="max-w-3xl space-y-6">
-            <h1 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
+            <h1 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl">
               Câu Chuyện Của Chúng Tôi
             </h1>
-            <p className="text-xl text-gray-200 md:text-2xl">
-              Hành trình của đam mê, chất lượng và bền vững trong từng tách cà phê.
+            <p className="text-xl md:text-2xl">
+              Hành trình của đam mê, chất lượng và bền vững trong từng tách cà
+              phê.
             </p>
           </div>
         </div>
@@ -28,23 +29,34 @@ export default function AboutPage() {
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">Hành Trình Của Chúng Tôi</h2>
+              <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
+                Hành Trình Của Chúng Tôi
+              </h2>
               <div className="w-20 h-1 bg-amber-800"></div>
               <p className="text-lg text-stone-600">
-                Được thành lập vào năm 1992 bởi người đam mê cà phê Maria Rodriguez, Élite Coffee bắt đầu là một xưởng rang nhỏ tại Seattle với sứ mệnh đơn giản: tìm nguồn và rang những hạt cà phê ngon nhất thế giới với sự tận tâm và chân thành.
+                Được thành lập vào năm 1992 bởi người đam mê cà phê Maria
+                Rodriguez, Élite Coffee bắt đầu là một xưởng rang nhỏ tại
+                Seattle với sứ mệnh đơn giản: tìm nguồn và rang những hạt cà phê
+                ngon nhất thế giới với sự tận tâm và chân thành.
               </p>
               <p className="text-lg text-stone-600">
-                Từ một dự án đam mê, chúng tôi nhanh chóng được công nhận nhờ chất lượng vượt trội và cam kết với việc thu mua đạo đức. Sau hơn ba thập kỷ, chúng tôi đã phát triển từ một thương hiệu địa phương thành một tên tuổi quốc tế, nhưng giá trị cốt lõi thì vẫn vẹn nguyên.
+                Từ một dự án đam mê, chúng tôi nhanh chóng được công nhận nhờ
+                chất lượng vượt trội và cam kết với việc thu mua đạo đức. Sau
+                hơn ba thập kỷ, chúng tôi đã phát triển từ một thương hiệu địa
+                phương thành một tên tuổi quốc tế, nhưng giá trị cốt lõi thì vẫn
+                vẹn nguyên.
               </p>
               <p className="text-lg text-stone-600">
-                Ngày nay, chúng tôi vẫn tiếp tục rong ruổi khắp thế giới để tìm kiếm những hạt cà phê xuất sắc, xây dựng mối quan hệ lâu dài với nông dân có cùng cam kết về chất lượng và phát triển bền vững.
+                Ngày nay, chúng tôi vẫn tiếp tục rong ruổi khắp thế giới để tìm
+                kiếm những hạt cà phê xuất sắc, xây dựng mối quan hệ lâu dài với
+                nông dân có cùng cam kết về chất lượng và phát triển bền vững.
               </p>
             </div>
             <div className="relative h-[500px] rounded-xl overflow-hidden">
               <img
-                src="/placeholder.svg?height=1000&width=800"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRguBK4MEdK7oE48pqq9mV_v6GRgjiyhjr5pA&s"
                 alt="Lịch sử quán cà phê"
-                className="object-cover"
+                className="object-cover w-full "
               />
             </div>
           </div>
@@ -55,10 +67,13 @@ export default function AboutPage() {
       <section className="py-20 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">Giá Trị Cốt Lõi</h2>
+            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
+              Giá Trị Cốt Lõi
+            </h2>
             <div className="w-20 h-1 bg-amber-800 mx-auto my-6"></div>
             <p className="text-lg text-stone-600">
-              Tại Élite Coffee, các giá trị là kim chỉ nam cho mọi hoạt động – từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
+              Tại Élite Coffee, các giá trị là kim chỉ nam cho mọi hoạt động –
+              từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
             </p>
           </div>
 
@@ -96,10 +111,13 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">Gặp Gỡ Đội Ngũ Của Chúng Tôi</h2>
+            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
+              Gặp Gỡ Đội Ngũ Của Chúng Tôi
+            </h2>
             <div className="w-20 h-1 bg-amber-800 mx-auto my-6"></div>
             <p className="text-lg text-stone-600">
-              Những con người đằng sau Élite Coffee – những người tạo nên sự xuất sắc mỗi ngày.
+              Những con người đằng sau Élite Coffee – những người tạo nên sự
+              xuất sắc mỗi ngày.
             </p>
           </div>
 
@@ -128,7 +146,11 @@ export default function AboutPage() {
             ].map((member, index) => (
               <div key={index} className="text-center">
                 <div className="relative h-80 mb-6 rounded-xl overflow-hidden">
-                  <img src={member.image || "/placeholder.svg"} alt={member.name} className="object-cover" />
+                  <img
+                    src={member.image || "/placeholder.svg"}
+                    alt={member.name}
+                    className="object-cover"
+                  />
                 </div>
                 <h3 className="text-xl font-medium">{member.name}</h3>
                 <p className="text-stone-600">{member.title}</p>
@@ -155,13 +177,19 @@ export default function AboutPage() {
               </h2>
               <div className="w-20 h-1 bg-amber-600"></div>
               <p className="text-lg text-stone-300">
-                Chúng tôi tin rằng cà phê hảo hạng và trách nhiệm với môi trường luôn song hành. Cam kết bền vững của chúng tôi trải dài trên toàn chuỗi cung ứng.
+                Chúng tôi tin rằng cà phê hảo hạng và trách nhiệm với môi trường
+                luôn song hành. Cam kết bền vững của chúng tôi trải dài trên
+                toàn chuỗi cung ứng.
               </p>
               <p className="text-lg text-stone-300">
-                Chúng tôi hợp tác với nông dân sử dụng phương pháp hữu cơ và canh tác dưới bóng râm, giảm thiểu sử dụng phân bón hóa học và bảo tồn hệ sinh thái tự nhiên.
+                Chúng tôi hợp tác với nông dân sử dụng phương pháp hữu cơ và
+                canh tác dưới bóng râm, giảm thiểu sử dụng phân bón hóa học và
+                bảo tồn hệ sinh thái tự nhiên.
               </p>
               <p className="text-lg text-stone-300">
-                Từ bao bì thân thiện với môi trường đến nhà máy rang tiết kiệm năng lượng, chúng tôi không ngừng giảm thiểu dấu chân môi trường trong khi vẫn duy trì chất lượng cà phê tốt nhất.
+                Từ bao bì thân thiện với môi trường đến nhà máy rang tiết kiệm
+                năng lượng, chúng tôi không ngừng giảm thiểu dấu chân môi trường
+                trong khi vẫn duy trì chất lượng cà phê tốt nhất.
               </p>
               <Link
                 to="/sustainability"
@@ -178,10 +206,13 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="container px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">Gia Nhập Đội Ngũ</h2>
+            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
+              Gia Nhập Đội Ngũ
+            </h2>
             <div className="w-20 h-1 bg-amber-800 mx-auto"></div>
             <p className="text-lg text-stone-600">
-              Chúng tôi luôn tìm kiếm những cá nhân đam mê, cùng chia sẻ tình yêu với cà phê và cam kết chất lượng cùng phát triển bền vững.
+              Chúng tôi luôn tìm kiếm những cá nhân đam mê, cùng chia sẻ tình
+              yêu với cà phê và cam kết chất lượng cùng phát triển bền vững.
             </p>
             <Link
               to="/careers"
@@ -193,5 +224,5 @@ export default function AboutPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

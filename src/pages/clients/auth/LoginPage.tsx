@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useUserStore } from "../../../stores/useUserStore";
 import { FcGoogle } from "react-icons/fc";
+import { getGoogleAuthUrl } from "../../../services/authService";
 
 interface LoginFormData {
   email: string;
@@ -16,6 +17,7 @@ interface LoginFormData {
 export default function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { login } = useUserStore();
 
   const {
@@ -42,8 +44,33 @@ export default function LoginPage() {
     },
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: getGoogleAuthUrl,
+    onSuccess: (data) => {
+      if (data.success && data.data?.auth_url) {
+        // Redirect to Google OAuth
+        window.location.href = data.data.auth_url;
+      } else {
+        throw new Error(data.message || "Không thể lấy URL đăng nhập Google");
+      }
+    },
+    onError: (error: any) => {
+      console.error("Google login error:", error);
+      toast.error(
+        error?.response?.data?.message ||
+        "Không thể đăng nhập bằng Google. Vui lòng thử lại!"
+      );
+      setIsGoogleLoading(false);
+    },
+  });
+
   const onSubmit = async (data: LoginFormData) => {
     await mutation.mutateAsync({ email: data.email, password: data.password });
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    googleLoginMutation.mutate();
   };
 
   return (
@@ -188,27 +215,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="mt-6 grid grid-cols-1 gap-3">
               <button
                 type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-stone-300 rounded-md shadow-sm bg-white text-sm font-medium text-stone-500 hover:bg-stone-50 cursor-pointer"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading || googleLoginMutation.isPending}
+                className="w-full inline-flex justify-center py-2 px-4 border border-stone-300 rounded-md shadow-sm bg-white text-sm font-medium text-stone-500 hover:bg-stone-50 hover:border-amber-800 hover:text-amber-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FcGoogle className="h-5 w-5" />
-                <span className="ml-2">Google</span>
-              </button>
-
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-stone-300 rounded-md shadow-sm bg-white text-sm font-medium text-stone-500 hover:bg-stone-50"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12..." />
-                </svg>
-                <span className="ml-2">Facebook</span>
+                <span className="ml-2">
+                  {isGoogleLoading || googleLoginMutation.isPending
+                    ? "Đang xử lý..."
+                    : "Đăng nhập bằng Google"
+                  }
+                </span>
               </button>
             </div>
           </div>

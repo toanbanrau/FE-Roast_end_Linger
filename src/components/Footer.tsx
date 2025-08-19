@@ -9,25 +9,28 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <Link to="/" className="flex items-center gap-2 mb-6">
-              <Coffee className="h-6 w-6 text-amber-600" />
-              <span className="text-xl font-serif font-bold tracking-tight text-white">Élite Coffee</span>
+              <img
+                src="/z6887861436131_47d6a9f9e86b1d04f1a94932d5b53cad-removebg-preview.png"
+                alt="Roast & Linger Logo"
+                className="h-8 w-8 object-contain"
+              />
+              <span className="text-xl font-serif font-bold tracking-tight text-white">Roast & Linger</span>
             </Link>
-            <p className="text-sm">
-              Crafting exceptional coffee experiences since 1992. From bean to cup, we're dedicated to quality and
-              sustainability.
+            <p className="text-sm leading-relaxed">
+              Tạo nên những trải nghiệm cà phê tuyệt vời từ năm 1992. Từ hạt cà phê đến tách cà phê, chúng tôi cam kết mang đến chất lượng cao nhất và tính bền vững cho cộng đồng.
             </p>
             <div className="flex gap-4 mt-6">
               <Link to="#" className="text-stone-400 hover:text-amber-600">
                 <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
+                <span className="sr-only">Theo dõi trên Facebook</span>
               </Link>
               <Link to="#" className="text-stone-400 hover:text-amber-600">
                 <Instagram className="h-5 w-5" />
-                <span className="sr-only">Instagram</span>
+                <span className="sr-only">Theo dõi trên Instagram</span>
               </Link>
               <Link to="#" className="text-stone-400 hover:text-amber-600">
                 <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
+                <span className="sr-only">Theo dõi trên Twitter</span>
               </Link>
             </div>
           </div>
@@ -37,7 +40,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link to="/products" className="text-sm hover:text-amber-600 transition-colors">
-                  All Products
+                  Tất Cả Sản Phẩm
                 </Link>
               </li>
               <li>
@@ -68,17 +71,17 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link to="/about" className="text-sm hover:text-amber-600 transition-colors">
-                  Our Story
+                  Giới Thiệu
                 </Link>
               </li>
               <li>
                 <Link to="/sustainability" className="text-sm hover:text-amber-600 transition-colors">
-                  Sustainability
+                  Tính Bền Vững
                 </Link>
               </li>
               <li>
                 <Link to="/blog" className="text-sm hover:text-amber-600 transition-colors">
-                  Blog
+                  Bài Viết
                 </Link>
               </li>
               <li>
@@ -88,7 +91,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link to="/contact" className="text-sm hover:text-amber-600 transition-colors">
-                  Contact Us
+                   Liên Hệ
                 </Link>
               </li>
             </ul>

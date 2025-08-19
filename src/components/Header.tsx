@@ -36,13 +36,17 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">Mở menu</span>
             </button>
 
             <Link to="/" className="flex items-center gap-2">
-              <Coffee className="h-6 w-6 text-amber-800" />
+              <img
+                src="/z6887861436131_47d6a9f9e86b1d04f1a94932d5b53cad-removebg-preview.png"
+                alt="Roast & Linger Logo"
+                className="h-10 w-10 object-contain"
+              />
               <span className="text-xl font-serif font-bold tracking-tight">
-                Élite Coffee
+                Roast & Linger
               </span>
             </Link>
           </div>
@@ -135,14 +139,14 @@ export default function Header() {
                     className="flex items-center gap-1 text-stone-700 hover:text-amber-800 text-sm font-medium px-2 py-1"
                   >
                     <LogIn className="h-4 w-4" />
-                    Sign In
+                    Đăng Nhập
                   </Link>
                   <Link
                     to="/auth/register"
                     className="flex items-center gap-1 bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-md text-sm font-medium"
                   >
                     <UserPlus className="h-4 w-4" />
-                    Sign Up
+                    Đăng Ký
                   </Link>
                 </>
               )}
@@ -159,7 +163,7 @@ export default function Header() {
                   {cartItemCount}
                 </span>
               )}
-              <span className="sr-only">Cart</span>
+              <span className="sr-only">Giỏ hàng</span>
             </button>
           </div>
         </div>
@@ -169,9 +173,13 @@ export default function Header() {
           <div className="fixed inset-0 z-50 bg-white lg:hidden">
             <div className="flex justify-between items-center h-16 px-4 border-b">
               <Link to="/" className="flex items-center gap-2">
-                <Coffee className="h-6 w-6 text-amber-800" />
+                <img
+                  src="/z6887861436131_47d6a9f9e86b1d04f1a94932d5b53cad-removebg-preview.png"
+                  alt="Roast & Linger Logo"
+                  className="h-10 w-10 object-contain"
+                />
                 <span className="text-xl font-serif font-bold tracking-tight">
-                  Élite Coffee
+                  Roast & Linger
                 </span>
               </Link>
               <button onClick={() => setIsMobileMenuOpen(false)}>
@@ -226,21 +234,21 @@ export default function Header() {
                       className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      My Account
+                      Tài Khoản Của Tôi
                     </Link>
                     <Link
                       to="/account/orders"
                       className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Orders
+                      Đơn Hàng
                     </Link>
                     <Link
                       to="/account/wishlist"
                       className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Wishlist
+                      Danh Sách Yêu Thích
                     </Link>
                   </>
                 )}
@@ -265,8 +273,11 @@ export default function Header() {
                         <p className="text-sm text-stone-500">{user.email}</p>
                       </div>
                     </div>
-                    <button className="w-full text-left py-2 px-3 text-stone-700 hover:bg-stone-50 rounded-md">
-                      Sign Out
+                    <button
+                      onClick={logout}
+                      className="w-full text-left py-2 px-3 text-stone-700 hover:bg-stone-50 rounded-md"
+                    >
+                      Đăng Xuất
                     </button>
                   </div>
                 ) : (

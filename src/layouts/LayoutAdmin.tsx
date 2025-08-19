@@ -96,18 +96,7 @@ const LayoutAdmin: React.FC = () => {
       key: "sub1",
       icon: <UsergroupAddOutlined />,
       label: "Tài Khoản",
-      children: [
-        {
-          key: "6",
-          label: "Admin",
-          onClick: () => navigate("/admin/user/listAdmin"),
-        },
-        {
-          key: "7",
-          label: "User",
-          onClick: () => navigate("/admin/user/listUser"),
-        },
-      ],
+      onClick: () => navigate("/admin/user"),
     },
     {
       key: "8",
@@ -139,12 +128,12 @@ const LayoutAdmin: React.FC = () => {
       label: "Nguồn Gốc",
       onClick: () => navigate("/admin/origin"),
     },
-    {
-      key: "13",
-      icon: <RocketOutlined />,
-      label: "Phương Thức Vận Chuyển",
-      onClick: () => navigate("/admin/shipping-method"),
-    },
+    // {
+    //   key: "13",
+    //   icon: <RocketOutlined />,
+    //   label: "Phương Thức Vận Chuyển",
+    //   onClick: () => navigate("/admin/shipping-method"),
+    // },
     {
       key: "15",
       icon: <ReadOutlined />,

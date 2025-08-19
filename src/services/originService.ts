@@ -1,4 +1,4 @@
-import { adminAxios } from "../configs/config";
+import { adminAxios, clientAxios } from "../configs/config";
 import type { IOrigin, IOriginCreate, IOriginUpdate } from "../interfaces/origin";
 
 // Lấy tất cả origin
@@ -28,4 +28,12 @@ export const updateOrigin = async (id: number, origin: IOriginUpdate): Promise<I
 // Xóa origin
 export const deleteOrigin = async (id: number): Promise<void> => {
   await adminAxios.delete(`/origins/${id}`);
-}; 
+};
+
+// ================= CLIENT ORIGIN SERVICE =================
+
+// Lấy tất cả origins cho client (public API)
+export const getAllOriginsClient = async (): Promise<IOrigin[]> => {
+  const response = await clientAxios.get("/origins");
+  return response.data.data;
+};
