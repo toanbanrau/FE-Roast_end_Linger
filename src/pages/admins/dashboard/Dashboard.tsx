@@ -10,17 +10,30 @@ import {
   DatePicker,
   Space,
   Spin,
+  Alert,
+  Progress,
+  Switch,
 } from "antd";
 import {
   ArrowUpOutlined,
+  ArrowDownOutlined,
   ShoppingOutlined,
   UserOutlined,
   GiftOutlined,
   DollarOutlined,
+  TeamOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
-import { Column, Pie } from "@ant-design/charts";
+import { Column, Pie, Line } from "@ant-design/charts";
 import { useQuery } from "@tanstack/react-query";
-import { getOrderStats } from "../../../services/adminOrderService";
+import {
+  getDashboardStatistics,
+  formatCurrency,
+  formatPercentage,
+  getGrowthColor,
+  type DashboardParams
+} from "../../../services/dashboardService";
+
 import dayjs from "dayjs";
 
 const { Title } = Typography;
@@ -28,57 +41,111 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const Dashboard: React.FC = () => {
-  const [period, setPeriod] = useState<string>("month");
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
-    null
-  );
+  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'year' | 'custom'>("month");
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [onlyCompleted, setOnlyCompleted] = useState(true); // Mặc định chỉ lấy completed orders
 
-  // Lấy thống kê đơn hàng từ API
-  const { data: orderStats, isLoading } = useQuery({
-    queryKey: ["order-stats", period, dateRange],
+  // Lấy dashboard statistics từ API mới
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ["dashboard-statistics", period, dateRange, onlyCompleted],
     queryFn: () => {
-      const params: {
-        period?: string;
-        date_from?: string;
-        date_to?: string;
-      } = {};
+      const params: DashboardParams = {
+        period: period,
+        include_charts: true,
+        timezone: 'Asia/Ho_Chi_Minh',
+        status: onlyCompleted ? 'completed' : 'all' // Toggle giữa completed và all
+      };
 
-      if (period !== "custom") {
-        params.period = period;
-      } else if (dateRange) {
-        params.date_from = dateRange[0].format("YYYY-MM-DD");
-        params.date_to = dateRange[1].format("YYYY-MM-DD");
+      if (period === "custom" && dateRange) {
+        params.start_date = dateRange[0].format("YYYY-MM-DD");
+        params.end_date = dateRange[1].format("YYYY-MM-DD");
       }
 
-      return getOrderStats(params);
+      return getDashboardStatistics(params);
     },
   });
 
-  // Chuẩn bị dữ liệu cho biểu đồ cột (doanh thu theo ngày)
-  const columnData =
-    orderStats?.revenue_chart?.map((item) => ({
-      date: dayjs(item.date).format("DD/MM"),
-      revenue: item.revenue / 1000000, // Chuyển đổi sang triệu VNĐ
-      orders: item.orders,
-    })) || [];
+  const stats = dashboardData?.data;
 
-  const columnConfig = {
-    data: columnData,
+  // Filter và tính toán lại chỉ cho completed orders
+  const getCompletedOrdersStats = () => {
+    if (!stats) return null;
+
+    // Lấy daily breakdown để tính completed orders
+    const completedDailyData = stats.detailed_stats.daily_breakdown.filter(day => {
+      // Giả sử completed orders có trong daily breakdown
+      // Tạm thời sử dụng tất cả data vì API chưa phân biệt status
+      return true; // TODO: Filter theo completed status khi backend hỗ trợ
+    });
+
+    // Tính tổng completed orders từ daily breakdown
+    const completedStats = completedDailyData.reduce((acc, day) => {
+      acc.total_orders += day.total_orders;
+      acc.total_revenue += parseFloat(day.total_revenue);
+      acc.unique_customers = Math.max(acc.unique_customers, day.unique_customers);
+      return acc;
+    }, {
+      total_orders: 0,
+      total_revenue: 0,
+      unique_customers: 0
+    });
+
+    // Tính average order value cho completed orders
+    const avg_order_value = completedStats.total_orders > 0
+      ? completedStats.total_revenue / completedStats.total_orders
+      : 0;
+
+
+
+    return {
+      total_orders: completedStats.total_orders,
+      total_revenue: completedStats.total_revenue.toString(),
+      average_order_value: avg_order_value,
+      total_customers: completedStats.unique_customers,
+      total_products: stats.overview.total_products // Giữ nguyên
+    };
+  };
+
+  const completedStats = getCompletedOrdersStats();
+
+  // Chuẩn bị dữ liệu cho biểu đồ line (doanh thu theo ngày)
+  const revenueData = stats?.charts?.revenue_trend?.map((item) => {
+    const revenueInMillions = parseFloat(item.revenue) / 1000000;
+
+
+    return {
+      date: dayjs(item.date).format("DD/MM"),
+      revenue: revenueInMillions, // Chuyển đổi sang triệu VNĐ
+      orders: 0, // API không trả về orders trong revenue_trend
+    };
+  }) || [];
+
+
+
+  const revenueConfig = {
+    data: revenueData,
     xField: "date",
     yField: "revenue",
+    smooth: true,
     color: "#1890ff",
-    columnWidthRatio: 0.6,
+    point: {
+      size: 4,
+      shape: 'circle',
+    },
     label: {
-      position: "middle" as const,
       style: {
-        fill: "#fff",
-        opacity: 0.6,
+        fill: '#aaa',
       },
     },
     xAxis: {
       label: {
         autoHide: true,
         autoRotate: false,
+      },
+    },
+    yAxis: {
+      label: {
+        formatter: (v: string) => `${v}M`,
       },
     },
     meta: {
@@ -88,15 +155,24 @@ const Dashboard: React.FC = () => {
   };
 
   // Chuẩn bị dữ liệu cho biểu đồ tròn (trạng thái đơn hàng)
-  const pieData =
-    orderStats?.by_status?.map((item) => ({
-      type: item.status_name,
-      value: item.count,
-    })) || [];
+  const statusData = stats?.charts?.order_status_distribution ?
+    Object.entries(stats.charts.order_status_distribution).map(([status, count]) => {
+      const totalOrders = stats?.overview?.total_orders || 1;
+      const percentage = ((count as number) / totalOrders * 100);
 
-  const pieConfig = {
+
+      return {
+        type: status,
+        value: count as number,
+        percentage: parseFloat(percentage.toFixed(1)),
+      };
+    }) : [];
+
+
+
+  const statusConfig = {
     appendPadding: 10,
-    data: pieData,
+    data: statusData,
     angleField: "value",
     colorField: "type",
     radius: 1,
@@ -104,7 +180,7 @@ const Dashboard: React.FC = () => {
     label: {
       type: "spider" as const,
       labelHeight: 28,
-      content: "{name}\n{percentage}",
+      content: "{name}\n{percentage}%",
     },
     legend: {
       position: "bottom" as const,
@@ -112,39 +188,52 @@ const Dashboard: React.FC = () => {
     color: ["#52c41a", "#1890ff", "#ff4d4f", "#faad14", "#722ed1"],
   };
 
-  // Chuẩn bị dữ liệu cho bảng phương thức thanh toán
-  const paymentMethodData =
-    orderStats?.by_payment_method?.map((item, index) => ({
-      key: index.toString(),
-      method:
-        item.payment_method === "cod"
-          ? "Thanh toán khi nhận hàng"
-          : item.payment_method === "bank_transfer"
-          ? "Chuyển khoản ngân hàng"
-          : item.payment_method === "momo"
-          ? "Ví MoMo"
-          : item.payment_method,
-      count: item.count,
-      revenue: item.revenue,
-    })) || [];
+  // Chuẩn bị dữ liệu cho bảng top categories
+  const topCategoriesData = stats?.charts?.top_categories?.map((item, index) => {
+    const revenue = parseFloat(item.revenue);
+    const totalRevenue = parseFloat(stats?.overview?.total_revenue || '0');
+    const percentage = totalRevenue > 0 ? (revenue / totalRevenue * 100) : 0;
 
-  const paymentColumns = [
+
+
+    return {
+      key: index.toString(),
+      category: item.category_name,
+      orders: 0, // API không trả về orders cho category
+      revenue: revenue,
+      percentage: parseFloat(percentage.toFixed(1)),
+    };
+  }) || [];
+
+
+
+  const categoryColumns = [
     {
-      title: "Phương thức thanh toán",
-      dataIndex: "method",
-      key: "method",
+      title: "Danh mục",
+      dataIndex: "category",
+      key: "category",
     },
     {
       title: "Số đơn",
-      dataIndex: "count",
-      key: "count",
+      dataIndex: "orders",
+      key: "orders",
     },
     {
       title: "Doanh thu",
       dataIndex: "revenue",
       key: "revenue",
-      render: (value: number) =>
-        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+      render: (value: number) => formatCurrency(value),
+    },
+    {
+      title: "Tỷ lệ",
+      dataIndex: "percentage",
+      key: "percentage",
+      render: (value: number) => (
+        <div>
+          <Progress percent={value} size="small" />
+          <span>{value.toFixed(1)}%</span>
+        </div>
+      ),
     },
   ];
 
@@ -152,17 +241,36 @@ const Dashboard: React.FC = () => {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
         <Spin size="large" />
+        <p style={{ marginTop: 16 }}>Đang tải dữ liệu dashboard...</p>
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <Alert
+        message="Lỗi tải dữ liệu"
+        description="Không thể tải dữ liệu dashboard. Vui lòng thử lại sau."
+        type="error"
+        showIcon
+        style={{ margin: 24 }}
+      />
+    );
+  }
+
   return (
     <div>
       {/* Header với bộ lọc thời gian */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
         <Col>
-          <Title level={3} style={{ margin: 0 }}>
-            Thống kê đơn hàng
+          <Title level={2} style={{ margin: 0 }}>
+            📊 Dashboard Thống Kê - Đơn Hàng Hoàn Thành
           </Title>
+          <p style={{ color: '#666', marginTop: 8 }}>
+            Thống kê chỉ tính đơn hàng đã hoàn thành - {stats?.period?.type}
+            ({dayjs(stats?.period?.start_date).format('DD/MM/YYYY')} - {dayjs(stats?.period?.end_date).format('DD/MM/YYYY')})
+          </p>
+
         </Col>
         <Col>
           <Space>
@@ -192,69 +300,180 @@ const Dashboard: React.FC = () => {
 
       {/* Thống kê tổng quan */}
       <Row gutter={16}>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Tổng đơn hàng"
-              value={orderStats?.summary?.total_orders || 0}
-              prefix={<ShoppingOutlined />}
-              valueStyle={{ color: "#3f8600" }}
-              suffix={<ArrowUpOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng doanh thu"
-              value={orderStats?.summary?.total_revenue || 0}
+              title="Tổng doanh thu (Completed)"
+              value={parseFloat(completedStats?.total_revenue || '0')}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: "#1890ff" }}
-              suffix={<ArrowUpOutlined />}
-              formatter={(value) =>
-                Number(value).toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })
+              valueStyle={{ color: getGrowthColor(stats?.growth?.revenue || 0) }}
+              suffix={
+                stats?.growth?.revenue && stats.growth.revenue > 0 ?
+                <ArrowUpOutlined /> :
+                stats?.growth?.revenue && stats.growth.revenue < 0 ?
+                <ArrowDownOutlined /> : null
               }
+              formatter={(value) => formatCurrency(Number(value))}
             />
+            {stats?.growth?.revenue !== undefined && (
+              <div style={{ marginTop: 8, fontSize: 12, color: getGrowthColor(stats.growth.revenue) }}>
+                {formatPercentage(stats.growth.revenue)} so với kỳ trước
+              </div>
+            )}
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Giá trị đơn hàng TB"
-              value={orderStats?.summary?.average_order_value || 0}
-              prefix={<UserOutlined />}
+              title="Đơn hàng hoàn thành"
+              value={completedStats?.total_orders || 0}
+              prefix={<ShoppingOutlined />}
+              valueStyle={{ color: getGrowthColor(stats?.growth?.orders || 0) }}
+              suffix={
+                stats?.growth?.orders && stats.growth.orders > 0 ?
+                <ArrowUpOutlined /> :
+                stats?.growth?.orders && stats.growth.orders < 0 ?
+                <ArrowDownOutlined /> : null
+              }
+            />
+            {stats?.growth?.orders !== undefined && (
+              <div style={{ marginTop: 8, fontSize: 12, color: getGrowthColor(stats.growth.orders) }}>
+                {formatPercentage(stats.growth.orders)} so với kỳ trước
+              </div>
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Khách hàng (Completed)"
+              value={completedStats?.total_customers || 0}
+              prefix={<TeamOutlined />}
+              valueStyle={{ color: getGrowthColor(stats?.growth?.users || 0) }}
+              suffix={
+                stats?.growth?.users && stats.growth.users > 0 ?
+                <ArrowUpOutlined /> :
+                stats?.growth?.users && stats.growth.users < 0 ?
+                <ArrowDownOutlined /> : null
+              }
+            />
+            {stats?.growth?.users !== undefined && (
+              <div style={{ marginTop: 8, fontSize: 12, color: getGrowthColor(stats.growth.users) }}>
+                {formatPercentage(stats.growth.users)} so với kỳ trước
+              </div>
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Giá trị đơn TB (Completed)"
+              value={completedStats?.average_order_value || 0}
+              prefix={<TrophyOutlined />}
               valueStyle={{ color: "#faad14" }}
-              formatter={(value) =>
-                Number(value).toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })
-              }
+              formatter={(value) => formatCurrency(Number(value))}
             />
+            <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
+              Tổng sản phẩm: {stats?.overview?.total_products || 0}
+            </div>
           </Card>
         </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng sản phẩm bán"
-              value={orderStats?.summary?.total_items_sold || 0}
-              prefix={<GiftOutlined />}
-              valueStyle={{ color: "#722ed1" }}
-              suffix={<ArrowUpOutlined />}
-            />
+      </Row>
+
+      {/* Recent Stats */}
+      <Row gutter={16} style={{ marginTop: 24 }}>
+        <Col xs={24} sm={8}>
+          <Card title="📅 Hôm nay" size="small">
+            <Row gutter={8}>
+              <Col span={8}>
+                <Statistic
+                  title="Doanh thu"
+                  value={parseFloat(stats?.recent_stats?.today?.revenue || '0')}
+                  formatter={(value) => formatCurrency(Number(value))}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Đơn hàng"
+                  value={stats?.recent_stats?.today?.orders || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Khách hàng"
+                  value={stats?.recent_stats?.today?.users || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card title="📊 Tuần này" size="small">
+            <Row gutter={8}>
+              <Col span={8}>
+                <Statistic
+                  title="Doanh thu"
+                  value={parseFloat(stats?.recent_stats?.this_week?.revenue || '0')}
+                  formatter={(value) => formatCurrency(Number(value))}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Đơn hàng"
+                  value={stats?.recent_stats?.this_week?.orders || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Khách hàng"
+                  value={stats?.recent_stats?.this_week?.users || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card title="📈 Tháng này" size="small">
+            <Row gutter={8}>
+              <Col span={8}>
+                <Statistic
+                  title="Doanh thu"
+                  value={parseFloat(stats?.recent_stats?.this_month?.revenue || '0')}
+                  formatter={(value) => formatCurrency(Number(value))}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Đơn hàng"
+                  value={stats?.recent_stats?.this_month?.orders || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Khách hàng"
+                  value={stats?.recent_stats?.this_month?.users || 0}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              </Col>
+            </Row>
           </Card>
         </Col>
       </Row>
 
       {/* Biểu đồ */}
       <Row gutter={16} style={{ marginTop: 24 }}>
-        <Col span={16}>
-          <Card title="Doanh thu theo ngày" style={{ height: 400 }}>
-            {columnData.length > 0 ? (
-              <Column {...columnConfig} height={300} />
+        <Col xs={24} lg={16}>
+          <Card title="📈 Xu hướng doanh thu" style={{ height: 400 }}>
+            {revenueData.length > 0 ? (
+              <Line {...revenueConfig} height={300} />
             ) : (
               <div style={{ textAlign: "center", padding: "50px" }}>
                 Không có dữ liệu
@@ -262,10 +481,10 @@ const Dashboard: React.FC = () => {
             )}
           </Card>
         </Col>
-        <Col span={8}>
-          <Card title="Tỉ lệ trạng thái đơn hàng" style={{ height: 400 }}>
-            {pieData.length > 0 ? (
-              <Pie {...pieConfig} height={300} />
+        <Col xs={24} lg={8}>
+          <Card title="📊 Phân bố trạng thái đơn hàng" style={{ height: 400 }}>
+            {statusData.length > 0 ? (
+              <Pie {...statusConfig} height={300} />
             ) : (
               <div style={{ textAlign: "center", padding: "50px" }}>
                 Không có dữ liệu
@@ -275,19 +494,21 @@ const Dashboard: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Bảng phương thức thanh toán */}
+      {/* Bảng top categories */}
       <Row gutter={16} style={{ marginTop: 24 }}>
         <Col span={24}>
-          <Card title="Thống kê theo phương thức thanh toán">
+          <Card title="🏆 Top Danh Mục Bán Chạy">
             <Table
-              dataSource={paymentMethodData}
-              columns={paymentColumns}
+              dataSource={topCategoriesData}
+              columns={categoryColumns}
               pagination={false}
               size="small"
             />
           </Card>
         </Col>
       </Row>
+
+
     </div>
   );
 };

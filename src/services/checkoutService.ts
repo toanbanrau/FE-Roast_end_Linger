@@ -23,9 +23,39 @@ export const getAllOrders = async (): Promise<IOrder[]> => {
     return response.data.data;
 }
 
-export const getMyOrders = async (): Promise<IOrder[]> => {
-    const response = await clientAxios.get<ApiResponse<{orders: IOrder[]}>>('/orders');
-    return response.data.data.orders;
+// Interface cho paginated orders response
+export interface PaginatedOrdersResponse {
+    orders: IOrder[];
+    pagination: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
+}
+
+export interface OrdersQueryParams {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    status?: string;
+}
+
+export const getMyOrders = async (params: OrdersQueryParams = {}): Promise<PaginatedOrdersResponse> => {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.set('page', params.page.toString());
+    if (params.per_page) queryParams.set('per_page', params.per_page.toString());
+    if (params.search) queryParams.set('search', params.search);
+    if (params.status && params.status !== 'all') queryParams.set('status', params.status);
+
+    const url = `/orders${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log('🔍 Fetching orders with params:', url);
+
+    const response = await clientAxios.get<ApiResponse<PaginatedOrdersResponse>>(url);
+    return response.data.data;
 }
 
 export const getMyOrderById = async (id: number): Promise<IOrder> => {
@@ -53,3 +83,14 @@ export const updateOrderStatus = async (id: number, status: string): Promise<IOr
     const response = await adminAxios.patch<ApiResponse<IOrder>>(`/orders/${id}/status`, { status });
     return response.data.data;
 }
+
+// Confirm delivery API
+export const confirmDelivery = async (orderId: number) => {
+    console.log('🚚 Confirming delivery for order:', orderId);
+
+    const response = await clientAxios.post<ApiResponse<{ order: IOrder; message: string }>>(`/orders/${orderId}/confirm-delivery`);
+
+    console.log('✅ Delivery confirmed successfully:', response.data);
+
+    return response.data;
+};

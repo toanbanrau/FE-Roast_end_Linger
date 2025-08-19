@@ -12,6 +12,8 @@ import {
   Row,
   Col,
   message,
+  Tooltip,
+  Alert,
 } from "antd";
 import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -93,9 +95,77 @@ export default function ListOrder() {
     },
   });
 
-  const handleStatusChange = (orderId: number, statusId: number) => {
+  // Định nghĩa thứ tự trạng thái (từ thấp đến cao) - theo database
+  const statusOrder = [
+    'pending',        // 1. Chờ xử lý
+    'confirmed',      // 2. Đã xác nhận
+    'processing',     // 3. Đang xử lý
+    'shipping',       // 4. Đang vận chuyển
+    'delivered',      // 5. Đã giao hàng
+    'completed',      // 6. Hoàn thành
+  ];
+
+  // Trạng thái cuối (không thể chỉnh sửa)
+  const finalStatuses = ['completed', 'cancelled', 'refunded'];
+
+  // Kiểm tra xem có thể chuyển trạng thái không
+  const canChangeStatus = (currentStatus: string | undefined | null, newStatusId: number) => {
+    // Tìm trạng thái mới
+    const newStatus = orderStatuses?.find(s => s.id === newStatusId);
+    if (!newStatus || !newStatus.status_name) return false;
+
+    const newStatusName = newStatus.status_name.toLowerCase();
+    const currentStatusName = (currentStatus || '').toLowerCase();
+
+    // Nếu trạng thái hiện tại là cuối thì không được chỉnh
+    if (finalStatuses.includes(currentStatusName)) {
+      return false;
+    }
+
+    // Cho phép chuyển sang cancelled từ bất kỳ trạng thái nào (trừ final statuses)
+    if (newStatusName === 'cancelled') {
+      return true;
+    }
+
+    // Không cho phép chuyển từ cancelled sang trạng thái khác
+    if (currentStatusName === 'cancelled') {
+      return false;
+    }
+
+    // Kiểm tra thứ tự tiến triển (chỉ được tiến lên)
+    const currentIndex = statusOrder.indexOf(currentStatusName);
+    const newIndex = statusOrder.indexOf(newStatusName);
+
+    // Nếu không tìm thấy trong statusOrder, cho phép (có thể là trạng thái đặc biệt)
+    if (currentIndex === -1 || newIndex === -1) {
+      return true;
+    }
+
+    // Chỉ cho phép tiến lên hoặc giữ nguyên
+    return newIndex >= currentIndex;
+  };
+
+  const handleStatusChange = (orderId: number, statusId: number, currentOrder: IOrder) => {
     console.log("🔄 handleStatusChange called:", { orderId, statusId });
-    console.log("🚀 Calling mutation directly (no confirmation)");
+
+    const currentStatusName = currentOrder.status.name;
+
+    // Kiểm tra validation
+    if (!canChangeStatus(currentStatusName, statusId)) {
+      const newStatus = orderStatuses?.find(s => s.id === statusId);
+      const newStatusText = newStatus ? getStatusText(newStatus.status_name) : 'Unknown';
+      const currentStatusText = getStatusText(currentStatusName);
+
+      if (finalStatuses.includes(currentStatusName.toLowerCase())) {
+        message.error(`Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`);
+      } else {
+        message.error(`Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`);
+      }
+      return;
+    }
+
+    console.log("✅ Status change validation passed");
+    console.log("🚀 Calling mutation");
     updateStatusMutation.mutate({ orderId, statusId });
   };
 
@@ -120,22 +190,38 @@ export default function ListOrder() {
   };
 
   // Function để chuyển đổi status sang tiếng Việt
-  const getStatusText = (statusName: string) => {
+  const getStatusText = (statusName: string | undefined | null) => {
+    if (!statusName) return "Không xác định";
+
     const statusMap: { [key: string]: string } = {
       pending: "Chờ xử lý",
       confirmed: "Đã xác nhận",
       processing: "Đang xử lý",
-      preparing: "Đang chuẩn bị",
       shipping: "Đang vận chuyển",
-      shipped: "Đã giao vận",
-      out_for_delivery: "Đang giao hàng",
       delivered: "Đã giao hàng",
       completed: "Hoàn thành",
       cancelled: "Đã hủy",
       refunded: "Đã hoàn tiền",
-      returned: "Đã trả hàng",
     };
     return statusMap[statusName.toLowerCase()] || statusName;
+  };
+
+  // Function để lấy màu cho trạng thái
+  const getStatusColor = (statusName: string | undefined | null) => {
+    if (!statusName) return "default";
+
+    const colorMap: { [key: string]: string } = {
+      // Theo database hiện tại
+      pending: "orange",
+      confirmed: "blue",
+      processing: "cyan",
+      shipping: "geekblue",
+      delivered: "green",
+      completed: "success",
+      cancelled: "error",
+      refunded: "warning",
+    };
+    return colorMap[statusName.toLowerCase()] || "default";
   };
 
   const columns: ColumnsType<IOrder> = [
@@ -193,22 +279,60 @@ export default function ListOrder() {
       title: "Trạng thái",
       key: "status",
       width: 150,
-      render: (_, record: IOrder) => (
-        <Select
-          value={record.status.id}
-          style={{ width: "100%" }}
-          onChange={(statusId) => handleStatusChange(record.id, statusId)}
-          loading={updateStatusMutation.isPending}
-        >
-          {orderStatuses?.map((status) => (
-            <Option key={status.id} value={status.id}>
-              <Tag color={status.color}>
-                {getStatusText(status.status_name)}
-              </Tag>
-            </Option>
-          ))}
-        </Select>
-      ),
+      render: (_, record: IOrder) => {
+        const currentStatusName = record.status?.name?.toLowerCase() || '';
+        const isFinalStatus = finalStatuses.includes(currentStatusName);
+
+        // Lọc các trạng thái có thể chuyển đến
+        const availableStatuses = orderStatuses?.filter(status =>
+          canChangeStatus(currentStatusName, status.id)
+        ) || [];
+
+        return (
+          <div>
+            <Tooltip
+              title={
+                isFinalStatus
+                  ? "Đơn hàng đã hoàn tất, không thể thay đổi trạng thái"
+                  : "Chỉ có thể chuyển lên trạng thái tiếp theo"
+              }
+            >
+              <Select
+                value={record.status.id}
+                style={{ width: "100%" }}
+                onChange={(statusId) => handleStatusChange(record.id, statusId, record)}
+                loading={updateStatusMutation.isPending}
+                disabled={isFinalStatus}
+                placeholder="Chọn trạng thái"
+              >
+              {/* Hiển thị trạng thái hiện tại */}
+              <Option key={record.status.id} value={record.status.id}>
+                <Tag color={record.status.color}>
+                  {getStatusText(record.status.name)}
+                </Tag>
+              </Option>
+
+              {/* Hiển thị các trạng thái có thể chuyển đến */}
+              {availableStatuses
+                .filter(status => status.id !== record.status.id) // Loại bỏ trạng thái hiện tại
+                .map((status) => (
+                <Option key={status.id} value={status.id}>
+                  <Tag color={status.color}>
+                    {getStatusText(status.status_name)}
+                  </Tag>
+                </Option>
+              ))}
+              </Select>
+            </Tooltip>
+
+            {isFinalStatus && (
+              <div className="text-xs text-gray-500 mt-1">
+                🔒 Không thể thay đổi
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Ngày tạo",
@@ -238,6 +362,16 @@ export default function ListOrder() {
 
   return (
     <div className="p-6">
+      {/* Thông báo quy tắc */}
+      <Alert
+        message="Quy tắc cập nhật trạng thái đơn hàng"
+        description="Chỉ có thể chuyển trạng thái tiến lên theo thứ tự. Đơn hàng đã hoàn thành, hủy, hoàn tiền hoặc trả hàng không thể thay đổi trạng thái."
+        type="info"
+        showIcon
+        className="mb-6"
+        closable
+      />
+
       {/* Thống kê */}
       {stats && (
         <Row gutter={16} className="mb-6">

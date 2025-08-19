@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, MapPin, Edit2, Trash2, Star, StarOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { 
-  getAddresses, 
-  deleteAddress, 
+import {
+  getAddresses,
+  deleteAddress,
   setDefaultAddress,
-  addressQueryOptions 
+  addressQueryOptions
 } from '../../services/addressUserServices';
 import type { UserAddress } from '../../interfaces/address';
+import ConfirmModal from '../ConfirmModal';
 import AddressModal from './AddressModal';
 
 export default function AddressManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingAddressId, setDeletingAddressId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch addresses
@@ -56,8 +59,15 @@ export default function AddressManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
-      deleteMutation.mutate(id);
+    setDeletingAddressId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingAddressId) {
+      deleteMutation.mutate(deletingAddressId);
+      setIsConfirmModalOpen(false);
+      setDeletingAddressId(null);
     }
   };
 
@@ -201,6 +211,22 @@ export default function AddressManagement() {
           setIsModalOpen(false);
           queryClient.invalidateQueries({ queryKey: ['addresses'] });
         }}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingAddressId(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xóa địa chỉ"
+        message="Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
       />
     </>
   );

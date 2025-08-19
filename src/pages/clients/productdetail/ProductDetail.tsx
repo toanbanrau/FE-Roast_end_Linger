@@ -365,25 +365,23 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Album ảnh sản phẩm */}
         <div className="flex flex-col gap-4">
-          <div className="bg-stone-50 rounded-xl p-8 flex items-center justify-center">
+          <div className="bg-stone-50 rounded-xl p-2 flex items-center justify-center w-full h-[500px]">
             <img
               src={activeImage}
               alt={product.product_name}
-              width={600}
-              height={600}
-              className="object-contain max-h-[500px]"
+              className="object-cover w-full h-full rounded-lg"
             />
           </div>
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-3 justify-center flex-wrap">
             {displayImages.map((img, idx) => (
               <img
                 key={idx}
                 src={img.url}
                 alt={img.type}
-                className={`w-20 h-20 object-cover rounded cursor-pointer border ${
+                className={`w-24 h-24 object-cover rounded-lg cursor-pointer border-2 transition-all hover:scale-105 ${
                   activeImage === img.url
-                    ? "border-amber-800"
-                    : "border-transparent"
+                    ? "border-amber-800 shadow-lg"
+                    : "border-gray-200 hover:border-amber-400"
                 }`}
                 onClick={() => setActiveImage(img.url)}
               />
@@ -553,7 +551,7 @@ export default function ProductDetailPage() {
 
           <div className="flex items-center gap-2 text-sm text-stone-600 pt-4 border-t">
             <Truck className="h-4 w-4 text-amber-800" />
-            <span>Miễn phí giao hàng cho đơn hàng trên $50</span>
+            <span>Miễn phí giao hàng cho đơn hàng trên 500.000đ</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">

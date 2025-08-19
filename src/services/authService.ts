@@ -37,6 +37,55 @@ export const getProfile = async (): Promise<IUser> => {
   return response.data.data;
 };
 
+// Cập nhật profile
+export interface UpdateProfilePayload {
+  name?: string;
+  full_name?: string;
+  email?: string;
+  address?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  gender?: 'male' | 'female' | 'other';
+  avatar?: File;
+}
+
+export const updateProfile = async (data: UpdateProfilePayload) => {
+  console.log('updateProfile called with data:', data);
+
+  // Luôn sử dụng FormData để hỗ trợ cả file upload và data thông thường
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      // Nếu là file, append trực tiếp
+      if (value instanceof File) {
+        console.log(`Appending file: ${key}`, value);
+        formData.append(key, value);
+      } else {
+        // Nếu là string/number, convert thành string
+        console.log(`Appending field: ${key} = ${value}`);
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  // Log FormData contents
+  console.log('FormData contents:');
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
+  }
+
+  console.log('Sending POST request to /profile with FormData');
+  const response = await clientAxios.post("/profile", formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  console.log('Update profile response:', response.data);
+  return response.data;
+};
+
 // Check token validity
 export const checkTokenInfo = async (): Promise<boolean> => {
   try {
@@ -100,6 +149,17 @@ export interface ResetPasswordPayload {
 }
 export const resetPassword = async (data: ResetPasswordPayload) => {
   const response = await clientAxios.post("/auth/reset-password", data);
+  return response.data;
+};
+
+// Đổi mật khẩu (khi đã đăng nhập)
+export interface ChangePasswordPayload {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+export const changePassword = async (data: ChangePasswordPayload) => {
+  const response = await clientAxios.put("/auth/change-password", data);
   return response.data;
 };
 

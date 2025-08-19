@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAllProductsClient } from "../services/productService";
@@ -75,10 +75,17 @@ export interface ProductFilterState {
 export const useProductFilter = (): ProductFilterState => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State cho search input với debounce
-  const [searchInput, setSearchInput] = useState(
-    searchParams.get("search") || ""
-  );
+  // State cho search input với debounce - không sync với URL để tránh reset
+  const [searchInput, setSearchInput] = useState("");
+
+  // Ref để tránh stale closure trong debounce
+  const updateSearchParamsRef = useRef<(updates: Record<string, string | number>) => void>();
+
+  // Initialize search input từ URL một lần duy nhất
+  useEffect(() => {
+    const initialSearch = searchParams.get("search") || "";
+    setSearchInput(initialSearch);
+  }, []); // Chỉ chạy một lần khi mount
 
   // Lấy các query params theo format API (theo docs/product.md)
   const filters: ProductFilterParams = useMemo(() => ({
@@ -97,22 +104,21 @@ export const useProductFilter = (): ProductFilterState => {
     search: searchParams.get("search") || "",
   }), [searchParams]);
 
-  // Sync searchInput với URL params khi URL thay đổi
-  useEffect(() => {
-    const urlSearch = searchParams.get("search") || "";
-    if (urlSearch !== searchInput) {
-      setSearchInput(urlSearch);
-    }
-  }, [searchParams, searchInput]);
+  // Ref để track user typing state
+  const isUserTypingRef = useRef(false);
 
   // Cập nhật query params
   const updateSearchParams = useCallback(
     (updates: Record<string, string | number>) => {
+      console.log('🔍 updateSearchParams called with:', updates);
+
       const newParams = new URLSearchParams(searchParams);
       Object.entries(updates).forEach(([key, value]) => {
         if (value === "" || (value === 0 && key !== "page")) {
+          console.log('🔍 Deleting param:', key);
           newParams.delete(key);
         } else {
+          console.log('🔍 Setting param:', key, '=', value);
           newParams.set(key, String(value));
         }
       });
@@ -120,10 +126,15 @@ export const useProductFilter = (): ProductFilterState => {
       if (!updates.hasOwnProperty('page')) {
         newParams.set("page", "1");
       }
+
+      console.log('🔍 New URL params:', newParams.toString());
       setSearchParams(newParams, { replace: true });
     },
     [searchParams, setSearchParams]
   );
+
+  // Update ref với function mới nhất
+  updateSearchParamsRef.current = updateSearchParams;
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
@@ -135,13 +146,30 @@ export const useProductFilter = (): ProductFilterState => {
   useEffect(() => {
     const currentSearch = searchParams.get("search") || "";
     if (searchInput !== currentSearch) {
+      console.log('🔍 Search debounce triggered:', { searchInput, currentSearch });
+
+      // Đánh dấu user đang typing
+      isUserTypingRef.current = true;
+
       const timeoutId = setTimeout(() => {
-        updateSearchParams({ search: searchInput });
+        console.log('🔍 Updating search params:', searchInput);
+        if (updateSearchParamsRef.current) {
+          updateSearchParamsRef.current({ search: searchInput });
+        }
+        // Reset flag sau khi update xong
+        setTimeout(() => {
+          isUserTypingRef.current = false;
+        }, 100);
       }, 500); // 500ms debounce
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        console.log('🔍 Clearing search timeout');
+        clearTimeout(timeoutId);
+        // Reset flag nếu timeout bị cancel
+        isUserTypingRef.current = false;
+      };
     }
-  }, [searchInput, searchParams, updateSearchParams]);
+  }, [searchInput]); // Chỉ depend vào searchInput
 
   // Check if any filters are active
   const hasActiveFilters = useMemo(() => {
@@ -191,7 +219,10 @@ export const useProductFilter = (): ProductFilterState => {
     error,
   } = useQuery({
     queryKey: ["products", queryParams.toString()],
-    queryFn: () => getAllProductsClient(queryParams),
+    queryFn: () => {
+      console.log('🔍 Fetching products with params:', queryParams.toString());
+      return getAllProductsClient(queryParams);
+    },
   });
 
   // Fetch categories

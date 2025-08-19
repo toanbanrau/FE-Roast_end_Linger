@@ -1,20 +1,21 @@
 import {
   ArrowLeft,
-  Download,
   Truck,
   Package,
   CheckCircle,
   X,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import AccountNav from "../../../../components/AccountNav";
-import { getMyOrderById } from "../../../../services/checkoutService";
+import { getMyOrderById, confirmDelivery } from "../../../../services/checkoutService";
 import type { IOrder } from "../../../../interfaces/order";
 import CancelOrderModal from "../../../../components/order/CancelOrderModal";
 import CreateReviewModal from "../../../../components/CreateReviewModal";
+import ConfirmModal from "../../../../components/ConfirmModal";
 import { canCancelOrder } from "../../../../utils/orderStatus";
+import { toast } from "react-hot-toast";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,9 @@ export default function OrderDetailPage() {
   const [selectedProductId, setSelectedProductId] = useState<
     number | undefined
   >();
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const {
     data: order,
@@ -32,6 +36,20 @@ export default function OrderDetailPage() {
     queryKey: ["order", id],
     queryFn: () => getMyOrderById(Number(id)),
     enabled: !!id,
+  });
+
+  // Mutation cho confirm delivery
+  const confirmDeliveryMutation = useMutation({
+    mutationFn: confirmDelivery,
+    onSuccess: (response) => {
+      toast.success(response.message || 'Đã xác nhận nhận hàng thành công!');
+      // Refresh order data
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi xác nhận nhận hàng!';
+      toast.error(errorMessage);
+    },
   });
 
   // Debug order status
@@ -49,6 +67,33 @@ export default function OrderDetailPage() {
   ].includes(order?.status.name || "");
 
   console.log("✅ isOrderCompleted:", isOrderCompleted);
+
+  // Function để kiểm tra có thể confirm delivery không
+  const canConfirmDelivery = (order: IOrder) => {
+    if (!order) return false;
+
+    const statusName = order.status.name?.toLowerCase();
+    console.log('🚚 Checking canConfirmDelivery:', {
+      statusName,
+      canConfirm: statusName === 'delivered'
+    });
+
+    // Chỉ cho phép confirm khi status là "delivered" (đã giao hàng)
+    return statusName === 'delivered';
+  };
+
+  // Handler cho confirm delivery
+  const handleConfirmDelivery = () => {
+    if (!order) return;
+    setIsConfirmModalOpen(true);
+  };
+
+  // Handler khi user confirm trong modal
+  const handleConfirmDeliveryConfirm = () => {
+    if (!order) return;
+    confirmDeliveryMutation.mutate(order.id);
+    setIsConfirmModalOpen(false);
+  };
 
   const handleCreateReview = (productId: number) => {
     setSelectedProductId(productId);
@@ -141,12 +186,20 @@ export default function OrderDetailPage() {
                       Hủy đơn hàng
                     </button>
                   )}
-                  <Link
-                    to={`/account/orders/${order.id}/invoice`}
-                    className="inline-flex items-center gap-1 text-amber-800 hover:text-amber-900 font-medium text-sm"
-                  >
-                    <Download className="h-4 w-4" /> Tải hóa đơn
-                  </Link>
+
+                  {/* Confirm Delivery Button */}
+                  {canConfirmDelivery(order) && (
+                    <button
+                      onClick={handleConfirmDelivery}
+                      disabled={confirmDeliveryMutation.isPending}
+                      className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      {confirmDeliveryMutation.isPending ? 'Đang xử lý...' : 'Xác nhận đã nhận hàng'}
+                    </button>
+                  )}
+
+
                 </div>
               </div>
             </div>
@@ -412,6 +465,19 @@ export default function OrderDetailPage() {
         visible={showReviewModal}
         onCancel={() => setShowReviewModal(false)}
         productId={selectedProductId}
+      />
+
+      {/* Modal xác nhận nhận hàng */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDeliveryConfirm}
+        title="Xác nhận nhận hàng"
+        message="Bạn có chắc chắn đã nhận được hàng? Sau khi xác nhận, đơn hàng sẽ được chuyển sang trạng thái hoàn thành và không thể hoàn tác."
+        confirmText="Đã nhận hàng"
+        cancelText="Chưa nhận"
+        type="success"
+        isLoading={confirmDeliveryMutation.isPending}
       />
     </div>
   );

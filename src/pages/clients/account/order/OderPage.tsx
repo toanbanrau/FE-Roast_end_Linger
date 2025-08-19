@@ -1,19 +1,44 @@
-import { ChevronRight, Package, Search } from "lucide-react"
+import { ChevronRight, Package, Search, ChevronLeft } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router-dom"
+import { useState } from "react"
 import AccountNav from "../../../../components/AccountNav"
-import { getMyOrders } from "../../../../services/checkoutService"
+import { getMyOrders, type PaginatedOrdersResponse, type OrdersQueryParams } from "../../../../services/checkoutService"
 import type { IOrder } from "../../../../interfaces/order"
 
 export default function OrdersPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   const {
-    data: orders,
+    data: ordersData,
     isLoading,
     isError,
-  } = useQuery<IOrder[]>({
-    queryKey: ["myOrders"],
-    queryFn: getMyOrders,
-  })
+  } = useQuery<PaginatedOrdersResponse>({
+    queryKey: ["myOrders", currentPage, perPage, searchTerm, statusFilter],
+    queryFn: () => getMyOrders({
+      page: currentPage,
+      per_page: perPage,
+      search: searchTerm || undefined,
+      status: statusFilter
+    }),
+  });
+
+  const orders = ordersData?.orders || [];
+  const pagination = ordersData?.pagination;
+
+  // Reset về trang 1 khi search hoặc filter thay đổi
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -41,16 +66,25 @@ export default function OrdersPage() {
               <input
                 type="search"
                 placeholder="Tìm đơn hàng..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10 pr-4 py-2 border rounded-md w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-stone-400" />
             </div>
             <div className="flex gap-4">
-              <select className="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800">
+              <select
+                value={statusFilter}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                className="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
+              >
                 <option value="all">Tất cả đơn</option>
                 <option value="pending">Đang xử lý</option>
-                <option value="shipped">Đã gửi hàng</option>
+                <option value="confirmed">Đã xác nhận</option>
+                <option value="processing">Đang xử lý</option>
+                <option value="shipping">Đang vận chuyển</option>
                 <option value="delivered">Đã giao hàng</option>
+                <option value="completed">Hoàn thành</option>
                 <option value="cancelled">Đã hủy</option>
               </select>
             </div>
@@ -113,7 +147,66 @@ export default function OrdersPage() {
             </div>
           )}
 
-          {/* Phân trang nếu cần */}
+          {/* Phân trang */}
+          {pagination && pagination.last_page > 1 && (
+            <div className="flex items-center justify-between bg-white border rounded-lg p-4">
+              <div className="text-sm text-stone-600">
+                Hiển thị {pagination.from}-{pagination.to} trong tổng số {pagination.total} đơn hàng
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1 px-3 py-2 text-sm border rounded-md hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Trước
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.last_page) }, (_, i) => {
+                    let pageNum;
+                    if (pagination.last_page <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= pagination.last_page - 2) {
+                      pageNum = pagination.last_page - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-2 text-sm border rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-amber-800 text-white border-amber-800'
+                            : 'hover:bg-stone-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+                  disabled={currentPage === pagination.last_page}
+                  className="flex items-center gap-1 px-3 py-2 text-sm border rounded-md hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sau
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

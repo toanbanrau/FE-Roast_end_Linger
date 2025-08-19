@@ -84,7 +84,7 @@ export default function GoogleCallbackPage() {
           if (response.data.success && response.data.data) {
             console.log("Full user data from backend:", response.data.data);
             setUser(response.data.data);
-            toast.success("Đăng nhập Google thành công!");
+            // Chỉ hiển thị toast một lần ở cuối
           } else {
             throw new Error("Không thể lấy thông tin user");
           }
@@ -102,9 +102,9 @@ export default function GoogleCallbackPage() {
             email_verified_at: new Date().toISOString(),
           };
           setUser(basicUser);
-          toast.success("Đăng nhập Google thành công!");
+          // Chỉ hiển thị toast một lần ở cuối
         } finally {
-          // Navigate after user data is set
+          // Navigate after user data is set (toast đã hiển thị ở mutation)
           setTimeout(() => {
             navigate("/", { replace: true });
           }, 100);
@@ -129,7 +129,7 @@ export default function GoogleCallbackPage() {
         setToken(token);
         setIsProcessed(true);
 
-        toast.success("Đăng nhập Google thành công!");
+        // Bỏ toast ở đây để tránh duplicate với mutation
         setTimeout(() => {
           navigate("/", { replace: true });
         }, 100);

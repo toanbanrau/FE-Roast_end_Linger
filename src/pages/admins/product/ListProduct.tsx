@@ -18,6 +18,11 @@ import {
   Select,
   Pagination,
   Tag,
+  Slider,
+  InputNumber,
+  Row,
+  Col,
+  Modal,
 } from "antd";
 import {
   EyeOutlined,
@@ -44,6 +49,15 @@ export default function ListProduct() {
   const status = searchParams.get("status") || "";
   const categoryId = searchParams.get("category_id") || "";
   const brandId = searchParams.get("brand_id") || "";
+  const minPrice = searchParams.get("min_price") || "";
+  const maxPrice = searchParams.get("max_price") || "";
+
+  // State cho search input để có thể type realtime
+  const [searchValue, setSearchValue] = useState(search);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    minPrice ? parseInt(minPrice) : 0,
+    maxPrice ? parseInt(maxPrice) : 10000000
+  ]);
 
   // Tạo query params cho API
   const queryParams = useMemo(() => {
@@ -53,8 +67,10 @@ export default function ListProduct() {
     if (status) params.set("status", status);
     if (categoryId) params.set("category_id", categoryId);
     if (brandId) params.set("brand_id", brandId);
+    if (minPrice) params.set("min_price", minPrice);
+    if (maxPrice) params.set("max_price", maxPrice);
     return params;
-  }, [page, search, status, categoryId, brandId]);
+  }, [page, search, status, categoryId, brandId, minPrice, maxPrice]);
 
   const { data: productsResponse, isLoading } = useQuery({
     queryKey: ["admin-products", queryParams.toString()],
@@ -126,10 +142,44 @@ export default function ListProduct() {
 
   // Hàm xóa sản phẩm
   const handleDelete = (id: number, name: string) => {
-    if (window.confirm(`Bạn có chắc muốn xóa sản phẩm "${name}"?`)) {
-      deleteMutation.mutate(id);
-    }
+    Modal.confirm({
+      title: 'Xác nhận xóa sản phẩm',
+      content: `Bạn có chắc muốn xóa sản phẩm "${name}"? Hành động này không thể hoàn tác.`,
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      okType: 'danger',
+      onOk: () => {
+        deleteMutation.mutate(id);
+      },
+    });
   };
+
+  // Handler cho search với debounce
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchValue(value);
+    // Debounce search - chỉ search sau 500ms không type
+    const timeoutId = setTimeout(() => {
+      updateSearchParams({ search: value });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [updateSearchParams]);
+
+  // Handler cho price range
+  const handlePriceRangeChange = useCallback((value: [number, number]) => {
+    setPriceRange(value);
+    updateSearchParams({
+      min_price: value[0] > 0 ? value[0].toString() : "",
+      max_price: value[1] < 10000000 ? value[1].toString() : ""
+    });
+  }, [updateSearchParams]);
+
+  // Reset filters
+  const handleResetFilters = useCallback(() => {
+    setSearchValue("");
+    setPriceRange([0, 10000000]);
+    setSearchParams(new URLSearchParams(), { replace: true });
+  }, [setSearchParams]);
 
   const columns: ColumnsType<IProduct> = [
     {
@@ -228,60 +278,143 @@ export default function ListProduct() {
       </button>
 
       {/* Bộ lọc */}
-      <Card className="mb-6">
-        <Space size="middle" wrap>
-          <Search
-            placeholder="Tìm kiếm sản phẩm, danh mục, thương hiệu..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            size="large"
-            value={search}
-            onSearch={(value) => updateSearchParams({ search: value })}
-            style={{ width: 300 }}
-          />
+      <Card className="mb-6" title="Bộ lọc tìm kiếm">
+        <Row gutter={[16, 16]}>
+          {/* Search */}
+          <Col xs={24} sm={12} md={8}>
+            <div>
+              <label className="block text-sm font-medium mb-2">Tìm kiếm</label>
+              <Input
+                placeholder="Tìm kiếm sản phẩm, danh mục, thương hiệu..."
+                allowClear
+                prefix={<SearchOutlined />}
+                size="large"
+                value={searchValue}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+          </Col>
 
-          <Select
-            placeholder="Lọc theo trạng thái"
-            allowClear
-            style={{ width: 180 }}
-            value={status || undefined}
-            onChange={(value) => updateSearchParams({ status: value || "" })}
-          >
-            <Option value="active">Đang bán</Option>
-            <Option value="inactive">Ngừng bán</Option>
-            <Option value="out_of_stock">Hết hàng</Option>
-          </Select>
+          {/* Status Filter */}
+          <Col xs={24} sm={12} md={4}>
+            <div>
+              <label className="block text-sm font-medium mb-2">Trạng thái</label>
+              <Select
+                placeholder="Chọn trạng thái"
+                allowClear
+                style={{ width: "100%" }}
+                value={status || undefined}
+                onChange={(value) => updateSearchParams({ status: value || "" })}
+              >
+                <Option value="active">Đang bán</Option>
+                <Option value="inactive">Ngừng bán</Option>
+                <Option value="out_of_stock">Hết hàng</Option>
+              </Select>
+            </div>
+          </Col>
 
-          <Select
-            placeholder="Lọc theo danh mục"
-            allowClear
-            style={{ width: 180 }}
-            value={categoryId ? parseInt(categoryId) : undefined}
-            onChange={(value) =>
-              updateSearchParams({ category_id: value || "" })
-            }
-          >
-            {categories?.map((category) => (
-              <Option key={category.id} value={category.id}>
-                {category.category_name}
-              </Option>
-            ))}
-          </Select>
+          {/* Category Filter */}
+          <Col xs={24} sm={12} md={4}>
+            <div>
+              <label className="block text-sm font-medium mb-2">Danh mục</label>
+              <Select
+                placeholder="Chọn danh mục"
+                allowClear
+                style={{ width: "100%" }}
+                value={categoryId ? parseInt(categoryId) : undefined}
+                onChange={(value) =>
+                  updateSearchParams({ category_id: value || "" })
+                }
+              >
+                {categories?.map((category) => (
+                  <Option key={category.id} value={category.id}>
+                    {category.category_name}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </Col>
 
-          <Select
-            placeholder="Lọc theo thương hiệu"
-            allowClear
-            style={{ width: 180 }}
-            value={brandId ? parseInt(brandId) : undefined}
-            onChange={(value) => updateSearchParams({ brand_id: value || "" })}
-          >
-            {brands?.map((brand) => (
-              <Option key={brand.id} value={brand.id}>
-                {brand.brand_name}
-              </Option>
-            ))}
-          </Select>
-        </Space>
+          {/* Brand Filter */}
+          <Col xs={24} sm={12} md={4}>
+            <div>
+              <label className="block text-sm font-medium mb-2">Thương hiệu</label>
+              <Select
+                placeholder="Chọn thương hiệu"
+                allowClear
+                style={{ width: "100%" }}
+                value={brandId ? parseInt(brandId) : undefined}
+                onChange={(value) => updateSearchParams({ brand_id: value || "" })}
+              >
+                {brands?.map((brand) => (
+                  <Option key={brand.id} value={brand.id}>
+                    {brand.brand_name}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </Col>
+
+          {/* Price Range Filter */}
+          <Col xs={24} md={8}>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Khoảng giá: {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()} VNĐ
+              </label>
+              <Slider
+                range
+                min={0}
+                max={10000000}
+                step={100000}
+                value={priceRange}
+                onChange={handlePriceRangeChange}
+                tooltip={{
+                  formatter: (value) => `${value?.toLocaleString()} VNĐ`
+                }}
+              />
+              <Row gutter={8} className="mt-2">
+                <Col span={12}>
+                  <InputNumber
+                    placeholder="Giá từ"
+                    min={0}
+                    max={priceRange[1]}
+                    value={priceRange[0]}
+                    onChange={(value) => handlePriceRangeChange([value || 0, priceRange[1]])}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+                    style={{ width: "100%" }}
+                  />
+                </Col>
+                <Col span={12}>
+                  <InputNumber
+                    placeholder="Giá đến"
+                    min={priceRange[0]}
+                    max={10000000}
+                    value={priceRange[1]}
+                    onChange={(value) => handlePriceRangeChange([priceRange[0], value || 10000000])}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+                    style={{ width: "100%" }}
+                  />
+                </Col>
+              </Row>
+            </div>
+          </Col>
+
+          {/* Reset Button */}
+          <Col xs={24} md={4}>
+            <div className="flex items-end h-full">
+              <Button
+                onClick={handleResetFilters}
+                style={{ width: "100%" }}
+                className="mb-2"
+              >
+                Xóa bộ lọc
+              </Button>
+            </div>
+          </Col>
+        </Row>
       </Card>
 
       <Table

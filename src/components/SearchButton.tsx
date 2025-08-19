@@ -59,7 +59,7 @@ export default function SearchButton({ className = "" }: SearchButtonProps) {
 
   // Handle search result click
   const handleSearchResultClick = (product: IProduct) => {
-    navigate(`/product/${product.slug}`);
+    navigate(`/products/${product.slug}`);
     setSearchQuery("");
     setShowSearchResults(false);
     setIsSearchOpen(false);
