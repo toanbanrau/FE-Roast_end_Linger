@@ -358,6 +358,9 @@ export default function CheckoutPage() {
 
         const result = await checkout(orderData);
 
+        // Xóa giỏ hàng ngay khi đặt hàng thành công (cho tất cả phương thức)
+        clearCart();
+
         // Kiểm tra phương thức thanh toán
         if (data.payment_method === "bank_transfer") {
           setOrderResult(result);
@@ -368,7 +371,6 @@ export default function CheckoutPage() {
         } else {
           // COD và các phương thức khác chuyển đến trang success
           toast.success("Đặt hàng thành công!");
-          clearCart();
 
           // Lấy order_number từ result
           const orderNumber = result.order.order_number;

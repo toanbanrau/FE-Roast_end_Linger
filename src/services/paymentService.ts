@@ -34,17 +34,20 @@ interface ApiResponse<T> {
  * Kiểm tra trạng thái thanh toán
  * @param paymentId - ID của payment
  * @param checkSepay - Có gọi SePay API để check không (default: true)
+ * @param signal - AbortSignal để cancel request
  * @returns Promise<PaymentStatusResponse>
  */
 export const getPaymentStatus = async (
   paymentId: number,
-  checkSepay: boolean = true
+  checkSepay: boolean = true,
+  signal?: AbortSignal
 ): Promise<PaymentStatusResponse> => {
   console.log('🔗 Calling Payment Status API:', `/api/payments/${paymentId}/status?check_sepay=${checkSepay}`);
 
   try {
     const response = await clientAxios.get<ApiResponse<PaymentStatusResponse>>(
-      `/payments/${paymentId}/status?check_sepay=${checkSepay}`
+      `/payments/${paymentId}/status?check_sepay=${checkSepay}`,
+      { signal }
     );
 
     console.log('📡 Payment API Response Status:', response.status);

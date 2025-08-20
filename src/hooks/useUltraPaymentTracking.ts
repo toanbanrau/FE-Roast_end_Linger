@@ -91,6 +91,7 @@ export const useUltraPaymentTracking = (
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const isActiveRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
 
 
@@ -116,9 +117,14 @@ export const useUltraPaymentTracking = (
     setCheckCount(prev => prev + 1);
 
     try {
-      const result = await getPaymentStatus(paymentId);
+      // Tạo AbortController mới cho mỗi request
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      if (isActiveRef.current) {
+      const result = await getPaymentStatus(paymentId, true, controller.signal);
+
+      // Kiểm tra xem component còn active và request không bị abort
+      if (isActiveRef.current && !controller.signal.aborted) {
         const newStatus = result.status;
 
         // Debug log để kiểm tra status change
@@ -168,7 +174,14 @@ export const useUltraPaymentTracking = (
         }
       }
     } catch (err: any) {
+      // Bỏ qua lỗi nếu request bị abort (component unmount)
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        console.log('🛑 Payment check aborted - component unmounted');
+        return;
+      }
+
       if (isActiveRef.current) {
+        console.error('❌ Payment check error:', err);
         setError(err.message || 'Lỗi kiểm tra thanh toán');
       }
     } finally {
@@ -249,13 +262,46 @@ export const useUltraPaymentTracking = (
     setTimeElapsed(0);
     setCheckCount(0);
     setError(null);
-    
+
     startPhase(0);
 
-    return () => {
+    // Cleanup khi window/tab bị đóng
+    const handleBeforeUnload = () => {
+      console.log('🚪 Window closing - stopping payment tracking');
       isActiveRef.current = false;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+
+    return () => {
+      console.log('🧹 Cleaning up payment tracking - component unmounting');
+
+      // Remove event listeners
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+
+      // Đánh dấu không active để dừng tất cả operations
+      isActiveRef.current = false;
+
+      // Clear interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        console.log('⏹️ Payment tracking interval cleared');
+      }
+
+      // Abort pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+        console.log('🛑 Payment API request aborted');
       }
     };
   }, [paymentId, startPhase]);
