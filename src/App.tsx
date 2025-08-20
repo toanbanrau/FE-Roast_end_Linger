@@ -73,6 +73,7 @@ import ListUser from "./pages/admins/user/ListUser";
 import UserForm from "./pages/admins/user/UserForm";
 import UserDetail from "./pages/admins/user/UserDetail";
 import ListReview from "./pages/admins/reviews/ListReview";
+import ReviewDetail from "./pages/admins/reviews/ReviewDetail";
 
 function App() {
   // Kiểm tra token khi ứng dụng khởi động
@@ -261,10 +262,14 @@ function App() {
           path: "user/:id",
           element: <UserDetail />,
         },
-        //Route Comment
+        //Route Reviews
         {
-          path: "comment",
+          path: "reviews",
           element: <ListReview/>,
+        },
+        {
+          path: "reviews/:id",
+          element: <ReviewDetail/>,
         },
         //Route Promotion
         {

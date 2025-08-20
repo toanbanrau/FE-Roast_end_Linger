@@ -1,4 +1,4 @@
-import { clientAxios } from "../configs/config";
+import { adminAxios } from "../configs/config";
 import type {
   IAdminReview,
   IAdminReviewsResponse,
@@ -32,36 +32,36 @@ export const getAdminReviews = async (
     if (params.sort_by) queryParams.append('sort_by', params.sort_by);
   }
 
-  const url = `/admin/reviews${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-  const response = await clientAxios.get(url);
+  const url = `/reviews${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+  const response = await adminAxios.get(url);
   return response.data.data;
 };
 
 // Get single review details for admin
 export const getAdminReviewDetails = async (reviewId: number): Promise<IAdminReview> => {
-  const response = await clientAxios.get(`/admin/reviews/${reviewId}`);
+  const response = await adminAxios.get(`/reviews/${reviewId}`);
   return response.data.data;
 };
 
 // Approve a review
 export const approveReview = async (reviewId: number): Promise<IAdminReviewActionResponse> => {
-  const response = await clientAxios.post(`/admin/reviews/${reviewId}/approve`);
+  const response = await adminAxios.post(`/reviews/${reviewId}/approve`);
   return response.data.data;
 };
 
 // Reject a review
 export const rejectReview = async (
-  reviewId: number, 
+  reviewId: number,
   reason?: string
 ): Promise<IAdminReviewActionResponse> => {
   const data = reason ? { reason } : {};
-  const response = await clientAxios.post(`/admin/reviews/${reviewId}/reject`, data);
+  const response = await adminAxios.post(`/reviews/${reviewId}/reject`, data);
   return response.data.data;
 };
 
 // Delete a review (permanent removal)
 export const deleteAdminReview = async (reviewId: number): Promise<IAdminReviewActionResponse> => {
-  const response = await clientAxios.delete(`/admin/reviews/${reviewId}`);
+  const response = await adminAxios.delete(`/reviews/${reviewId}`);
   return response.data.data;
 };
 

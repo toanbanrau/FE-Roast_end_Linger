@@ -48,38 +48,38 @@ const LayoutAdmin: React.FC = () => {
       label: "Đơn Hàng",
       onClick: () => navigate("/admin/order"),
     },
-    {
-      key: "17",
-      icon: <DatabaseOutlined />,
-      label: "Quản Lý Kho",
-      children: [
-        {
-          key: "17-1",
-          label: "Danh Sách Tồn Kho",
-          onClick: () => navigate("/admin/inventory"),
-        },
-        {
-          key: "17-2",
-          label: "Nhập Kho",
-          onClick: () => navigate("/admin/inventory/import"),
-        },
-        {
-          key: "17-3",
-          label: "Xuất Kho",
-          onClick: () => navigate("/admin/inventory/export"),
-        },
-        {
-          key: "17-4",
-          label: "Hoàn Trả",
-          onClick: () => navigate("/admin/inventory/return"),
-        },
-        {
-          key: "17-5",
-          label: "Quản Lý Hạn Sử Dụng",
-          onClick: () => navigate("/admin/inventory/expiry"),
-        },
-      ],
-    },
+    // {
+    //   key: "17",
+    //   icon: <DatabaseOutlined />,
+    //   label: "Quản Lý Kho",
+    //   children: [
+    //     {
+    //       key: "17-1",
+    //       label: "Danh Sách Tồn Kho",
+    //       onClick: () => navigate("/admin/inventory"),
+    //     },
+    //     {
+    //       key: "17-2",
+    //       label: "Nhập Kho",
+    //       onClick: () => navigate("/admin/inventory/import"),
+    //     },
+    //     {
+    //       key: "17-3",
+    //       label: "Xuất Kho",
+    //       onClick: () => navigate("/admin/inventory/export"),
+    //     },
+    //     {
+    //       key: "17-4",
+    //       label: "Hoàn Trả",
+    //       onClick: () => navigate("/admin/inventory/return"),
+    //     },
+    //     {
+    //       key: "17-5",
+    //       label: "Quản Lý Hạn Sử Dụng",
+    //       onClick: () => navigate("/admin/inventory/expiry"),
+    //     },
+    //   ],
+    // },
     {
       key: "4",
       icon: <TrademarkOutlined />,
@@ -102,7 +102,7 @@ const LayoutAdmin: React.FC = () => {
       key: "8",
       icon: <CommentOutlined />,
       label: "Bình Luận",
-      onClick: () => navigate("/admin/comment"),
+      onClick: () => navigate("/admin/reviews"),
     },
     {
       key: "9",

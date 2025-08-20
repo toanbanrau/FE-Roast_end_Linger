@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Tag,
@@ -28,6 +29,7 @@ import {
   StarOutlined,
   UserOutlined,
   VerifiedOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -51,6 +53,7 @@ const { Text, Title } = Typography;
 
 export default function ListReview() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filters, setFilters] = useState<IAdminReviewQueryParams>({
@@ -389,6 +392,14 @@ export default function ListReview() {
       fixed: "right",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/admin/reviews/${record.id}`)}
+            />
+          </Tooltip>
+
           {!record.is_approved && (
             <Tooltip title="Duyệt đánh giá">
               <Button

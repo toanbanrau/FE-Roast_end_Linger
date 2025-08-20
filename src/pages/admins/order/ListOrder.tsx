@@ -201,7 +201,7 @@ export default function ListOrder() {
     {
       title: "STT",
       key: "stt",
-      width: 60,
+      width: 50,
       render: (_: unknown, __: unknown, index: number) =>
         (currentPage - 1) * 10 + index + 1,
     },
@@ -237,17 +237,17 @@ export default function ListOrder() {
         </span>
       ),
     },
-    {
-      title: "Phương thức thanh toán",
-      dataIndex: "payment_method",
-      key: "payment_method",
-      width: 180,
-      render: (method: string) => (
-        <Tag color={getPaymentMethodColor(method)}>
-          {getPaymentMethodText(method)}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Phương thức thanh toán",
+    //   dataIndex: "payment_method",
+    //   key: "payment_method",
+    //   width: 180,
+    //   render: (method: string) => (
+    //     <Tag color={getPaymentMethodColor(method)}>
+    //       {getPaymentMethodText(method)}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Trạng thái thanh toán",
       key: "payment_status",
@@ -322,7 +322,7 @@ export default function ListOrder() {
     {
       title: "Ngày tạo",
       key: "created_at",
-      width: 120,
+      width: 100,
       render: (_, record: IOrder) => (
         <span>
           {new Date(record.dates.created_at).toLocaleDateString("vi-VN")}
