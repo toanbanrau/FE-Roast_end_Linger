@@ -16,6 +16,7 @@ import CreateReviewModal from "../../../../components/CreateReviewModal";
 import ConfirmModal from "../../../../components/ConfirmModal";
 import { canCancelOrder } from "../../../../utils/orderStatus";
 import { toast } from "react-hot-toast";
+import { getStatusText } from "../../../../utils/orderStatusUtils";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -62,9 +63,7 @@ export default function OrderDetailPage() {
   const isOrderCompleted = [
     "delivered",
     "completed",
-    "Delivered",
-    "Completed",
-  ].includes(order?.status.name || "");
+  ].includes(order?.status.name?.toLowerCase() || "");
 
   console.log("✅ isOrderCompleted:", isOrderCompleted);
 
@@ -116,6 +115,8 @@ export default function OrderDetailPage() {
       minute: "2-digit",
     });
   };
+
+
 
   if (isLoading) {
     return (
@@ -169,7 +170,7 @@ export default function OrderDetailPage() {
                         color: order.status.color,
                       }}
                     >
-                      {order.status.name}
+                      {getStatusText(order.status.name)}
                     </span>
                   </div>
                   <p className="text-sm text-stone-500">
@@ -210,9 +211,9 @@ export default function OrderDetailPage() {
                   <div key={history.id} className="flex mb-8 last:mb-0">
                     <div className="flex flex-col items-center mr-4">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100 text-green-600">
-                        {history.new_status.name === "Pending" ? (
+                        {history.new_status.name.toLowerCase() === "pending" ? (
                           <Package className="h-4 w-4" />
-                        ) : history.new_status.name === "Processing" ? (
+                        ) : history.new_status.name.toLowerCase() === "processing" ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -228,7 +229,7 @@ export default function OrderDetailPage() {
                             <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"></path>
                             <path d="M6 12h12"></path>
                           </svg>
-                        ) : history.new_status.name === "Shipped" ? (
+                        ) : history.new_status.name.toLowerCase() === "shipped" ? (
                           <Truck className="h-4 w-4" />
                         ) : (
                           <CheckCircle className="h-4 w-4" />
@@ -239,7 +240,7 @@ export default function OrderDetailPage() {
                       )}
                     </div>
                     <div className="pt-1">
-                      <h3 className="font-medium">{history.new_status.name}</h3>
+                      <h3 className="font-medium">{getStatusText(history.new_status.name)}</h3>
                       <p className="text-sm text-stone-500">
                         {formatDate(history.created_at)} lúc{" "}
                         {formatTime(history.created_at)}
@@ -254,7 +255,7 @@ export default function OrderDetailPage() {
                 ))}
               </div>
 
-              {order.status.name === "Shipped" && (
+              {order.status.name.toLowerCase() === "shipped" && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Truck className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -273,7 +274,7 @@ export default function OrderDetailPage() {
                 </div>
               )}
 
-              {order.status.name === "Delivered" && (
+              {order.status.name.toLowerCase() === "delivered" && (
                 <div className="mt-6 p-4 bg-green-50 rounded-lg">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
@@ -378,6 +379,18 @@ export default function OrderDetailPage() {
                       ? "Thanh toán khi nhận hàng"
                       : order.payment_method}
                   </p>
+                </div>
+                <div className="mb-4">
+                  <h3 className="font-medium mb-1">Trạng thái thanh toán</h3>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      order.payment_status || order.is_paid
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
+                  </span>
                 </div>
                 <div className="space-y-2 border-t pt-4">
                   <div className="flex justify-between">

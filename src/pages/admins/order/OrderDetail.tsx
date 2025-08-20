@@ -28,6 +28,7 @@ import {
   updateOrderStatus,
   getOrderStatuses,
 } from "../../../services/adminOrderService";
+import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
 
 const { Option } = Select;
 
@@ -104,24 +105,7 @@ export default function OrderDetail() {
     return colorMap[statusName] || "default";
   };
 
-  // Function để chuyển đổi status sang tiếng Việt
-  const getStatusText = (statusName: string) => {
-    const statusMap: { [key: string]: string } = {
-      pending: "Chờ xử lý",
-      confirmed: "Đã xác nhận",
-      processing: "Đang xử lý",
-      preparing: "Đang chuẩn bị",
-      shipping: "Đang vận chuyển",
-      shipped: "Đã giao vận",
-      out_for_delivery: "Đang giao hàng",
-      delivered: "Đã giao hàng",
-      completed: "Hoàn thành",
-      cancelled: "Đã hủy",
-      refunded: "Đã hoàn tiền",
-      returned: "Đã trả hàng",
-    };
-    return statusMap[statusName.toLowerCase()] || statusName;
-  };
+
 
   const getPaymentMethodText = (method: string) => {
     const textMap: { [key: string]: string } = {
@@ -277,6 +261,13 @@ export default function OrderDetail() {
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán" span={1}>
                 {getPaymentMethodText(order.payment_method)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái thanh toán" span={1}>
+                <Tag
+                  color={order.payment_status || order.is_paid ? "green" : "orange"}
+                >
+                  {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
+                </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức giao hàng" span={1}>
                 <div>

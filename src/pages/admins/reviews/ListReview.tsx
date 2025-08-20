@@ -239,11 +239,7 @@ export default function ListReview() {
   // Cấu hình columns cho table
   const columns: ColumnsType<IAdminReview> = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
-      sorter: true,
+      title: "STT", render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "Sản phẩm",
@@ -585,7 +581,7 @@ export default function ListReview() {
           dataSource={reviewsData?.reviews.data}
           rowKey="id"
           loading={isLoading}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
           pagination={{
             current: currentPage,
             pageSize: filters.per_page || 15,

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ICart, IAddProductToCartPayload } from '../interfaces/cart';
 import * as cartService from '../services/cartService';
+import { toast } from 'react-hot-toast';
 
 interface CartState {
   cart: ICart | null;
@@ -20,6 +21,19 @@ interface CartState {
 const updateTimeouts = new Map<number, NodeJS.Timeout>();
 // Map để lưu trữ AbortController cho việc cancel request
 const updateControllers = new Map<number, AbortController>();
+
+// Helper function để kiểm tra canceled error
+const isCanceledError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') return false;
+
+  // Kiểm tra Axios CanceledError
+  if ('code' in error && error.code === 'ERR_CANCELED') return true;
+
+  // Kiểm tra AbortError hoặc CanceledError
+  if (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) return true;
+
+  return false;
+};
 
 const initialState: ICart | null = null;
 
@@ -50,10 +64,13 @@ export const useCartStore = create<CartState>()(
         set({ loading: true });
         try {
           const res = await cartService.addToCart(payload);
-          if (!res.success) throw new Error(res.message || 'Thêm sản phẩm thất bại!');
+          // Kiểm tra này không cần thiết nữa vì service đã throw error
+          // if (!res.success) throw new Error(res.message || 'Thêm sản phẩm thất bại!');
           await get().syncCart();
         } catch (error) {
-          console.log(error);
+          console.error('Add to cart error:', error);
+          // QUAN TRỌNG: Throw lại error để React Query mutation có thể catch được
+          throw error;
         } finally {
           set({ loading: false });
         }
@@ -62,7 +79,19 @@ export const useCartStore = create<CartState>()(
         const currentCart = get().cart;
         if (!currentCart) return;
 
-        // 1. Optimistic update - cập nhật UI ngay lập tức
+        // 0. Tìm item cần update để kiểm tra stock
+        const targetItem = currentCart.items.find(item => item.id === itemId);
+        if (!targetItem) return;
+
+        // Kiểm tra stock trước khi optimistic update
+        const availableStock = targetItem.stock_info?.available_stock || 0;
+        if (quantity > availableStock) {
+          // Không cho phép optimistic update nếu vượt quá stock
+          toast.error(`Chỉ còn ${availableStock} sản phẩm trong kho!`);
+          return;
+        }
+
+        // 1. Optimistic update - cập nhật UI ngay lập tức (chỉ khi hợp lệ)
         const optimisticCart = {
           ...currentCart,
           items: currentCart.items.map(item =>
@@ -116,21 +145,27 @@ export const useCartStore = create<CartState>()(
 
           try {
             const res = await cartService.updateCartItem(itemId, { quantity }, controller.signal);
-            if (!res.success) throw new Error(res.message || 'Cập nhật số lượng thất bại!');
+            // Kiểm tra này không cần thiết nữa vì service đã throw error
+            // if (!res.success) throw new Error(res.message || 'Cập nhật số lượng thất bại!');
 
             // 4. Sync lại với server để đảm bảo dữ liệu chính xác
             await get().syncCart();
           } catch (error) {
             // Bỏ qua lỗi nếu request bị cancel
-            if (error instanceof Error && error.name === 'AbortError') return;
+            if (isCanceledError(error)) return;
 
-            console.log(error);
+            // Chỉ log lỗi thật sự, không log cancel errors
+            console.error('Cart update error:', error);
 
             // 5. Rollback nếu API thất bại
             set({ cart: currentCart });
 
-            // Có thể thêm toast notification ở đây
-            // toast.error('Cập nhật số lượng thất bại!');
+            // Hiển thị thông báo lỗi cho user
+            let errorMessage = 'Cập nhật số lượng thất bại!';
+            if (error instanceof Error) {
+              errorMessage = error.message;
+            }
+            toast.error(errorMessage);
           } finally {
             // Cleanup
             updateControllers.delete(itemId);
@@ -170,12 +205,13 @@ export const useCartStore = create<CartState>()(
         // 2. Gọi API ở background
         try {
           const res = await cartService.removeFromCart(itemId);
-          if (!res.success) throw new Error(res.message || 'Xóa sản phẩm thất bại!');
+          // Kiểm tra này không cần thiết nữa vì service đã throw error
+          // if (!res.success) throw new Error(res.message || 'Xóa sản phẩm thất bại!');
 
           // 3. Sync lại với server
           await get().syncCart();
         } catch (error) {
-          console.log(error);
+          console.error('Remove from cart error:', error);
 
           // 4. Rollback nếu API thất bại
           set({ cart: currentCart });
@@ -185,10 +221,13 @@ export const useCartStore = create<CartState>()(
         set({ loading: true });
         try {
           const res = await cartService.clearCart();
-          if (!res.success) throw new Error(res.message || 'Xóa giỏ hàng thất bại!');
+          // Kiểm tra này không cần thiết nữa vì service đã throw error
+          // if (!res.success) throw new Error(res.message || 'Xóa giỏ hàng thất bại!');
           set({ cart: initialState });
         } catch (error) {
-          console.log(error);
+          console.error('Clear cart error:', error);
+          // QUAN TRỌNG: Throw lại error để component có thể catch được
+          throw error;
         } finally {
           set({ loading: false });
         }

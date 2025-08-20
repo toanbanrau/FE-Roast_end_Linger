@@ -32,6 +32,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
+import ConfirmModal from "../../../components/ConfirmModal";
+import  {toast} from "react-toastify";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -58,6 +60,10 @@ export default function ListProduct() {
     minPrice ? parseInt(minPrice) : 0,
     maxPrice ? parseInt(maxPrice) : 10000000
   ]);
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingProduct, setDeletingProduct] = useState<{id: number, name: string} | null>(null);
 
   // Tạo query params cho API
   const queryParams = useMemo(() => {
@@ -132,26 +138,52 @@ export default function ListProduct() {
   const deleteMutation = useMutation({
     mutationFn: deleteAdminProduct,
     onSuccess: () => {
-      alert("Xóa sản phẩm thành công!");
+      toast.success("Xóa sản phẩm thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     },
     onError: () => {
-      alert("Có lỗi xảy ra khi xóa sản phẩm!");
+      toast.error("Có lỗi xảy ra khi xóa sản phẩm!");
     },
   });
 
-  // Hàm xóa sản phẩm
-  const handleDelete = (id: number, name: string) => {
+  // Hàm xóa sản phẩm - Phiên bản 1: Sử dụng Modal.confirm
+  const handleDeleteWithModal = (id: number, name: string) => {
+    console.log('Delete button clicked for product:', id, name); // Debug log
+
     Modal.confirm({
       title: 'Xác nhận xóa sản phẩm',
       content: `Bạn có chắc muốn xóa sản phẩm "${name}"? Hành động này không thể hoàn tác.`,
       okText: 'Xóa',
       cancelText: 'Hủy',
       okType: 'danger',
+      centered: true, // Căn giữa modal
+      zIndex: 1000, // Đảm bảo z-index cao
+      maskClosable: false, // Không cho phép đóng khi click ngoài
       onOk: () => {
+        console.log('Confirming delete for product:', id); // Debug log
         deleteMutation.mutate(id);
       },
+      onCancel: () => {
+        console.log('Delete cancelled'); // Debug log
+      },
     });
+  };
+
+  // Hàm xóa sản phẩm - Phiên bản 2: Sử dụng ConfirmModal tùy chỉnh
+  const handleDelete = (id: number, name: string) => {
+    console.log('Delete button clicked for product:', id, name); // Debug log
+    setDeletingProduct({ id, name });
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingProduct) {
+      console.log('Confirming delete for product:', deletingProduct.id); // Debug log
+      deleteMutation.mutate(deletingProduct.id);
+      setIsConfirmModalOpen(false);
+      setDeletingProduct(null);
+    }
   };
 
   // Handler cho search với debounce
@@ -441,6 +473,22 @@ export default function ListProduct() {
           }}
         />
       </div>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingProduct(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa sản phẩm"
+        message={`Bạn có chắc muốn xóa sản phẩm "${deletingProduct?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   );
 }

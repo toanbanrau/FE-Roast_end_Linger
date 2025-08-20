@@ -25,6 +25,7 @@ import {
   getOrderStatuses,
   updateOrderStatus,
 } from "../../../services/adminOrderService";
+import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -38,6 +39,9 @@ export default function ListOrder() {
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<
     string | undefined
   >();
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<
+    boolean | undefined
+  >();
 
   // Lấy danh sách đơn hàng
   const { data: ordersData, isLoading: ordersLoading } = useQuery({
@@ -47,6 +51,7 @@ export default function ListOrder() {
       searchQuery,
       statusFilter,
       paymentMethodFilter,
+      paymentStatusFilter,
     ],
     queryFn: () => {
       return getAllOrders({
@@ -55,6 +60,7 @@ export default function ListOrder() {
         search: searchQuery || undefined,
         status_id: statusFilter || undefined,
         payment_method: paymentMethodFilter || undefined,
+        payment_status: paymentStatusFilter,
       });
     },
   });
@@ -189,40 +195,7 @@ export default function ListOrder() {
     return textMap[method] || method;
   };
 
-  // Function để chuyển đổi status sang tiếng Việt
-  const getStatusText = (statusName: string | undefined | null) => {
-    if (!statusName) return "Không xác định";
 
-    const statusMap: { [key: string]: string } = {
-      pending: "Chờ xử lý",
-      confirmed: "Đã xác nhận",
-      processing: "Đang xử lý",
-      shipping: "Đang vận chuyển",
-      delivered: "Đã giao hàng",
-      completed: "Hoàn thành",
-      cancelled: "Đã hủy",
-      refunded: "Đã hoàn tiền",
-    };
-    return statusMap[statusName.toLowerCase()] || statusName;
-  };
-
-  // Function để lấy màu cho trạng thái
-  const getStatusColor = (statusName: string | undefined | null) => {
-    if (!statusName) return "default";
-
-    const colorMap: { [key: string]: string } = {
-      // Theo database hiện tại
-      pending: "orange",
-      confirmed: "blue",
-      processing: "cyan",
-      shipping: "geekblue",
-      delivered: "green",
-      completed: "success",
-      cancelled: "error",
-      refunded: "warning",
-    };
-    return colorMap[statusName.toLowerCase()] || "default";
-  };
 
   const columns: ColumnsType<IOrder> = [
     {
@@ -272,6 +245,18 @@ export default function ListOrder() {
       render: (method: string) => (
         <Tag color={getPaymentMethodColor(method)}>
           {getPaymentMethodText(method)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Trạng thái thanh toán",
+      key: "payment_status",
+      width: 150,
+      render: (_, record: IOrder) => (
+        <Tag
+          color={record.payment_status || record.is_paid ? "green" : "orange"}
+        >
+          {record.payment_status_text || (record.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
         </Tag>
       ),
     },
@@ -362,16 +347,6 @@ export default function ListOrder() {
 
   return (
     <div className="p-6">
-      {/* Thông báo quy tắc */}
-      <Alert
-        message="Quy tắc cập nhật trạng thái đơn hàng"
-        description="Chỉ có thể chuyển trạng thái tiến lên theo thứ tự. Đơn hàng đã hoàn thành, hủy, hoàn tiền hoặc trả hàng không thể thay đổi trạng thái."
-        type="info"
-        showIcon
-        className="mb-6"
-        closable
-      />
-
       {/* Thống kê */}
       {stats && (
         <Row gutter={16} className="mb-6">
@@ -450,6 +425,16 @@ export default function ListOrder() {
             <Option value="credit_card">Thẻ tín dụng</Option>
             <Option value="e_wallet">Ví điện tử</Option>
           </Select>
+
+          <Select
+            placeholder="Lọc theo trạng thái thanh toán"
+            allowClear
+            style={{ width: 200 }}
+            onChange={setPaymentStatusFilter}
+          >
+            <Option value={true}>Đã thanh toán</Option>
+            <Option value={false}>Chưa thanh toán</Option>
+          </Select>
         </Space>
       </Card>
 
@@ -470,7 +455,7 @@ export default function ListOrder() {
               `${range[0]}-${range[1]} của ${total} đơn hàng`,
             onChange: (page) => setCurrentPage(page),
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
         />
       </Card>
     </div>

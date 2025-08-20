@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPromotion } from "../../../services/promotionService";
 import { useNavigate } from "react-router-dom";
 import type { IPromotionCreate } from "../../../interfaces/promotion";
+import {toast} from "react-hot-toast";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -22,8 +23,7 @@ const AddPromotion: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
     },
     onError: (error) => {
-      console.error("Error details:", error);
-      message.error("Có lỗi xảy ra khi thêm khuyến mãi!");
+      toast.error("Có lỗi xảy ra khi thêm khuyến mãi!");
     },
   });
 

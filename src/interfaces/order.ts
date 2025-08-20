@@ -205,6 +205,9 @@ export interface IOrder {
   delivery_info: DeliveryInfo;
   order_totals: OrderTotals;
   payment_method: string;
+  payment_status: boolean; // true=paid, false=unpaid
+  payment_status_text: string; // "Đã thanh toán", "Chưa thanh toán"
+  is_paid: boolean; // Alias for payment_status
   shipping_method: OrderShippingMethod;
   status: OrderStatus;
   promotion_code: string | null;

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, Button, Rate, Image, message, Modal, Tabs } from 'antd';
+import { Card, Button, Rate, Image, message, Tabs } from 'antd';
 import { EditOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { getReviewableProducts, deleteProductReview } from '../../../services/reviewService';
 import CreateReviewModal from '../../../components/CreateReviewModal';
+import ConfirmModal from '../../../components/ConfirmModal';
 import type { IReviewableProduct } from '../../../interfaces/review';
 
 const { TabPane } = Tabs;
@@ -11,6 +12,8 @@ const { TabPane } = Tabs;
 export default function MyReviews() {
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingReview, setDeletingReview] = useState<{productId: number, reviewId: number} | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | undefined>();
 
   // Fetch reviewable products

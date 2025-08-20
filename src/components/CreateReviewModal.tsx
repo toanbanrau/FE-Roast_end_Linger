@@ -379,15 +379,6 @@ export default function CreateReviewModal({
                 htmlType="submit"
                 loading={createMutation.isPending}
                 disabled={!selectedProduct}
-                onClick={() => {
-                  alert(
-                    "Nút được click! selectedProduct: " +
-                      (selectedProduct ? "Có" : "Không")
-                  );
-                  console.log("Submit button clicked!");
-                  console.log("selectedProduct:", selectedProduct);
-                  console.log("Button disabled:", !selectedProduct);
-                }}
               >
                 {createMutation.isPending ? "Đang gửi..." : "Gửi đánh giá"}
               </Button>

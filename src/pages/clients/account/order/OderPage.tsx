@@ -5,6 +5,7 @@ import { useState } from "react"
 import AccountNav from "../../../../components/AccountNav"
 import { getMyOrders, type PaginatedOrdersResponse, type OrdersQueryParams } from "../../../../services/checkoutService"
 import type { IOrder } from "../../../../interfaces/order"
+import { getStatusText } from "../../../../utils/orderStatusUtils"
 
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +48,8 @@ export default function OrdersPage() {
       year: "numeric",
     })
   }
+
+
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -129,7 +132,16 @@ export default function OrdersPage() {
                               color: order.status.color,
                             }}
                           >
-                            {order.status.name}
+                            {getStatusText(order.status.name)}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              order.payment_status || order.is_paid
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
                           </span>
                         </div>
                         <p className="text-sm text-stone-500">Ngày đặt: {formatDate(order.dates.created_at)}</p>

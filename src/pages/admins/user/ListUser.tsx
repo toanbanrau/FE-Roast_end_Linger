@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import {
-  Table,
-  Button,
-  Space,
-  Input,
-  Select,
-  Card,
-  Row,
-  Col,
-  Popconfirm,
-  message,
+    Table,
+    Button,
+    Space,
+    Input,
+    Select,
+    Card,
+    Row,
+    Col,
+    Popconfirm,
+    message, Tag,
 } from "antd";
 import {
   SearchOutlined,
@@ -53,7 +53,7 @@ const ListUser: React.FC = () => {
       message.success("Xóa người dùng thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
-    onError: () => {
+    onError: (error) => {
       message.error("Xóa người dùng thất bại!");
     },
   });
@@ -77,11 +77,9 @@ const ListUser: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 80,
+      {
+          title: "STT",
+          render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "Tên",
@@ -99,14 +97,14 @@ const ListUser: React.FC = () => {
       dataIndex: "role",
       key: "role",
       render: (role: string) => (
-        <span
+        <Tag
           style={{
             color: role === "admin" ? "#1890ff" : "#52c41a",
             fontWeight: "bold",
           }}
         >
           {role === "admin" ? "Admin" : role === "staff" ? "Staff" : "User"}
-        </span>
+        </Tag>
       ),
     },
     {
@@ -114,14 +112,14 @@ const ListUser: React.FC = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <span
+        <Tag
           style={{
             color: status === "active" ? "#52c41a" : "#ff4d4f",
             fontWeight: "bold",
           }}
         >
           {status === "active" ? "Hoạt động" : "Không hoạt động"}
-        </span>
+        </Tag>
       ),
     },
     {
@@ -134,18 +132,15 @@ const ListUser: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
-      width: 200,
       render: (_: any, record: IUser) => (
-        <Space>
+        <Space size="middle">
           <Button
-            type="link"
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/user/${record.id}`)}
           >
             Xem
           </Button>
           <Button
-            type="link"
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/user/edit/${record.id}`)}
           >
@@ -158,7 +153,6 @@ const ListUser: React.FC = () => {
             cancelText="Không"
           >
             <Button
-              type="link"
               danger
               icon={<DeleteOutlined />}
               loading={deleteMutation.isPending}

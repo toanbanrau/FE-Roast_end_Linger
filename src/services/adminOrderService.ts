@@ -48,6 +48,7 @@ export const getAllOrders = async (params?: {
   search?: string;
   status_id?: number;
   payment_method?: string;
+  payment_status?: boolean;
   date_from?: string;
   date_to?: string;
   sort_by?: string;
@@ -60,6 +61,7 @@ export const getAllOrders = async (params?: {
   if (params?.search) queryParams.append('search', params.search);
   if (params?.status_id) queryParams.append('status_id', params.status_id.toString());
   if (params?.payment_method) queryParams.append('payment_method', params.payment_method);
+  if (params?.payment_status !== undefined) queryParams.append('payment_status', params.payment_status.toString());
   if (params?.date_from) queryParams.append('date_from', params.date_from);
   if (params?.date_to) queryParams.append('date_to', params.date_to);
   if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
