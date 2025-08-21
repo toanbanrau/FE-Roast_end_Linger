@@ -14,7 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UploadFile } from "antd/es/upload/interface";
 import {
   createProductReview,
-  getReviewableProducts,
+  getOrderReviewableProducts,
 } from "../services/reviewService";
 import type { IReviewForm, IReviewableProduct } from "../interfaces/review";
 
@@ -25,12 +25,14 @@ interface CreateReviewModalProps {
   visible: boolean;
   onCancel: () => void;
   productId?: number; // If specified, only show this product
+  orderId?: number; // Order ID to fetch reviewable products for
 }
 
 export default function CreateReviewModal({
   visible,
   onCancel,
   productId,
+  orderId,
 }: CreateReviewModalProps) {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -38,11 +40,11 @@ export default function CreateReviewModal({
   const [selectedProduct, setSelectedProduct] =
     useState<IReviewableProduct | null>(null);
 
-  // Fetch reviewable products
+  // Fetch reviewable products for specific order
   const { data: reviewableProducts, isLoading: isLoadingProducts } = useQuery({
-    queryKey: ["reviewable-products"],
-    queryFn: getReviewableProducts,
-    enabled: visible,
+    queryKey: ["order-reviewable-products", orderId],
+    queryFn: () => orderId ? getOrderReviewableProducts(orderId) : Promise.resolve({ data: { items: [] } }),
+    enabled: visible && !!orderId,
   });
 
   // Create review mutation
@@ -86,12 +88,14 @@ export default function CreateReviewModal({
     },
   });
 
+  // Handle single order response format (from order detail API)
+  const orderItems = reviewableProducts?.items || [];
+
   // Filter products based on productId prop
-  const filteredProducts =
-    reviewableProducts?.filter((item) => {
-      const matchesProduct = productId ? item.product.id === productId : true;
-      return matchesProduct;
-    }) || [];
+  const filteredProducts = orderItems.filter((item: any) => {
+    const matchesProduct = productId ? item.product.id === productId : true;
+    return matchesProduct;
+  });
 
   // Check if specific productId was requested but not found in reviewable list
   const isSpecificProductRequested = !!productId;

@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import AccountNav from "../../../../components/AccountNav";
 import { getMyOrderById } from "../../../../services/checkoutService";
-import { getReviewableProducts } from "../../../../services/reviewService";
+import { getOrderReviewableProducts } from "../../../../services/reviewService";
 import type { IOrder } from "../../../../interfaces/order";
 import CancelOrderModal from "../../../../components/order/CancelOrderModal";
 import CreateReviewModal from "../../../../components/CreateReviewModal";
@@ -78,51 +78,97 @@ export default function OrderDetailPage() {
       setIsLoadingReviewable(true);
       const fetchReviewableProducts = async () => {
         try {
-          console.log("📞 Calling getReviewableProducts API...");
-          const response = await getReviewableProducts();
+          console.log(`📞 Calling getOrderReviewableProducts API for order ${order.id}...`);
+          const response = await getOrderReviewableProducts(order.id);
           console.log("📋 Raw API Response:", response);
 
-          // Handle different response formats
-          const products = response?.data || response || [];
-          console.log("📦 Processed products:", products);
+          // Handle response format - should be single order with items
+          const orderData = response?.data || response || {};
+          console.log("📦 Order data:", orderData);
 
-          setReviewableProducts(products);
-          console.log("✅ Reviewable products set:", products.length);
+          // Extract items from the order
+          const items = orderData.items?.map((item: any) => ({
+            ...item,
+            order_id: orderData.order_id,
+            order_number: orderData.order_number,
+            purchased_at: orderData.purchased_at,
+            days_since_purchase: orderData.days_since_purchase
+          })) || [];
+
+          console.log("📦 Order items:", items);
+          setReviewableProducts(items);
+          console.log("✅ Reviewable products set:", items.length);
         } catch (error) {
-          console.error("❌ Failed to fetch reviewable products:", error);
+          console.error("❌ Failed to fetch order reviewable products:", error);
+          // If API fails, set empty array to avoid showing loading forever
+          setReviewableProducts([]);
         } finally {
           setIsLoadingReviewable(false);
         }
       };
       fetchReviewableProducts();
     } else {
-      console.log("⏹️ Order not completed or no order data, skipping fetch");
+      console.log("⏹️ Order not completed or no order ID, skipping fetch");
     }
-  }, [isOrderCompleted, order]);
+  }, [isOrderCompleted, order?.id]);
 
   // Check if a product can be reviewed or has been reviewed
   const getProductReviewStatus = (productId: number) => {
-    const reviewableItem = reviewableProducts.find(item => item.product.id === productId);
+    // Find all items for this product (could be multiple from different orders)
+    const productItems = reviewableProducts.filter(item => item.product.id === productId);
+
+    // Filter items that can be reviewed (can_review = true)
+    const reviewableItems = productItems.filter(item => item.can_review === true);
+
+    // Filter items that have been reviewed (has_reviewed = true)
+    const reviewedItems = productItems.filter(item => item.has_reviewed === true);
 
     console.log(`🔍 getProductReviewStatus for productId ${productId}:`, {
       reviewableProductsLength: reviewableProducts.length,
-      reviewableItem: reviewableItem ? {
-        productId: reviewableItem.product.id,
-        canReview: reviewableItem.can_review,
-        hasReviewed: reviewableItem.has_reviewed
-      } : null,
-      found: !!reviewableItem
+      productItemsFound: productItems.length,
+      reviewableItemsFound: reviewableItems.length,
+      reviewedItemsFound: reviewedItems.length,
+      productItems: productItems.map(item => ({
+        orderItemId: item.order_item_id,
+        orderNumber: item.order_number,
+        canReview: item.can_review,
+        hasReviewed: item.has_reviewed
+      }))
     });
 
-    if (!reviewableItem) {
+    // If no items found for this product
+    if (productItems.length === 0) {
       return { canReview: false, hasReviewed: false, status: 'not_eligible' };
     }
 
+    // If has reviewable items (can_review = true)
+    if (reviewableItems.length > 0) {
+      return {
+        canReview: true,
+        hasReviewed: reviewedItems.length > 0,
+        status: 'can_review',
+        review: reviewedItems[0]?.review,
+        items: productItems
+      };
+    }
+
+    // If has reviewed items but no reviewable items
+    if (reviewedItems.length > 0) {
+      return {
+        canReview: false,
+        hasReviewed: true,
+        status: 'already_reviewed',
+        review: reviewedItems[0]?.review,
+        items: productItems
+      };
+    }
+
+    // Product exists but neither can review nor has reviewed
     return {
-      canReview: reviewableItem.can_review === true,
-      hasReviewed: reviewableItem.has_reviewed === true,
-      status: reviewableItem.can_review ? 'can_review' : 'already_reviewed',
-      review: reviewableItem.review
+      canReview: false,
+      hasReviewed: false,
+      status: 'not_eligible',
+      items: productItems
     };
   };
 
@@ -356,28 +402,23 @@ export default function OrderDetailPage() {
                     {isOrderCompleted && !isLoadingReviewable && (() => {
                       const reviewStatus = getProductReviewStatus(item.product.id);
 
-                      console.log(`🎯 Rendering review button for product ${item.product.id}:`, {
-                        productName: item.product.name,
-                        reviewStatus,
-                        willShowReviewButton: reviewStatus.canReview && !reviewStatus.hasReviewed
-                      });
-
-                      if (reviewStatus.hasReviewed) {
-                        return (
-                          <button
-                            disabled
-                            className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
-                          >
-                            ✓ Bạn đã đánh giá rồi
-                          </button>
-                        );
-                      } else if (reviewStatus.canReview) {
+                      // Ưu tiên canReview trước hasReviewed
+                      if (reviewStatus.canReview) {
                         return (
                           <button
                             onClick={() => handleCreateReview(item.product.id)}
                             className="mt-2 inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
                           >
                             ⭐ Viết đánh giá
+                          </button>
+                        );
+                      } else if (reviewStatus.hasReviewed) {
+                        return (
+                          <button
+                            disabled
+                            className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
+                          >
+                            ✓ Bạn đã đánh giá rồi
                           </button>
                         );
                       } else {
@@ -530,6 +571,7 @@ export default function OrderDetailPage() {
         visible={showReviewModal}
         onCancel={() => setShowReviewModal(false)}
         productId={selectedProductId}
+        orderId={order?.id}
       />
 
 
