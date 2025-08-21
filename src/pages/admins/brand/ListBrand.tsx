@@ -2,12 +2,19 @@ import { Image, message, Table, Button, Space } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import type { IBrand } from "../../../interfaces/brand";
 import { deleteBrand, getAllBrands } from "../../../services/brandService";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 const ListBrand = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    brandId: 0,
+    brandName: "",
+  });
 
   const { data } = useQuery({
     queryKey: ["brands"],
@@ -24,8 +31,21 @@ const ListBrand = () => {
       message.error("Có lỗi xảy ra khi xóa thương hiệu!");
     },
   });
-  const handleDeleteBrand = (id: number) => {
-    mutation.mutate(id);
+  const handleDeleteBrand = (id: number, brandName: string) => {
+    setConfirmModal({
+      isOpen: true,
+      brandId: id,
+      brandName: brandName,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    mutation.mutate(confirmModal.brandId);
+    setConfirmModal({ isOpen: false, brandId: 0, brandName: "" });
+  };
+
+  const handleCloseModal = () => {
+    setConfirmModal({ isOpen: false, brandId: 0, brandName: "" });
   };
 
   const columns = [
@@ -67,7 +87,8 @@ const ListBrand = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteBrand(data.id)}
+            onClick={() => handleDeleteBrand(data.id, data.brand_name)}
+            loading={mutation.isPending}
           />
         </Space>
       ),
@@ -83,6 +104,18 @@ const ListBrand = () => {
         Thêm Thương Hiệu
       </button>
       <Table columns={columns} dataSource={data} />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa thương hiệu"
+        message={`Bạn có chắc chắn muốn xóa thương hiệu "${confirmModal.brandName}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={mutation.isPending}
+      />
     </>
   );
 };

@@ -56,35 +56,14 @@ export const useUltraPaymentTracking = (
   const [checkCount, setCheckCount] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
 
-  // 4-Phase Strategy for Sub-15-Second Detection
+  // Đơn giản hóa: chỉ 1 phase với interval 5 giây
   const phases: PhaseInfo[] = [
-    { 
-      name: 'Lightning', 
-      interval: 1000, 
-      duration: 15000, 
-      icon: '⚡',
-      description: 'Kiểm tra siêu nhanh - 1 giây/lần'
-    },
-    { 
-      name: 'Rapid', 
-      interval: 2000, 
-      duration: 30000, 
-      icon: '🚀',
-      description: 'Kiểm tra nhanh - 2 giây/lần'
-    },
-    { 
-      name: 'Fast', 
-      interval: 3000, 
-      duration: 45000, 
-      icon: '🔥',
-      description: 'Kiểm tra thường - 3 giây/lần'
-    },
-    { 
-      name: 'Standard', 
-      interval: 5000, 
-      duration: 0, 
+    {
+      name: 'Standard',
+      interval: 5000,
+      duration: 0,
       icon: '🔄',
-      description: 'Kiểm tra chuẩn - 5 giây/lần'
+      description: 'Kiểm tra mỗi 5 giây'
     },
   ];
 
@@ -190,17 +169,15 @@ export const useUltraPaymentTracking = (
     }
   }, [paymentId, status, onPaymentCompleted, onPaymentFailed, onStatusUpdate]);
 
-  const startPhase = useCallback((phaseIndex: number) => {
-    if (phaseIndex >= phases.length) return;
-
-    // Không start phase nếu đã completed/failed
+  const startPhase = useCallback(() => {
+    // Không start nếu đã completed/failed
     if (status === 'completed' || status === 'failed' || !isActiveRef.current) {
-      console.log('⏹️ Not starting phase - payment already completed/failed');
+      console.log('⏹️ Not starting tracking - payment already completed/failed');
       return;
     }
 
-    const currentPhase = phases[phaseIndex];
-    setPhase(phaseIndex + 1);
+    const currentPhase = phases[0]; // Chỉ có 1 phase
+    setPhase(1);
 
     // Clear existing interval
     if (intervalRef.current) {
@@ -208,43 +185,31 @@ export const useUltraPaymentTracking = (
       intervalRef.current = null;
     }
 
-    console.log(`🚀 Starting Phase ${phaseIndex + 1}: ${currentPhase.name} (${currentPhase.interval}ms interval)`);
+    console.log(`🚀 Starting payment tracking (interval: ${currentPhase.interval}ms)`);
 
     // Initial check
     checkPaymentStatus();
 
-    // Set up interval for this phase
+    // Set up interval - chỉ 1 interval duy nhất 5 giây
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - (startTimeRef.current || 0);
 
-      // Chỉ update time elapsed mỗi 500ms để tránh giật
-      const now = Date.now();
-      if (now - lastUpdateTime > 500) {
-        setTimeElapsed(elapsed);
-        setLastUpdateTime(now);
-      }
+      // Update time elapsed
+      setTimeElapsed(elapsed);
 
+      // Dừng nếu quá thời gian hoặc component không active
       if (elapsed >= maxTotalTime || !isActiveRef.current) {
+        console.log('⏰ Payment tracking timeout or component inactive');
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
         return;
       }
 
+      console.log('🔄 Checking payment status...');
       checkPaymentStatus();
     }, currentPhase.interval);
-
-    // Schedule next phase if this phase has duration limit
-    if (currentPhase.duration > 0) {
-      setTimeout(() => {
-        if (isActiveRef.current && status === 'pending') {
-          const elapsed = Date.now() - (startTimeRef.current || 0);
-          if (elapsed < maxTotalTime && phaseIndex + 1 < phases.length) {
-            startPhase(phaseIndex + 1);
-          }
-        }
-      }, currentPhase.duration);
-    }
   }, [checkPaymentStatus, maxTotalTime, status, phases]);
 
   // Manual check function
@@ -263,7 +228,7 @@ export const useUltraPaymentTracking = (
     setCheckCount(0);
     setError(null);
 
-    startPhase(0);
+    startPhase();
 
     // Cleanup khi window/tab bị đóng
     const handleBeforeUnload = () => {

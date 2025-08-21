@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import "./ListReview.css";
 import {
   Table,
   Tag,
@@ -242,47 +243,47 @@ export default function ListReview() {
   // Cấu hình columns cho table
   const columns: ColumnsType<IAdminReview> = [
     {
-      title: "STT", render: (_: any, __: any, index: number) => index + 1,
+      title: "STT",
+      key: "stt",
+      width: 50,
+      render: (_: any, __: any, index: number) =>
+        (currentPage - 1) * 15 + index + 1,
     },
     {
       title: "Sản phẩm",
       key: "product",
-      width: 200,
+      width: 250,
       render: (_, record) => (
-        <Space>
-          <Image
+        <div className="flex items-center space-x-3">
+          <img
             src={record.product.image}
             alt={record.product.name}
-            width={40}
-            height={40}
-            style={{ objectFit: "cover", borderRadius: 4 }}
-            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+            className="w-12 h-12 object-cover rounded"
           />
           <div>
-            <Text strong>{record.product.name}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: 12 }}>
+            <div className="font-medium text-gray-900 truncate max-w-[150px]">
+              {record.product.name}
+            </div>
+            <div className="text-gray-500 text-sm">
               ID: {record.product.id}
-            </Text>
+            </div>
           </div>
-        </Space>
+        </div>
       ),
     },
     {
       title: "Người đánh giá",
       key: "user",
-      width: 180,
+      width: 200,
       render: (_, record) => (
-        <Space>
-          <Avatar icon={<UserOutlined />} />
-          <div>
-            <Text strong>{record.user.full_name}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.user.email}
-            </Text>
+        <div>
+          <div className="font-medium text-gray-900">
+            {record.user.full_name}
           </div>
-        </Space>
+          <div className="text-gray-500 text-sm">
+            {record.user.email}
+          </div>
+        </div>
       ),
     },
     {
@@ -290,43 +291,35 @@ export default function ListReview() {
       key: "rating",
       width: 120,
       render: (_, record) => (
-        <div>
+        <div className="text-center">
           <Rate
             disabled
-            defaultValue={record.rating}
+            value={record.rating}
             style={{ fontSize: 14 }}
           />
-          <br />
-          <Text style={{ fontSize: 12 }}>{record.rating}/5 sao</Text>
+          <div className="text-gray-500 text-xs mt-1">
+            {record.rating}/5 sao
+          </div>
         </div>
       ),
     },
     {
       title: "Nội dung",
       key: "content",
-      width: 250,
+      width: 300,
       render: (_, record) => (
         <div>
           {record.title && (
-            <Text strong style={{ display: "block", marginBottom: 4 }}>
+            <div className="font-medium text-gray-900 mb-1 truncate">
               {record.title}
-            </Text>
+            </div>
           )}
-          <Text
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
+          <div className="text-gray-600 text-sm line-clamp-2">
             {record.comment}
-          </Text>
+          </div>
           {record.images && record.images.length > 0 && (
-            <div style={{ marginTop: 4 }}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                📷 {record.images.length} ảnh
-              </Text>
+            <div className="text-blue-500 text-xs mt-1">
+              📷 {record.images.length} ảnh
             </div>
           )}
         </div>
@@ -337,100 +330,60 @@ export default function ListReview() {
       key: "status",
       width: 120,
       render: (_, record) => (
-        <div>
+        <div className="space-y-1">
           <Tag color={record.is_approved ? "green" : "orange"}>
             {record.is_approved ? "Đã duyệt" : "Chờ duyệt"}
           </Tag>
           {record.is_verified_purchase && (
-            <Tag
-              color="blue"
-              icon={<VerifiedOutlined />}
-              style={{ marginTop: 4 }}
-            >
-              Đã mua hàng
-            </Tag>
+            <div>
+              <Tag color="blue" icon={<VerifiedOutlined />}>
+                Đã mua
+              </Tag>
+            </div>
           )}
-        </div>
-      ),
-    },
-    {
-      title: "Tương tác",
-      key: "interaction",
-      width: 100,
-      render: (_, record) => (
-        <div>
-          <Text style={{ fontSize: 12, color: "#52c41a" }}>
-            👍 {record.helpful_count}
-          </Text>
-          <br />
-          <Text style={{ fontSize: 12, color: "#ff4d4f" }}>
-            👎 {record.not_helpful_count}
-          </Text>
         </div>
       ),
     },
     {
       title: "Ngày tạo",
       key: "created_at",
-      width: 120,
+      width: 100,
       render: (_, record) => (
-        <div>
-          <Text style={{ fontSize: 12 }}>
+        <div className="text-center">
+          <div className="text-gray-900 text-sm">
             {dayjs(record.created_at).format("DD/MM/YYYY")}
-          </Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: 11 }}>
+          </div>
+          <div className="text-gray-500 text-xs">
             {dayjs(record.created_at).format("HH:mm")}
-          </Text>
+          </div>
         </div>
       ),
     },
     {
-      title: "Thao tác",
+      title: "Hành động",
       key: "actions",
       width: 150,
-      fixed: "right",
       render: (_, record) => (
-        <Space>
-          <Tooltip title="Xem chi tiết">
-            <Button
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => navigate(`/admin/reviews/${record.id}`)}
-            />
-          </Tooltip>
+        <Space size="middle">
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/reviews/${record.id}`)}
+          />
 
-          {!record.is_approved && (
-            <Tooltip title="Duyệt đánh giá">
-              <Button
-                type="primary"
-                size="small"
-                icon={<CheckOutlined />}
-                onClick={() => handleApprove(record.id)}
-                loading={approveMutation.isPending}
-              />
-            </Tooltip>
-          )}
-          {!record.is_approved && (
-            <Tooltip title="Từ chối đánh giá">
-              <Button
-                danger
-                size="small"
-                icon={<CloseOutlined />}
-                onClick={() => handleReject(record.id)}
-                loading={rejectMutation.isPending}
-              />
-            </Tooltip>
-          )}
-          <Tooltip title="Xóa đánh giá">
+          {!record.is_approved ? (
             <Button
-              danger
-              size="small"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
-              loading={deleteMutation.isPending}
+              type="primary"
+              icon={<CheckOutlined />}
+              onClick={() => handleApprove(record.id)}
+              loading={approveMutation.isPending}
             />
-          </Tooltip>
+          ) : (
+            <Button
+              icon={<CloseOutlined />}
+              onClick={() => handleReject(record.id)}
+              loading={rejectMutation.isPending}
+            />
+          )}
         </Space>
       ),
     },
@@ -592,7 +545,6 @@ export default function ListReview() {
           dataSource={reviewsData?.reviews.data}
           rowKey="id"
           loading={isLoading}
-          scroll={{ x: 1000 }}
           pagination={{
             current: currentPage,
             pageSize: filters.per_page || 15,

@@ -31,6 +31,7 @@ import { getAllOrigins } from "../../../services/originService";
 import type { IProductOrigin } from "../../../interfaces/product";
 import type { ICategory } from "../../../interfaces/category";
 import type { IBrand } from "../../../interfaces/brand";
+import {toast} from "react-hot-toast";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -94,7 +95,7 @@ const AddProduct = () => {
   const mutation = useMutation({
     mutationFn: (formData: FormData) => createAdminProduct(formData),
     onSuccess: () => {
-      message.success("Thêm sản phẩm thành công!");
+      toast.success("Thêm sản phẩm thành công!");
       navigate("/admin/product");
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },

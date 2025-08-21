@@ -194,3 +194,35 @@ export const getOrderStats = async (params?: {
   const response = await adminAxios.get<ApiResponse<OrderStatistics>>(url);
   return response.data.data;
 };
+
+// Cập nhật trạng thái thanh toán
+export const updatePaymentStatus = async (orderId: number, paymentStatus: boolean): Promise<{
+  order_id: number;
+  order_number: string;
+  payment_status: boolean;
+  payment_status_text: string;
+}> => {
+  console.log(`🔄 Updating order ${orderId} payment status to ${paymentStatus}`);
+  console.log(`📤 API URL: PUT /api/admin/orders/${orderId}/payment-status`);
+
+  const requestBody = {
+    payment_status: paymentStatus
+  };
+
+  console.log(`📤 Request body:`, requestBody);
+
+  try {
+    const response = await adminAxios.put<ApiResponse<{
+      order_id: number;
+      order_number: string;
+      payment_status: boolean;
+      payment_status_text: string;
+    }>>(`/orders/${orderId}/payment-status`, requestBody);
+
+    console.log(`✅ Payment status updated successfully:`, response.data);
+    return response.data.data;
+  } catch (error) {
+    console.error(`❌ Failed to update payment status:`, error);
+    throw error;
+  }
+};

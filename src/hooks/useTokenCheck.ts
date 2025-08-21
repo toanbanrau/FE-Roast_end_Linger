@@ -7,7 +7,6 @@ export const useTokenCheck = () => {
     const checkToken = async () => {
       await checkTokenOnAppStart();
     };
-
     checkToken();
   }, []);
 };

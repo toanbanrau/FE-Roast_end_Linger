@@ -106,7 +106,7 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
   } = useUltraPaymentTracking(paymentInfo?.payment_id || null, {
     onPaymentCompleted: () => {
       setPaymentCompleted(true);
-      toast.success("🎉 Thanh toán thành công! Đang chuyển trang...");
+      // toast.success("🎉 Thanh toán thành công! Đang chuyển trang...");
 
       // Lưu thông tin đơn hàng vào localStorage
       if (orderData) {
@@ -160,17 +160,17 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Payment Status - Hiển thị khi có payment_id */}
-        {paymentInfo.payment_id && !paymentCompleted && (
-          <PaymentStatus
-            status={paymentStatus}
-            phaseInfo={phaseInfo}
-            checkCount={checkCount}
-            timeElapsed={timeElapsed}
-            loading={checkingPayment}
-            onManualCheck={manualCheck}
-          />
-        )}
+        {/*/!* Payment Status - Hiển thị khi có payment_id *!/*/}
+        {/*{paymentInfo.payment_id && !paymentCompleted && (*/}
+        {/*  <PaymentStatus*/}
+        {/*    status={paymentStatus}*/}
+        {/*    phaseInfo={phaseInfo}*/}
+        {/*    checkCount={checkCount}*/}
+        {/*    timeElapsed={timeElapsed}*/}
+        {/*    loading={checkingPayment}*/}
+        {/*    onManualCheck={manualCheck}*/}
+        {/*  />*/}
+        {/*)}*/}
 
         {/* Success Message */}
         {paymentCompleted && (

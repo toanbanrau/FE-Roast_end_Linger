@@ -1,14 +1,3 @@
-/**
- * EditProduct Component
- *
- * Implements product update API according to docs/product_edit_api_guide.md
- *
- * New Image Management Format (API v2.0):
- * - images.new[] = { image_file: File, alt_text: "text", is_primary: true }
- * - images.keep[] = [1, 2, 3] (array of image IDs to keep)
- * - images.delete[] = [4, 5] (array of image IDs to delete)
- * - images.update[] = { id: 6, alt_text: "new text", sort_order: 2 }
- */
 
 import {
   Form,
@@ -48,6 +37,7 @@ import type { IProductOrigin } from "../../../interfaces/product";
 import type { ICategory } from "../../../interfaces/category";
 import type { IBrand } from "../../../interfaces/brand";
 import type { UploadFile } from "antd/es/upload/interface";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -251,7 +241,7 @@ const EditProduct = () => {
       updateAdminProduct(Number(id), formData),
     onSuccess: (data) => {
       console.log("=== UPDATE SUCCESS RESPONSE ===", data);
-      message.success("Cập nhật sản phẩm thành công!");
+      toast.success("Cập nhật sản phẩm thành công!");
       navigate("/admin/product");
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", id] });

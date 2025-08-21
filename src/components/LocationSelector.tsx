@@ -229,10 +229,12 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                     onClick={() => handleProvinceSelect(province)}
                     className="px-3 py-2 hover:bg-amber-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
-                    <div className="font-medium">{province?.name || "N/A"}</div>
-                    <div className="text-xs text-gray-500">
-                      {province?.full_name || "N/A"}
-                    </div>
+                    <div className="font-medium">{province?.name}</div>
+                    {province?.full_name && province.full_name !== province.name && (
+                      <div className="text-xs text-gray-500">
+                        {province.full_name}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -281,10 +283,12 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                     onClick={() => handleDistrictSelect(district)}
                     className="px-3 py-2 hover:bg-amber-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
-                    <div className="font-medium">{district?.name || "N/A"}</div>
-                    <div className="text-xs text-gray-500">
-                      {district?.full_name || "N/A"}
-                    </div>
+                    <div className="font-medium">{district?.name}</div>
+                    {district?.full_name && district.full_name !== district.name && (
+                      <div className="text-xs text-gray-500">
+                        {district.full_name}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -333,10 +337,12 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                     onClick={() => handleWardSelect(ward)}
                     className="px-3 py-2 hover:bg-amber-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
-                    <div className="font-medium">{ward?.name || "N/A"}</div>
-                    <div className="text-xs text-gray-500">
-                      {ward?.full_name || "N/A"}
-                    </div>
+                    <div className="font-medium">{ward?.name}</div>
+                    {ward?.full_name && ward.full_name !== ward.name && (
+                      <div className="text-xs text-gray-500">
+                        {ward.full_name}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

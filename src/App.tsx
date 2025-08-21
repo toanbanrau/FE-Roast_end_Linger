@@ -2,6 +2,7 @@ import { useRoutes } from "react-router-dom";
 import LayoutClient from "./layouts/LayoutClient";
 import LayoutAdmin from "./layouts/LayoutAdmin";
 import { useTokenCheck } from "./hooks/useTokenCheck";
+import { useCartSync } from "./hooks/useCartSync";
 import HomePage from "./pages/clients/home/HomePage";
 import ListBrand from "./pages/admins/brand/ListBrand";
 import AddBrand from "./pages/admins/brand/AddBrand";
@@ -78,6 +79,9 @@ import ReviewDetail from "./pages/admins/reviews/ReviewDetail";
 function App() {
   // Kiểm tra token khi ứng dụng khởi động
   useTokenCheck();
+
+  // Đồng bộ giỏ hàng khi app khởi động và các sự kiện khác
+  useCartSync();
 
   const element = useRoutes([
     {

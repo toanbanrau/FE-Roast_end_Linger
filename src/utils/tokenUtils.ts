@@ -90,7 +90,6 @@ export const checkTokenOnAppStart = async (): Promise<void> => {
     if (!isValid && !isTokenExpiredToastShown) {
       isTokenExpiredToastShown = true;
       clearLocalDataOnTokenError();
-      toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
       resetToastFlag();
     }
   }
@@ -100,7 +99,6 @@ export const checkTokenOnAppStart = async (): Promise<void> => {
 export const showTokenExpiredMessage = () => {
   if (!isTokenExpiredToastShown) {
     isTokenExpiredToastShown = true;
-    toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
     resetToastFlag();
   }
 };

@@ -37,6 +37,18 @@ const isCanceledError = (error: unknown): boolean => {
 
 const initialState: ICart | null = null;
 
+// Helper function để check user authentication
+const isUserAuthenticated = (): boolean => {
+  try {
+    // Sử dụng localStorage để check token thay vì import store
+    const token = localStorage.getItem('token');
+    return !!token;
+  } catch (error) {
+    console.error('Error checking user authentication:', error);
+    return false;
+  }
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -44,16 +56,41 @@ export const useCartStore = create<CartState>()(
       loading: false,
       isClearing: false,
       syncCart: async () => {
+        // Kiểm tra user authentication trước khi sync
+        if (!isUserAuthenticated()) {
+          console.log('⚠️ No authenticated user - skipping cart sync');
+          return;
+        }
+
         try {
+          console.log('🔄 Syncing cart with server...');
           const cart = await cartService.getCart();
           set({ cart });
-        } catch (error) {
-          console.error('Không thể đồng bộ giỏ hàng:', error);
+          console.log('✅ Cart synced successfully');
+        } catch (error: any) {
+          // Chỉ log lỗi, không hiển thị toast để tránh spam user
+          console.error('❌ Failed to sync cart:', error);
+
+          // Nếu là lỗi 401 (unauthorized), clear cart
+          if (error?.response?.status === 401) {
+            console.log('🔐 Unauthorized - clearing cart');
+            set({ cart: null });
+          }
+
+          // Nếu là lỗi network, giữ nguyên cart hiện tại
+          // User có thể tiếp tục sử dụng offline
         }
       },
       getCart: async () => {
+        // Kiểm tra user authentication trước khi get cart
+        if (!isUserAuthenticated()) {
+          console.log('⚠️ No authenticated user - skipping getCart');
+          return;
+        }
+
         set({ loading: true });
         try {
+          console.log('🔄 Getting cart from server...');
           const cart = await cartService.getCart();
           set({ cart });
         } finally {
@@ -247,8 +284,15 @@ export const useCartStore = create<CartState>()(
   )
 );
 
+// Subscribe listener để auto-sync cart khi cần thiết
 useCartStore.subscribe((state) => {
-  if (!state.cart && !state.loading && !state.isClearing) {
+  // Chỉ sync khi:
+  // 1. Không có cart
+  // 2. Không đang loading
+  // 3. Không đang clearing
+  // 4. Có authenticated user
+  if (!state.cart && !state.loading && !state.isClearing && isUserAuthenticated()) {
+    console.log('🔄 Auto-syncing cart due to state change...');
     state.syncCart();
   }
 });

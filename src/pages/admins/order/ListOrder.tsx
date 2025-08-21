@@ -24,6 +24,7 @@ import {
   getOrderStats,
   getOrderStatuses,
   updateOrderStatus,
+  updatePaymentStatus,
 } from "../../../services/adminOrderService";
 import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
 
@@ -98,6 +99,30 @@ export default function ListOrder() {
     onError: (error) => {
       console.error("❌ Mutation error:", error);
       message.error("Cập nhật trạng thái thất bại");
+    },
+  });
+
+  // Mutation cập nhật trạng thái thanh toán
+  const updatePaymentStatusMutation = useMutation({
+    mutationFn: ({
+      orderId,
+      paymentStatus,
+    }: {
+      orderId: number;
+      paymentStatus: boolean;
+    }) => {
+      console.log("🚀 Payment status mutation called:", { orderId, paymentStatus });
+      return updatePaymentStatus(orderId, paymentStatus);
+    },
+    onSuccess: (data) => {
+      console.log("✅ Payment status mutation success:", data);
+      message.success(`Cập nhật trạng thái thanh toán thành công: ${data.payment_status_text}`);
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-stats"] });
+    },
+    onError: (error) => {
+      console.error("❌ Payment status mutation error:", error);
+      message.error("Cập nhật trạng thái thanh toán thất bại");
     },
   });
 
@@ -251,14 +276,31 @@ export default function ListOrder() {
     {
       title: "Trạng thái thanh toán",
       key: "payment_status",
-      width: 150,
-      render: (_, record: IOrder) => (
-        <Tag
-          color={record.payment_status || record.is_paid ? "green" : "orange"}
-        >
-          {record.payment_status_text || (record.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
-        </Tag>
-      ),
+      width: 180,
+      render: (_, record: IOrder) => {
+        const isPaid = record.payment_status || record.is_paid;
+        return (
+          <Select
+            value={isPaid}
+            style={{ width: 150 }}
+            loading={updatePaymentStatusMutation.isPending}
+            disabled={updatePaymentStatusMutation.isPending}
+            onChange={(value: boolean) => {
+              updatePaymentStatusMutation.mutate({
+                orderId: record.id,
+                paymentStatus: value
+              });
+            }}
+          >
+            <Option value={false}>
+              <Tag color="orange">Chưa thanh toán</Tag>
+            </Option>
+            <Option value={true}>
+              <Tag color="green">Đã thanh toán</Tag>
+            </Option>
+          </Select>
+        );
+      },
     },
     {
       title: "Trạng thái",

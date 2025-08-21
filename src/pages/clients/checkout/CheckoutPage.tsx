@@ -316,6 +316,40 @@ export default function CheckoutPage() {
     toast.info("Đã xóa mã khuyến mãi");
   };
 
+  // Validate promotion khi subtotal thay đổi
+  useEffect(() => {
+    if (!appliedPromotion) return;
+
+    const minOrderValue = parseFloat(appliedPromotion.minimum_order_value);
+
+    // Nếu subtotal xuống dưới giá trị tối thiểu, tự động xóa mã
+    if (subtotal < minOrderValue) {
+      setAppliedPromotion(null);
+      setPromotionDiscount(0);
+      setValue("promotion_code", "");
+      toast.warning(
+        `Mã giảm giá đã bị hủy vì đơn hàng dưới ${appliedPromotion.formatted_minimum_order}!`
+      );
+      return;
+    }
+
+    // Tính lại discount khi subtotal thay đổi
+    let newDiscount = 0;
+    if (appliedPromotion.discount_type === "percentage") {
+      newDiscount = (subtotal * parseFloat(appliedPromotion.discount_value)) / 100;
+      // Áp dụng giới hạn discount tối đa
+      const maxDiscount = parseFloat(appliedPromotion.maximum_discount_amount);
+      if (newDiscount > maxDiscount) {
+        newDiscount = maxDiscount;
+      }
+    } else {
+      newDiscount = parseFloat(appliedPromotion.discount_value);
+    }
+
+    // Cập nhật discount mới
+    setPromotionDiscount(newDiscount);
+  }, [subtotal, appliedPromotion, setValue]);
+
   if (!cart || cartItems.length === 0) {
     return (
       <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -358,18 +392,17 @@ export default function CheckoutPage() {
 
         const result = await checkout(orderData);
 
-        // Xóa giỏ hàng ngay khi đặt hàng thành công (cho tất cả phương thức)
-        clearCart();
-
         // Kiểm tra phương thức thanh toán
         if (data.payment_method === "bank_transfer") {
+          // Thanh toán online: KHÔNG clear cart ngay, chờ thanh toán thành công
           setOrderResult(result);
           setShowPaymentInfo(true);
           toast.success(
             "Đặt hàng thành công! Vui lòng thanh toán theo thông tin bên dưới."
           );
         } else {
-          // COD và các phương thức khác chuyển đến trang success
+          // COD: Clear cart ngay vì không cần thanh toán thêm
+          clearCart();
           toast.success("Đặt hàng thành công!");
 
           // Lấy order_number từ result

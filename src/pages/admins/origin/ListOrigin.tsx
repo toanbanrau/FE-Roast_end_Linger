@@ -1,10 +1,11 @@
-import { Table, message, Modal, Space, Button } from "antd";
+import { Table, Modal, Space, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllOrigins, deleteOrigin } from "../../../services/originService";
 import type { IOrigin } from "../../../interfaces/origin";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
 const ListOrigin = () => {
   const navigate = useNavigate();
@@ -18,11 +19,11 @@ const ListOrigin = () => {
   const mutation = useMutation({
     mutationFn: deleteOrigin,
     onSuccess: () => {
-      message.success("Xóa xuất xứ thành công!");
+      toast.success("Xóa xuất xứ thành công!");
       queryClient.invalidateQueries({ queryKey: ["origins"] });
     },
     onError: () => {
-      message.error("Xóa xuất xứ thất bại!");
+      toast.error("Xóa xuất xứ thất bại!");
     },
   });
 
