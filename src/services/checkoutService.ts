@@ -84,13 +84,4 @@ export const updateOrderStatus = async (id: number, status: string): Promise<IOr
     return response.data.data;
 }
 
-// Confirm delivery API
-export const confirmDelivery = async (orderId: number) => {
-    console.log('🚚 Confirming delivery for order:', orderId);
 
-    const response = await clientAxios.post<ApiResponse<{ order: IOrder; message: string }>>(`/orders/${orderId}/confirm-delivery`);
-
-    console.log('✅ Delivery confirmed successfully:', response.data);
-
-    return response.data;
-};

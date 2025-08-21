@@ -88,27 +88,54 @@ export default function CreateReviewModal({
 
   // Filter products based on productId prop
   const filteredProducts =
-    reviewableProducts?.filter((item) =>
-      productId ? item.product.id === productId : true
-    ) || [];
+    reviewableProducts?.filter((item) => {
+      const matchesProduct = productId ? item.product.id === productId : true;
+      return matchesProduct;
+    }) || [];
+
+  // Check if specific productId was requested but not found in reviewable list
+  const isSpecificProductRequested = !!productId;
+  const productFoundInList = filteredProducts.some(item => item.product.id === productId);
+
+  // Check if product was found but already reviewed
+  const hasProductButReviewed = filteredProducts.some(item =>
+    item.product.id === productId && item.can_review === false
+  );
+
+  // Only show reviewable products (can_review = true)
+  const reviewableFilteredProducts = filteredProducts.filter(item => item.can_review === true);
+
+  // Determine if we should show "not eligible" message
+  const shouldShowNotEligible = isSpecificProductRequested && !productFoundInList;
 
   // Debug log
   console.log("CreateReviewModal Debug:", {
     productId,
     reviewableProducts: reviewableProducts?.length || 0,
     filteredProducts: filteredProducts.length,
+    reviewableFilteredProducts: reviewableFilteredProducts.length,
+    isSpecificProductRequested,
+    productFoundInList,
+    hasProductButReviewed,
+    shouldShowNotEligible,
     selectedProduct: selectedProduct?.product.name || "None",
   });
 
-  // Auto-select product if only one available
+  // Auto-select product if available
   useEffect(() => {
-    if (filteredProducts.length === 1 && !selectedProduct) {
-      console.log("🔄 Auto-selecting product:", filteredProducts[0]);
-      setSelectedProduct(filteredProducts[0]);
-      form.setFieldValue("order_item_id", filteredProducts[0].order_item_id);
+    console.log("🔄 Auto-select useEffect triggered:", {
+      reviewableFilteredProductsLength: reviewableFilteredProducts.length,
+      hasSelectedProduct: !!selectedProduct,
+      shouldAutoSelect: reviewableFilteredProducts.length > 0 && !selectedProduct
+    });
+
+    if (reviewableFilteredProducts.length > 0 && !selectedProduct) {
+      console.log("🔄 Auto-selecting first product:", reviewableFilteredProducts[0]);
+      setSelectedProduct(reviewableFilteredProducts[0]);
+      form.setFieldValue("order_item_id", reviewableFilteredProducts[0].order_item_id);
       console.log(
         "✅ Set order_item_id to form:",
-        filteredProducts[0].order_item_id
+        reviewableFilteredProducts[0].order_item_id
       );
 
       // Verify form value was set
@@ -116,8 +143,12 @@ export default function CreateReviewModal({
         const currentValue = form.getFieldValue("order_item_id");
         console.log("🔍 Current form order_item_id value:", currentValue);
       }, 100);
+    } else {
+      console.log("⚠️ Auto-select conditions not met");
     }
-  }, [filteredProducts, selectedProduct, form]);
+  }, [reviewableFilteredProducts, selectedProduct, form]);
+
+
 
   const handleCancel = () => {
     form.resetFields();
@@ -233,19 +264,26 @@ export default function CreateReviewModal({
       destroyOnClose
     >
       {/* No products available message */}
-      {!isLoadingProducts && filteredProducts.length === 0 && (
+      {!isLoadingProducts && reviewableFilteredProducts.length === 0 && (
         <div className="text-center py-8">
           <div className="text-gray-500 mb-4">
-            {productId
-              ? "Bạn chưa mua sản phẩm này hoặc đã đánh giá rồi"
+            {hasProductButReviewed
+              ? "Bạn đã đánh giá sản phẩm này rồi"
+              : shouldShowNotEligible
+              ? "Sản phẩm này không đủ điều kiện để đánh giá hoặc đã được đánh giá"
+              : productId
+              ? "Bạn chưa mua sản phẩm này từ đơn hàng đã hoàn thành"
               : "Không có sản phẩm nào để đánh giá"}
+          </div>
+          <div className="text-sm text-gray-400 mb-4">
+            💡 Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành và chưa được đánh giá
           </div>
           <Button onClick={handleCancel}>Đóng</Button>
         </div>
       )}
 
-      {/* Form - only show if has products */}
-      {filteredProducts.length > 0 && (
+      {/* Form - only show if has reviewable products */}
+      {reviewableFilteredProducts.length > 0 && (
         <Form
           form={form}
           layout="vertical"
@@ -378,7 +416,7 @@ export default function CreateReviewModal({
                 type="primary"
                 htmlType="submit"
                 loading={createMutation.isPending}
-                disabled={!selectedProduct}
+                disabled={!selectedProduct || createMutation.isPending}
               >
                 {createMutation.isPending ? "Đang gửi..." : "Gửi đánh giá"}
               </Button>

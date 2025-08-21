@@ -106,7 +106,7 @@ const BankTransferInfo: React.FC<BankTransferInfoProps> = ({
   } = useUltraPaymentTracking(paymentInfo?.payment_id || null, {
     onPaymentCompleted: () => {
       setPaymentCompleted(true);
-      // toast.success("🎉 Thanh toán thành công! Đang chuyển trang...");
+      toast.success("🎉 Thanh toán thành công! Đang chuyển trang...");
 
       // Lưu thông tin đơn hàng vào localStorage
       if (orderData) {

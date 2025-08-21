@@ -7,13 +7,13 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AccountNav from "../../../../components/AccountNav";
-import { getMyOrderById, confirmDelivery } from "../../../../services/checkoutService";
+import { getMyOrderById } from "../../../../services/checkoutService";
+import { getReviewableProducts } from "../../../../services/reviewService";
 import type { IOrder } from "../../../../interfaces/order";
 import CancelOrderModal from "../../../../components/order/CancelOrderModal";
 import CreateReviewModal from "../../../../components/CreateReviewModal";
-import ConfirmModal from "../../../../components/ConfirmModal";
 import { canCancelOrder } from "../../../../utils/orderStatus";
 import { toast } from "react-hot-toast";
 import { getStatusText } from "../../../../utils/orderStatusUtils";
@@ -25,7 +25,16 @@ export default function OrderDetailPage() {
   const [selectedProductId, setSelectedProductId] = useState<
     number | undefined
   >();
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [reviewableProducts, setReviewableProducts] = useState<any[]>([]);
+  const [isLoadingReviewable, setIsLoadingReviewable] = useState(false);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log("🔄 reviewableProducts state changed:", {
+      length: reviewableProducts.length,
+      productIds: reviewableProducts.map(item => item.product.id)
+    });
+  }, [reviewableProducts]);
 
   const queryClient = useQueryClient();
 
@@ -39,19 +48,7 @@ export default function OrderDetailPage() {
     enabled: !!id,
   });
 
-  // Mutation cho confirm delivery
-  const confirmDeliveryMutation = useMutation({
-    mutationFn: confirmDelivery,
-    onSuccess: (response) => {
-      toast.success(response.message || 'Đã xác nhận nhận hàng thành công!');
-      // Refresh order data
-      queryClient.invalidateQueries({ queryKey: ["order", id] });
-    },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi xác nhận nhận hàng!';
-      toast.error(errorMessage);
-    },
-  });
+
 
   // Debug order status
   console.log("🔍 Order Status Debug:", {
@@ -66,32 +63,67 @@ export default function OrderDetailPage() {
   ].includes(order?.status.name?.toLowerCase() || "");
 
   console.log("✅ isOrderCompleted:", isOrderCompleted);
+  console.log("📊 Component state:", {
+    isOrderCompleted,
+    reviewableProductsLength: reviewableProducts.length,
+    isLoadingReviewable
+  });
 
-  // Function để kiểm tra có thể confirm delivery không
-  const canConfirmDelivery = (order: IOrder) => {
-    if (!order) return false;
+  // Fetch reviewable products when order is completed
+  useEffect(() => {
+    console.log("🔄 useEffect triggered:", { isOrderCompleted, order: !!order });
 
-    const statusName = order.status.name?.toLowerCase();
-    console.log('🚚 Checking canConfirmDelivery:', {
-      statusName,
-      canConfirm: statusName === 'delivered'
+    if (isOrderCompleted && order) {
+      console.log("🚀 Fetching reviewable products...");
+      setIsLoadingReviewable(true);
+      const fetchReviewableProducts = async () => {
+        try {
+          console.log("📞 Calling getReviewableProducts API...");
+          const response = await getReviewableProducts();
+          console.log("📋 Raw API Response:", response);
+
+          // Handle different response formats
+          const products = response?.data || response || [];
+          console.log("📦 Processed products:", products);
+
+          setReviewableProducts(products);
+          console.log("✅ Reviewable products set:", products.length);
+        } catch (error) {
+          console.error("❌ Failed to fetch reviewable products:", error);
+        } finally {
+          setIsLoadingReviewable(false);
+        }
+      };
+      fetchReviewableProducts();
+    } else {
+      console.log("⏹️ Order not completed or no order data, skipping fetch");
+    }
+  }, [isOrderCompleted, order]);
+
+  // Check if a product can be reviewed or has been reviewed
+  const getProductReviewStatus = (productId: number) => {
+    const reviewableItem = reviewableProducts.find(item => item.product.id === productId);
+
+    console.log(`🔍 getProductReviewStatus for productId ${productId}:`, {
+      reviewableProductsLength: reviewableProducts.length,
+      reviewableItem: reviewableItem ? {
+        productId: reviewableItem.product.id,
+        canReview: reviewableItem.can_review,
+        hasReviewed: reviewableItem.has_reviewed
+      } : null,
+      found: !!reviewableItem
     });
 
-    // Chỉ cho phép confirm khi status là "delivered" (đã giao hàng)
-    return statusName === 'delivered';
-  };
+    if (!reviewableItem) {
+      return { canReview: false, hasReviewed: false, status: 'not_eligible' };
+    }
 
-  // Handler cho confirm delivery
-  const handleConfirmDelivery = () => {
-    if (!order) return;
-    setIsConfirmModalOpen(true);
-  };
-
-  // Handler khi user confirm trong modal
-  const handleConfirmDeliveryConfirm = () => {
-    if (!order) return;
-    confirmDeliveryMutation.mutate(order.id);
-    setIsConfirmModalOpen(false);
+    return {
+      canReview: reviewableItem.can_review === true,
+      hasReviewed: reviewableItem.has_reviewed === true,
+      status: reviewableItem.can_review ? 'can_review' : 'already_reviewed',
+      review: reviewableItem.review
+    };
   };
 
   const handleCreateReview = (productId: number) => {
@@ -188,17 +220,7 @@ export default function OrderDetailPage() {
                     </button>
                   )}
 
-                  {/* Confirm Delivery Button */}
-                  {canConfirmDelivery(order) && (
-                    <button
-                      onClick={handleConfirmDelivery}
-                      disabled={confirmDeliveryMutation.isPending}
-                      className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      {confirmDeliveryMutation.isPending ? 'Đang xử lý...' : 'Xác nhận đã nhận hàng'}
-                    </button>
-                  )}
+
 
 
                 </div>
@@ -330,15 +352,45 @@ export default function OrderDetailPage() {
                     <div className="font-medium">
                       {item.formatted_total_price}
                     </div>
-                    {/* Show review button only if order is completed */}
-                    {isOrderCompleted && (
-                      <button
-                        onClick={() => handleCreateReview(item.product.id)}
-                        className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-1 inline-block"
-                      >
-                        Viết đánh giá
-                      </button>
-                    )}
+                    {/* Show review status and button if order is completed */}
+                    {isOrderCompleted && !isLoadingReviewable && (() => {
+                      const reviewStatus = getProductReviewStatus(item.product.id);
+
+                      console.log(`🎯 Rendering review button for product ${item.product.id}:`, {
+                        productName: item.product.name,
+                        reviewStatus,
+                        willShowReviewButton: reviewStatus.canReview && !reviewStatus.hasReviewed
+                      });
+
+                      if (reviewStatus.hasReviewed) {
+                        return (
+                          <button
+                            disabled
+                            className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
+                          >
+                            ✓ Bạn đã đánh giá rồi
+                          </button>
+                        );
+                      } else if (reviewStatus.canReview) {
+                        return (
+                          <button
+                            onClick={() => handleCreateReview(item.product.id)}
+                            className="mt-2 inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
+                          >
+                            ⭐ Viết đánh giá
+                          </button>
+                        );
+                      } else {
+                        return (
+                          <button
+                            disabled
+                            className="mt-2 inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
+                          >
+                            ⚪ Không thể đánh giá
+                          </button>
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
               ))}
@@ -480,18 +532,7 @@ export default function OrderDetailPage() {
         productId={selectedProductId}
       />
 
-      {/* Modal xác nhận nhận hàng */}
-      <ConfirmModal
-        isOpen={isConfirmModalOpen}
-        onClose={() => setIsConfirmModalOpen(false)}
-        onConfirm={handleConfirmDeliveryConfirm}
-        title="Xác nhận nhận hàng"
-        message="Bạn có chắc chắn đã nhận được hàng? Sau khi xác nhận, đơn hàng sẽ được chuyển sang trạng thái hoàn thành và không thể hoàn tác."
-        confirmText="Đã nhận hàng"
-        cancelText="Chưa nhận"
-        type="success"
-        isLoading={confirmDeliveryMutation.isPending}
-      />
+
     </div>
   );
 }
