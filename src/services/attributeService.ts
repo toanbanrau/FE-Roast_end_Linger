@@ -55,6 +55,11 @@ export const updateAttribute = async (id: number, data: IUpdateAttributeRequest)
   return response.data.data;
 };
 
+// Xóa một thuộc tính
+export const deleteAttribute = async (id: number): Promise<void> => {
+  await adminAxios.delete(`/attributes/${id}`);
+};
+
 // Xóa nhiều thuộc tính
 export const bulkDeleteAttributes = async (data: IBulkDeleteRequest): Promise<IBulkDeleteResponse['data']> => {
   const response = await adminAxios.delete<IBulkDeleteResponse>('/attributes/bulk-delete', { data });

@@ -8,8 +8,8 @@ import {
     Card,
     Row,
     Col,
-    Popconfirm,
-    message, Tag,
+    message,
+    Tag,
 } from "antd";
 import {
   SearchOutlined,
@@ -25,6 +25,8 @@ import {
   deleteAdminUser,
 } from "../../../services/adminUserService";
 import type { IUser } from "../../../interfaces/user";
+import ConfirmModal from "../../../components/ConfirmModal";
+import { toast } from "react-toastify";
 
 const { Option } = Select;
 
@@ -41,6 +43,10 @@ const ListUser: React.FC = () => {
   const [filters, setFilters] = useState<UserQueryParams>({});
   const [searchEmail, setSearchEmail] = useState("");
 
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<{id: number, name: string, email: string} | null>(null);
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", filters],
     queryFn: () => getAdminUsers(filters),
@@ -50,11 +56,11 @@ const ListUser: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteAdminUser,
     onSuccess: () => {
-      message.success("Xóa người dùng thành công!");
+      toast.success("Xóa người dùng thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
     onError: (error) => {
-      message.error("Xóa người dùng thất bại!");
+      toast.error("Có lỗi xảy ra khi xóa người dùng!");
     },
   });
 
@@ -71,9 +77,21 @@ const ListUser: React.FC = () => {
     setFilters({ ...filters, [key]: value });
   };
 
-  // Handle delete
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
+  // Handle delete - mở confirm modal
+  const handleDelete = (id: number, name: string, email: string) => {
+    console.log('Delete button clicked for user:', id, name, email); // Debug log
+    setDeletingUser({ id, name, email });
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingUser) {
+      console.log('Confirming delete for user:', deletingUser.id); // Debug log
+      deleteMutation.mutate(deletingUser.id);
+      setIsConfirmModalOpen(false);
+      setDeletingUser(null);
+    }
   };
 
   const columns = [
@@ -138,28 +156,26 @@ const ListUser: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/user/${record.id}`)}
           >
-            Xem
+
           </Button>
           <Button
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/user/edit/${record.id}`)}
           >
-            Sửa
+
           </Button>
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa người dùng này?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Có"
-            cancelText="Không"
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(
+              record.id,
+              record.name || record.full_name || 'Người dùng',
+              record.email
+            )}
+            loading={deleteMutation.isPending}
           >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              loading={deleteMutation.isPending}
-            >
-              Xóa
-            </Button>
-          </Popconfirm>
+
+          </Button>
         </Space>
       ),
     },
@@ -238,6 +254,22 @@ const ListUser: React.FC = () => {
           }}
         />
       </Card>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingUser(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa người dùng"
+        message={`Bạn có chắc muốn xóa người dùng "${deletingUser?.name}" (${deletingUser?.email})? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 };

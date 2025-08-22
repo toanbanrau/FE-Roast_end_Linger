@@ -14,8 +14,6 @@ import {
   Col,
   Statistic,
   Tooltip,
-  Modal,
-  message,
   Switch,
 } from "antd";
 import {
@@ -34,13 +32,15 @@ import {
   getAttributes,
   bulkDeleteAttributes,
   toggleAttributeStatus,
+  deleteAttribute,
 } from "../../../services/attributeService";
 import type { IAttribute } from "../../../interfaces/attribute";
+import ConfirmModal from "../../../components/ConfirmModal";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { Option } = Select;
 const { Search } = Input;
-const { confirm } = Modal;
 
 const ListAttribute: React.FC = () => {
   const navigate = useNavigate();
@@ -50,6 +50,11 @@ const ListAttribute: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingAttribute, setDeletingAttribute] = useState<{id: number, name: string} | null>(null);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
 
   // Queries
   const { data: attributes = [], isLoading } = useQuery({
@@ -67,7 +72,7 @@ const ListAttribute: React.FC = () => {
   const bulkDeleteMutation = useMutation({
     mutationFn: bulkDeleteAttributes,
     onSuccess: (data) => {
-      message.success(
+      toast.success(
         `Xóa thành công ${data.deleted_count} thuộc tính${
           data.failed_count > 0 ? `. ${data.failed_count} thuộc tính không thể xóa.` : ""
         }`
@@ -76,18 +81,29 @@ const ListAttribute: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["attributes"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi xóa thuộc tính!");
+      toast.error("Có lỗi xảy ra khi xóa thuộc tính!");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteAttribute,
+    onSuccess: () => {
+      toast.success("Xóa thuộc tính thành công!");
+      queryClient.invalidateQueries({ queryKey: ["attributes"] });
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra khi xóa thuộc tính!");
     },
   });
 
   const toggleStatusMutation = useMutation({
     mutationFn: toggleAttributeStatus,
     onSuccess: () => {
-      message.success("Cập nhật trạng thái thành công!");
+      toast.success("Cập nhật trạng thái thành công!");
       queryClient.invalidateQueries({ queryKey: ["attributes"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi cập nhật trạng thái!");
+      toast.error("Có lỗi xảy ra khi cập nhật trạng thái!");
     },
   });
 
@@ -109,20 +125,41 @@ const ListAttribute: React.FC = () => {
   // Handlers
   const handleBulkDelete = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("Vui lòng chọn ít nhất một thuộc tính để xóa!");
+      toast.warning("Vui lòng chọn ít nhất một thuộc tính để xóa!");
       return;
     }
 
-    confirm({
-      title: "Xác nhận xóa",
-      content: `Bạn có chắc chắn muốn xóa ${selectedRowKeys.length} thuộc tính đã chọn?`,
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        bulkDeleteMutation.mutate({ ids: selectedRowKeys as number[] });
-      },
+    setDeletingAttribute({
+      id: 0, // Bulk delete không cần id cụ thể
+      name: `${selectedRowKeys.length} thuộc tính đã chọn`
     });
+    setIsBulkDelete(true);
+    setIsConfirmModalOpen(true);
+  };
+
+  // Handle delete single attribute
+  const handleDeleteAttribute = (id: number, name: string) => {
+    console.log('Delete button clicked for attribute:', id, name); // Debug log
+    setDeletingAttribute({ id, name });
+    setIsBulkDelete(false);
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingAttribute) {
+      console.log('Confirming delete for attribute:', deletingAttribute.id); // Debug log
+
+      if (isBulkDelete) {
+        bulkDeleteMutation.mutate({ ids: selectedRowKeys as number[] });
+      } else {
+        deleteMutation.mutate(deletingAttribute.id);
+      }
+
+      setIsConfirmModalOpen(false);
+      setDeletingAttribute(null);
+      setIsBulkDelete(false);
+    }
   };
 
   const handleToggleStatus = (id: number) => {
@@ -203,7 +240,7 @@ const ListAttribute: React.FC = () => {
     {
       title: "Hành động",
       key: "actions",
-      width: 200,
+      width: 280,
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem chi tiết">
@@ -226,6 +263,20 @@ const ListAttribute: React.FC = () => {
                 Giá trị
               </Button>
             </Link>
+          </Tooltip>
+          <Tooltip title="Xóa thuộc tính">
+            <Button
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteAttribute(
+                record.id,
+                record.attribute_name || 'Thuộc tính'
+              )}
+              loading={deleteMutation.isPending}
+            >
+              Xóa
+            </Button>
           </Tooltip>
         </Space>
       ),
@@ -370,6 +421,27 @@ const ListAttribute: React.FC = () => {
           scroll={{ x: 1000 }}
         />
       </Card>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingAttribute(null);
+          setIsBulkDelete(false);
+        }}
+        onConfirm={handleConfirmDelete}
+        title={isBulkDelete ? "Xác nhận xóa nhiều thuộc tính" : "Xác nhận xóa thuộc tính"}
+        message={
+          isBulkDelete
+            ? `Bạn có chắc muốn xóa ${deletingAttribute?.name}? Hành động này không thể hoàn tác.`
+            : `Bạn có chắc muốn xóa thuộc tính "${deletingAttribute?.name}"? Hành động này không thể hoàn tác.`
+        }
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={isBulkDelete ? bulkDeleteMutation.isPending : deleteMutation.isPending}
+      />
     </div>
   );
 };

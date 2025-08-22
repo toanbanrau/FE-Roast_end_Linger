@@ -1,5 +1,5 @@
-import React from "react";
-import { Table, Tag, message, Button, Space } from "antd";
+import React, { useState } from "react";
+import { Table, Tag, Button, Space } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,10 +9,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import type { IPromotion } from "../../../interfaces/promotion";
 import toast from "react-hot-toast";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 const ListPromotion: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingPromotion, setDeletingPromotion] = useState<{id: number, name: string} | null>(null);
 
   const { data: promotions, isLoading } = useQuery({
     queryKey: ["promotions"],
@@ -27,12 +32,25 @@ const ListPromotion: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi xóa khuyến mãi!");
+      toast.error("Có lỗi xảy ra khi xóa khuyến mãi!");
     },
   });
 
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
+  // Handle delete - mở confirm modal
+  const handleDelete = (id: number, name: string) => {
+    console.log('Delete button clicked for promotion:', id, name); // Debug log
+    setDeletingPromotion({ id, name });
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingPromotion) {
+      console.log('Confirming delete for promotion:', deletingPromotion.id); // Debug log
+      deleteMutation.mutate(deletingPromotion.id);
+      setIsConfirmModalOpen(false);
+      setDeletingPromotion(null);
+    }
   };
 
   const formatCurrency = (amount: string) => {
@@ -142,7 +160,11 @@ const ListPromotion: React.FC = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDelete(record.id)}
+            onClick={() => handleDelete(
+              record.id,
+              record.promotion_name || 'Khuyến mãi'
+            )}
+            loading={deleteMutation.isPending}
           />
         </Space>
       ),
@@ -172,6 +194,22 @@ const ListPromotion: React.FC = () => {
         }}
         scroll={{ x: 1200 }}
         size="middle"
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingPromotion(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa khuyến mãi"
+        message={`Bạn có chắc muốn xóa khuyến mãi "${deletingPromotion?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
       />
     </>
   );

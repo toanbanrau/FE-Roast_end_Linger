@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Table, Button, Modal, Space, Input, Tag } from "antd";
+import { Table, Button, Space, Input, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +9,7 @@ import {
 } from "../../../services/categoryService";
 import type { ICategory } from "../../../interfaces/category";
 import { toast } from "react-toastify";
+import ConfirmModal from "../../../components/ConfirmModal";
 import "antd/dist/reset.css";
 
 const { Search } = Input;
@@ -17,6 +18,10 @@ const ListCategory = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [searchText, setSearchText] = useState("");
+
+    // State cho confirm modal
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [deletingCategory, setDeletingCategory] = useState<{id: number, name: string} | null>(null);
 
     // Delete mutation
     const deleteMutation = useMutation({
@@ -43,19 +48,21 @@ const ListCategory = () => {
 
     const categories = categoryResponse?.data?.data || [];
 
-    const handleDeleteCategory = (id: number) => {
-        // Modal.confirm({
-        //     title: "Bạn có chắc muốn xóa danh mục này?",
-        //     content: "Hành động này không thể hoàn tác.",
-        //     okText: "Xóa",
-        //     okType: "danger",
-        //     cancelText: "Hủy",
-        //     centered: true,
-        //     zIndex: 2000,
-        //     onOk: () => deleteMutation.mutate(id),
-        //
-        // });
-        deleteMutation.mutate(id)
+    // Handle delete - mở confirm modal
+    const handleDeleteCategory = (id: number, name: string) => {
+        console.log('Delete button clicked for category:', id, name); // Debug log
+        setDeletingCategory({ id, name });
+        setIsConfirmModalOpen(true);
+    };
+
+    // Xử lý xác nhận xóa
+    const handleConfirmDelete = () => {
+        if (deletingCategory) {
+            console.log('Confirming delete for category:', deletingCategory.id); // Debug log
+            deleteMutation.mutate(deletingCategory.id);
+            setIsConfirmModalOpen(false);
+            setDeletingCategory(null);
+        }
     };
 
     const columns = [
@@ -130,7 +137,11 @@ const ListCategory = () => {
                     <Button
                         icon={<DeleteOutlined />}
                         danger
-                        onClick={() => handleDeleteCategory(record.id)}
+                        onClick={() => handleDeleteCategory(
+                            record.id,
+                            record.category_name || 'Danh mục'
+                        )}
+                        loading={deleteMutation.isPending}
                     />
                 </Space>
             ),
@@ -187,6 +198,22 @@ const ListCategory = () => {
                         `${range[0]}-${range[1]} của ${total} danh mục`,
                 }}
                 scroll={{ x: 1200 }}
+            />
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => {
+                    setIsConfirmModalOpen(false);
+                    setDeletingCategory(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Xác nhận xóa danh mục"
+                message={`Bạn có chắc muốn xóa danh mục "${deletingCategory?.name}"? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa"
+                cancelText="Hủy"
+                type="danger"
+                isLoading={deleteMutation.isPending}
             />
         </div>
     );

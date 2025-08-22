@@ -18,6 +18,8 @@ import {
   PlusOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
+import ConfirmModal from "../../../components/ConfirmModal";
+import { toast } from "react-toastify";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -34,6 +36,10 @@ const ListBlogPost = () => {
     number | undefined
   >();
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>();
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingBlogPost, setDeletingBlogPost] = useState<{id: number, title: string} | null>(null);
 
   // Query parameters
   const queryParams: IAdminBlogPostListParams = {
@@ -77,15 +83,32 @@ const ListBlogPost = () => {
     },
   };
 
-  const mutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: deleteBlogPost,
     onSuccess: () => {
+      toast.success("Xóa bài viết thành công!");
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra khi xóa bài viết!");
     },
   });
 
-  const handleDelete = (id: number) => {
-    mutation.mutate(id);
+  // Handle delete - mở confirm modal
+  const handleDelete = (id: number, title: string) => {
+    console.log('Delete button clicked for blog post:', id, title); // Debug log
+    setDeletingBlogPost({ id, title });
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingBlogPost) {
+      console.log('Confirming delete for blog post:', deletingBlogPost.id); // Debug log
+      deleteMutation.mutate(deletingBlogPost.id);
+      setIsConfirmModalOpen(false);
+      setDeletingBlogPost(null);
+    }
   };
 
   const columns = [
@@ -163,7 +186,11 @@ const ListBlogPost = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDelete(record.id)}
+            onClick={() => handleDelete(
+              record.id,
+              record.title || 'Bài viết'
+            )}
+            loading={deleteMutation.isPending}
             title="Xóa"
           />
         </Space>
@@ -284,6 +311,22 @@ const ListBlogPost = () => {
         loading={isLoading}
         pagination={pagination}
         scroll={{ x: 1200 }}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingBlogPost(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa bài viết"
+        message={`Bạn có chắc muốn xóa bài viết "${deletingBlogPost?.title}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

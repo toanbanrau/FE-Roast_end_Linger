@@ -1,4 +1,4 @@
-import { Table, Modal, Space, Button } from "antd";
+import { Table, Space, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllOrigins, deleteOrigin } from "../../../services/originService";
@@ -6,17 +6,23 @@ import type { IOrigin } from "../../../interfaces/origin";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
+import ConfirmModal from "../../../components/ConfirmModal";
+import { useState } from "react";
 
 const ListOrigin = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [deletingOrigin, setDeletingOrigin] = useState<{id: number, name: string} | null>(null);
 
   const { data: origins, isLoading } = useQuery({
     queryKey: ["origins"],
     queryFn: getAllOrigins,
   });
 
-  const mutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: deleteOrigin,
     onSuccess: () => {
       toast.success("Xóa xuất xứ thành công!");
@@ -27,14 +33,21 @@ const ListOrigin = () => {
     },
   });
 
-  const handleDeleteOrigin = (id: number) => {
-    Modal.confirm({
-      title: "Bạn có chắc muốn xóa xuất xứ này?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: () => mutation.mutate(id),
-    });
+  // Handle delete - mở confirm modal
+  const handleDeleteOrigin = (id: number, name: string) => {
+    console.log('Delete button clicked for origin:', id, name); // Debug log
+    setDeletingOrigin({ id, name });
+    setIsConfirmModalOpen(true);
+  };
+
+  // Xử lý xác nhận xóa
+  const handleConfirmDelete = () => {
+    if (deletingOrigin) {
+      console.log('Confirming delete for origin:', deletingOrigin.id); // Debug log
+      deleteMutation.mutate(deletingOrigin.id);
+      setIsConfirmModalOpen(false);
+      setDeletingOrigin(null);
+    }
   };
 
   const columns: ColumnsType<IOrigin> = [
@@ -82,7 +95,11 @@ const ListOrigin = () => {
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => handleDeleteOrigin(record.id)}
+            onClick={() => handleDeleteOrigin(
+              record.id,
+              record.origin_name || 'Xuất xứ'
+            )}
+            loading={deleteMutation.isPending}
           />
         </Space>
       ),
@@ -102,6 +119,22 @@ const ListOrigin = () => {
         loading={isLoading}
         dataSource={origins}
         rowKey="id"
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setDeletingOrigin(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa xuất xứ"
+        message={`Bạn có chắc muốn xóa xuất xứ "${deletingOrigin?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
       />
     </>
   );
