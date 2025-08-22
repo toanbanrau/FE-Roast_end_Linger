@@ -45,9 +45,7 @@ export const getReviewableProducts = async (): Promise<IReviewableProduct[]> => 
 
 // Get reviewable products for specific order (requires auth)
 export const getOrderReviewableProducts = async (orderId: number) => {
-  console.log(`🔍 Getting reviewable products for order ${orderId}`);
   const response = await clientAxios.get(`/reviews/reviewable-products/${orderId}`);
-  console.log(`📋 Order ${orderId} reviewable products:`, response.data);
   return response.data.data;
 };
 

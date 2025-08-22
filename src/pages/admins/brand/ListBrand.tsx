@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { IBrand } from "../../../interfaces/brand";
 import { deleteBrand, getAllBrands } from "../../../services/brandService";
 import ConfirmModal from "../../../components/ConfirmModal";
+import {toast} from 'react-toastify'
 
 const ListBrand = () => {
   const navigate = useNavigate();
@@ -24,11 +25,11 @@ const ListBrand = () => {
   const mutation = useMutation({
     mutationFn: (id: number) => deleteBrand(id),
     onSuccess: () => {
-      message.success("Xóa thương hiệu thành công!");
+      toast.success("Xóa thương hiệu thành công!");
       queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi xóa thương hiệu!");
+      toast.error("Có lỗi xảy ra khi xóa thương hiệu!");
     },
   });
   const handleDeleteBrand = (id: number, brandName: string) => {

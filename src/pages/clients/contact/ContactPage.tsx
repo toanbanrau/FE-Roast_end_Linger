@@ -142,9 +142,8 @@ export default function ContactPage() {
                 <MapPin className="h-5 w-5 text-amber-800 mt-1" />
                 <div>
                   <p className="font-medium">Trụ Sở Chính Élite Coffee</p>
-                  <p className="text-stone-600">123 Coffee Lane</p>
-                  <p className="text-stone-600">Seattle, WA 98101</p>
-                  <p className="text-stone-600">Hoa Kỳ</p>
+                  <p className="text-stone-600">FPT Polytechnic</p>
+                  <p className="text-stone-600">Trịnh Văn Bô</p>
                 </div>
               </div>
 
@@ -152,7 +151,7 @@ export default function ContactPage() {
                 <Phone className="h-5 w-5 text-amber-800" />
                 <div>
                   <p className="font-medium">Số điện thoại</p>
-                  <p className="text-stone-600">(555) 123-4567</p>
+                  <p className="text-stone-600">01234567890</p>
                 </div>
               </div>
 
@@ -160,7 +159,7 @@ export default function ContactPage() {
                 <Mail className="h-5 w-5 text-amber-800" />
                 <div>
                   <p className="font-medium">Email</p>
-                  <p className="text-stone-600">info@elitecoffee.com</p>
+                  <p className="text-stone-600">roastandlinger@gmail.com</p>
                 </div>
               </div>
             </div>
@@ -214,63 +213,63 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Các chi nhánh */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">
-          Các Chi Nhánh
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              name: "Trung tâm Seattle",
-              address: "123 Coffee Lane, Seattle, WA 98101",
-              phone: "(555) 123-4567",
-              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
-              image: "/placeholder.svg?height=200&width=300",
-            },
-            {
-              name: "Capitol Hill",
-              address: "456 Roast Avenue, Seattle, WA 98102",
-              phone: "(555) 234-5678",
-              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
-              image: "/placeholder.svg?height=200&width=300",
-            },
-            {
-              name: "Bellevue",
-              address: "789 Bean Boulevard, Bellevue, WA 98004",
-              phone: "(555) 345-6789",
-              hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",
-              image: "/placeholder.svg?height=200&width=300",
-            },
-          ].map((location, index) => (
-            <div key={index} className="border rounded-lg overflow-hidden">
-              <div className="relative h-48">
-                <img
-                  src={location.image}
-                  alt={location.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-medium mb-2">{location.name}</h3>
-                <p className="text-stone-600 text-sm mb-1">
-                  {location.address}
-                </p>
-                <p className="text-stone-600 text-sm mb-1">{location.phone}</p>
-                <p className="text-stone-600 text-sm">{location.hours}</p>
-                <Link
-                  to={`/locations/${location.name
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-3 inline-block"
-                >
-                  Xem Chi Tiết
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/*/!* Các chi nhánh *!/*/}
+      {/*<div className="mt-12">*/}
+      {/*  <h2 className="text-2xl font-serif font-bold tracking-tight mb-6">*/}
+      {/*    Các Chi Nhánh*/}
+      {/*  </h2>*/}
+      {/*  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">*/}
+      {/*    {[*/}
+      {/*      {*/}
+      {/*        name: "Trung tâm Seattle",*/}
+      {/*        address: "123 Coffee Lane, Seattle, WA 98101",*/}
+      {/*        phone: "(555) 123-4567",*/}
+      {/*        hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",*/}
+      {/*        image: "/placeholder.svg?height=200&width=300",*/}
+      {/*      },*/}
+      {/*      {*/}
+      {/*        name: "Capitol Hill",*/}
+      {/*        address: "456 Roast Avenue, Seattle, WA 98102",*/}
+      {/*        phone: "(555) 234-5678",*/}
+      {/*        hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",*/}
+      {/*        image: "/placeholder.svg?height=200&width=300",*/}
+      {/*      },*/}
+      {/*      {*/}
+      {/*        name: "Bellevue",*/}
+      {/*        address: "789 Bean Boulevard, Bellevue, WA 98004",*/}
+      {/*        phone: "(555) 345-6789",*/}
+      {/*        hours: "T2-T6: 7:00-19:00, T7-CN: 8:00-18:00",*/}
+      {/*        image: "/placeholder.svg?height=200&width=300",*/}
+      {/*      },*/}
+      {/*    ].map((location, index) => (*/}
+      {/*      <div key={index} className="border rounded-lg overflow-hidden">*/}
+      {/*        <div className="relative h-48">*/}
+      {/*          <img*/}
+      {/*            src={location.image}*/}
+      {/*            alt={location.name}*/}
+      {/*            className="w-full h-full object-cover"*/}
+      {/*          />*/}
+      {/*        </div>*/}
+      {/*        <div className="p-4">*/}
+      {/*          <h3 className="text-lg font-medium mb-2">{location.name}</h3>*/}
+      {/*          <p className="text-stone-600 text-sm mb-1">*/}
+      {/*            {location.address}*/}
+      {/*          </p>*/}
+      {/*          <p className="text-stone-600 text-sm mb-1">{location.phone}</p>*/}
+      {/*          <p className="text-stone-600 text-sm">{location.hours}</p>*/}
+      {/*          <Link*/}
+      {/*            to={`/locations/${location.name*/}
+      {/*              .toLowerCase()*/}
+      {/*              .replace(/\s+/g, "-")}`}*/}
+      {/*            className="text-amber-800 hover:text-amber-900 text-sm font-medium mt-3 inline-block"*/}
+      {/*          >*/}
+      {/*            Xem Chi Tiết*/}
+      {/*          </Link>*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*    ))}*/}
+      {/*  </div>*/}
+      {/*</div>*/}
 
       {/* Câu hỏi thường gặp */}
       <div className="mt-12 bg-stone-50 p-8 rounded-lg">
@@ -311,12 +310,12 @@ export default function ContactPage() {
               </div>
             ))}
           </div>
-          <Link
-            to="/faq"
-            className="inline-flex items-center justify-center rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 mt-8"
-          >
-            Xem Tất Cả Câu Hỏi
-          </Link>
+          {/*<Link*/}
+          {/*  to="/faq"*/}
+          {/*  className="inline-flex items-center justify-center rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 mt-8"*/}
+          {/*>*/}
+          {/*  Xem Tất Cả Câu Hỏi*/}
+          {/*</Link>*/}
         </div>
       </div>
     </div>

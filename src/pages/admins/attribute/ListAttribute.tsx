@@ -141,17 +141,20 @@ const ListAttribute: React.FC = () => {
       title: "Tên thuộc tính",
       dataIndex: "attribute_name",
       key: "attribute_name",
+        width:200,
       sorter: (a, b) => a.attribute_name.localeCompare(b.attribute_name),
     },
     {
       title: "Loại",
       dataIndex: "attribute_type",
       key: "attribute_type",
+        width:100,
       render: (type: string) => (
         <Tag color="blue">{type === "select" ? "Lựa chọn" : type}</Tag>
       ),
     },
     {
+        width:200,
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
@@ -161,6 +164,7 @@ const ListAttribute: React.FC = () => {
       title: "Bắt buộc",
       dataIndex: "is_required",
       key: "is_required",
+        width:80,
       render: (required: boolean) => (
         <Tag color={required ? "red" : "default"}>
           {required ? "Bắt buộc" : "Tùy chọn"}
@@ -177,6 +181,7 @@ const ListAttribute: React.FC = () => {
     {
       title: "Số giá trị",
       key: "values_count",
+        width:100,
       render: (_, record) => (
         <Tag color="green">{record.attribute_values?.length || 0}</Tag>
       ),
@@ -185,6 +190,7 @@ const ListAttribute: React.FC = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+        width:150,
       render: (status: boolean, record) => (
         <Switch
           checked={status}
@@ -361,7 +367,7 @@ const ListAttribute: React.FC = () => {
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} thuộc tính`,
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
         />
       </Card>
     </div>
