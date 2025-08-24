@@ -35,7 +35,7 @@ export default function AboutPage() {
               <div className="w-20 h-1 bg-amber-800"></div>
               <p className="text-lg text-stone-600">
                 Được thành lập vào năm 1992 bởi người đam mê cà phê Maria
-                Rodriguez, Élite Coffee bắt đầu là một xưởng rang nhỏ tại
+                Rodriguez, Roast And Linger bắt đầu là một xưởng rang nhỏ tại
                 Seattle với sứ mệnh đơn giản: tìm nguồn và rang những hạt cà phê
                 ngon nhất thế giới với sự tận tâm và chân thành.
               </p>
@@ -72,8 +72,8 @@ export default function AboutPage() {
             </h2>
             <div className="w-20 h-1 bg-amber-800 mx-auto my-6"></div>
             <p className="text-lg text-stone-600">
-              Tại Élite Coffee, các giá trị là kim chỉ nam cho mọi hoạt động –
-              từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
+              Tại Roast And Linger, các giá trị là kim chỉ nam cho mọi hoạt động
+              – từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function AboutPage() {
             </h2>
             <div className="w-20 h-1 bg-amber-800 mx-auto my-6"></div>
             <p className="text-lg text-stone-600">
-              Những con người đằng sau Élite Coffee – những người tạo nên sự
+              Những con người đằng sau Roast And Linger - những người tạo nên sự
               xuất sắc mỗi ngày.
             </p>
           </div>

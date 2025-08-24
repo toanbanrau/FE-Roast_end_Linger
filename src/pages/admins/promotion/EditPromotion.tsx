@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Button,
-  message,
   Select,
   DatePicker,
   InputNumber,
@@ -19,6 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { IPromotionUpdate } from "../../../interfaces/promotion";
 import dayjs from "dayjs";
 
+import { toast } from "react-toastify";
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -43,14 +43,31 @@ const EditPromotion: React.FC = () => {
   const mutation = useMutation({
     mutationFn: (data: IPromotionUpdate) => updatePromotion(Number(id), data),
     onSuccess: () => {
-      message.success("Cập nhật khuyến mãi thành công!");
+      toast.success("Cập nhật khuyến mãi thành công!");
       navigate("/admin/promotion");
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
       queryClient.invalidateQueries({ queryKey: ["promotion", id] });
     },
-    onError: (error) => {
-      console.error("Error details:", error);
-      message.error("Có lỗi xảy ra khi cập nhật khuyến mãi!");
+    onError: (error: any) => {
+      if (error.response && error.response.data) {
+        const responseData = error.response.data;
+        // Handle validation errors (dictionary of errors)
+        if (responseData.errors) {
+          const errors = responseData.errors;
+          Object.values(errors).forEach((err: any) => {
+            err.forEach((errMsg: string) => {
+              toast.error(errMsg);
+            });
+          });
+          // Handle single error message
+        } else if (responseData.message) {
+          toast.error(responseData.message);
+        } else {
+          toast.error("Có lỗi xảy ra khi cập nhật khuyến mãi!");
+        }
+      } else {
+        toast.error("Có lỗi xảy ra khi cập nhật khuyến mãi!");
+      }
     },
   });
 

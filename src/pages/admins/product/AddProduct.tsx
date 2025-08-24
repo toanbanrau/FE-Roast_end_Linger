@@ -31,7 +31,7 @@ import { getAllOrigins } from "../../../services/originService";
 import type { IProductOrigin } from "../../../interfaces/product";
 import type { ICategory } from "../../../interfaces/category";
 import type { IBrand } from "../../../interfaces/brand";
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -362,7 +362,7 @@ const AddProduct = () => {
 
   return (
     <div className="p-5">
-      <h2 className="mb-4 text-2xl font-bold">Add New Product</h2>
+      <h2 className="mb-4 text-2xl font-bold">Thêm Sản Phẩm</h2>
       <Form
         form={form}
         layout="vertical"

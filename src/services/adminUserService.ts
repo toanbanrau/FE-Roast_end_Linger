@@ -26,7 +26,7 @@ interface UserFormData {
 }
 
 // Lấy danh sách người dùng với filters
-export const getAdminUsers = async (params?: UserQueryParams): Promise<{ data: IUser[]; meta?: any; links?: any }> => {
+export const getAdminUsers = async (params?: UserQueryParams): Promise<any> => {
   const queryString = new URLSearchParams();
 
   if (params?.role) queryString.append('role', params.role);
@@ -34,8 +34,8 @@ export const getAdminUsers = async (params?: UserQueryParams): Promise<{ data: I
   if (params?.status) queryString.append('status', params.status);
   if (params?.page) queryString.append('page', params.page.toString());
 
-  const response = await adminAxios.get<ApiResponse<IUser[]>>(`/users?${queryString.toString()}`);
-  return { data: response.data.data.data };
+  const response = await adminAxios.get<ApiResponse<any>>(`/users?${queryString.toString()}`);
+  return response.data.data; // Return the whole pagination object
 };
 
 // Lấy chi tiết người dùng

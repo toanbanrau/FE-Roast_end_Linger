@@ -11,6 +11,7 @@ import {
   message,
   Tag,
 } from "antd";
+import type { TablePaginationConfig } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -80,7 +81,15 @@ const ListUser: React.FC = () => {
     key: keyof UserQueryParams,
     value: string | undefined
   ) => {
-    setFilters({ ...filters, [key]: value });
+    setFilters({ ...filters, page: 1, [key]: value });
+  };
+
+  // Handle table pagination change
+  const handleTableChange = (pagination: TablePaginationConfig) => {
+    setFilters({
+      ...filters,
+      page: pagination.current,
+    });
   };
 
   // Handle delete - mở confirm modal
@@ -249,15 +258,19 @@ const ListUser: React.FC = () => {
         {/* Table */}
         <Table
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.data} // Corrected: The user list is in data.data
           loading={isLoading}
           rowKey="id"
           pagination={{
+            current: data?.current_page, // Corrected: read from data object
+            pageSize: data?.per_page, // Corrected: read from data object
+            total: data?.total, // Corrected: read from data object
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} người dùng`,
           }}
+          onChange={handleTableChange}
         />
       </Card>
 

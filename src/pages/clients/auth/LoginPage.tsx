@@ -80,7 +80,7 @@ export default function LoginPage() {
           <Link to="/" className="flex items-center justify-center gap-2 mb-6">
             <Coffee className="h-8 w-8 text-amber-800" />
             <span className="text-2xl font-serif font-bold tracking-tight">
-              Élite Coffee
+ Roast And Linger
             </span>
           </Link>
           <h2 className="text-3xl font-serif font-bold text-stone-900">

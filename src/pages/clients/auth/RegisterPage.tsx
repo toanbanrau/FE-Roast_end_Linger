@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { register as registerService } from "../../../services/authService";
 import type { UserRegister } from "../../../interfaces/user";
+import { toast } from "react-toastify";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -20,10 +21,10 @@ const RegisterPage = () => {
   const mutation = useMutation({
     mutationFn: registerService,
     onSuccess: () => {
-      alert(
+      toast.success(
         "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
       );
-      setTimeout(() => navigate("auth/login"), 1500);
+      setTimeout(() => navigate("/auth/login"), 1500);
     },
     onError: (error: unknown) => {
       if (
@@ -64,7 +65,7 @@ const RegisterPage = () => {
           <Link to="/" className="flex items-center justify-center gap-2 mb-6">
             <Coffee className="h-8 w-8 text-amber-800" />
             <span className="text-2xl font-serif font-bold tracking-tight">
-              Élite Coffee
+              Roast And Linger
             </span>
           </Link>
           <h2 className="text-3xl font-serif font-bold text-stone-900">

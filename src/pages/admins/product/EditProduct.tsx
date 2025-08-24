@@ -1,4 +1,3 @@
-
 import {
   Form,
   Input,
@@ -95,20 +94,22 @@ const EditProduct = () => {
       const target = e.target as HTMLElement;
 
       // Check if this is a Form.List remove button
-      if (target.textContent?.includes('Xóa')) {
-
+      if (target.textContent?.includes("Xóa")) {
         try {
-          const card = target.closest('.ant-card');
+          const card = target.closest(".ant-card");
           if (card) {
             const currentValues = form.getFieldsValue();
             const albumImages = currentValues.album_images || [];
-            const allCards = Array.from(document.querySelectorAll('.ant-card'));
+            const allCards = Array.from(document.querySelectorAll(".ant-card"));
             const cardIndex = allCards.indexOf(card);
 
             if (cardIndex >= 0 && albumImages[cardIndex]) {
               const imageData = albumImages[cardIndex];
 
-              if (imageData?.image?.[0]?.uid && !isNaN(Number(imageData.image[0].uid))) {
+              if (
+                imageData?.image?.[0]?.uid &&
+                !isNaN(Number(imageData.image[0].uid))
+              ) {
                 const imageId = Number(imageData.image[0].uid);
 
                 if (!deletedImageIdsRef.current.includes(imageId)) {
@@ -122,13 +123,11 @@ const EditProduct = () => {
         } catch (error) {
           console.error("Error in remove handler:", error);
         }
-
-
       }
     };
 
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
+    document.addEventListener("click", handleGlobalClick);
+    return () => document.removeEventListener("click", handleGlobalClick);
   }, []);
 
   useEffect(() => {
@@ -231,7 +230,11 @@ const EditProduct = () => {
       // Add to deleted list if not already there
       if (!deletedImageIdsRef.current.includes(imageId)) {
         deletedImageIdsRef.current.push(imageId);
-        message.success(`Ảnh ${imageType === "primary" ? "chính" : "phụ"} sẽ được xóa khi lưu sản phẩm`);
+        message.success(
+          `Ảnh ${
+            imageType === "primary" ? "chính" : "phụ"
+          } sẽ được xóa khi lưu sản phẩm`
+        );
       }
     }
   };
@@ -256,10 +259,13 @@ const EditProduct = () => {
       if (err?.response?.data?.errors) {
         // Validation errors (422)
         const errors = err.response.data.errors;
-        const errorList = Object.entries(errors).map(([field, messages]: [string, any]) =>
-          `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
+        const errorList = Object.entries(errors).map(
+          ([field, messages]: [string, any]) =>
+            `${field}: ${
+              Array.isArray(messages) ? messages.join(", ") : messages
+            }`
         );
-        errorMessage = `Validation errors:\n${errorList.join('\n')}`;
+        errorMessage = `Validation errors:\n${errorList.join("\n")}`;
         console.error("Validation errors:", errors);
       } else if (err?.response?.data?.message) {
         errorMessage = err.response.data.message;
@@ -419,7 +425,8 @@ const EditProduct = () => {
     const imagesData: any = {};
 
     // 3.1. Images to DELETE
-    const finalDeletedIds = deletedImageIds.length > 0 ? deletedImageIds : deletedImageIdsRef.current;
+    const finalDeletedIds =
+      deletedImageIds.length > 0 ? deletedImageIds : deletedImageIdsRef.current;
     if (finalDeletedIds.length > 0) {
       imagesData.delete = finalDeletedIds;
     }
@@ -439,12 +446,19 @@ const EditProduct = () => {
     // BACKUP: Always check for deleted images by comparing form vs original
     if (product?.images) {
       const currentAlbumImages = values.album_images || [];
-      const originalImageIds = product.images.filter(img => !img.is_primary).map(img => img.id);
+      const originalImageIds = product.images
+        .filter((img) => !img.is_primary)
+        .map((img) => img.id);
       const currentImageIds = currentAlbumImages
-        .filter((albumImg: any) => albumImg.image?.[0]?.uid && !isNaN(Number(albumImg.image[0].uid)))
+        .filter(
+          (albumImg: any) =>
+            albumImg.image?.[0]?.uid && !isNaN(Number(albumImg.image[0].uid))
+        )
         .map((albumImg: any) => Number(albumImg.image[0].uid));
 
-      const deletedIds = originalImageIds.filter(id => !currentImageIds.includes(id));
+      const deletedIds = originalImageIds.filter(
+        (id) => !currentImageIds.includes(id)
+      );
 
       if (deletedIds.length > 0) {
         imagesData.delete = deletedIds; // Use detected deleted IDs
@@ -460,7 +474,6 @@ const EditProduct = () => {
       product.images.forEach((img) => {
         // Skip deleted images
         if (!actualDeletedIds.includes(img.id)) {
-
           // Check if this is old primary image and we're uploading new primary
           if (img.is_primary && hasNewPrimaryUpload) {
             // DELETE old primary image completely
@@ -480,29 +493,42 @@ const EditProduct = () => {
 
           if (img.is_primary) {
             // Primary image updates (only if not uploading new primary)
-            if (values.primary_alt_text && values.primary_alt_text !== img.alt_text) {
+            if (
+              values.primary_alt_text &&
+              values.primary_alt_text !== img.alt_text
+            ) {
               needsUpdate = true;
               newAltText = values.primary_alt_text;
             }
-            if (values.primary_sort_order && values.primary_sort_order !== img.sort_order) {
+            if (
+              values.primary_sort_order &&
+              values.primary_sort_order !== img.sort_order
+            ) {
               needsUpdate = true;
               newSortOrder = values.primary_sort_order;
             }
           } else {
             // Album image updates - check form values
             if (values.album_images && Array.isArray(values.album_images)) {
-              const albumImage = values.album_images.find((albumImg: any) =>
-                albumImg.image &&
-                albumImg.image[0] &&
-                albumImg.image[0].uid === img.id.toString()
+              const albumImage = values.album_images.find(
+                (albumImg: any) =>
+                  albumImg.image &&
+                  albumImg.image[0] &&
+                  albumImg.image[0].uid === img.id.toString()
               );
 
               if (albumImage) {
-                if (albumImage.alt_text && albumImage.alt_text !== img.alt_text) {
+                if (
+                  albumImage.alt_text &&
+                  albumImage.alt_text !== img.alt_text
+                ) {
                   needsUpdate = true;
                   newAltText = albumImage.alt_text;
                 }
-                if (albumImage.sort_order && albumImage.sort_order !== img.sort_order) {
+                if (
+                  albumImage.sort_order &&
+                  albumImage.sort_order !== img.sort_order
+                ) {
                   needsUpdate = true;
                   newSortOrder = albumImage.sort_order;
                 }
@@ -514,10 +540,8 @@ const EditProduct = () => {
             const updateData: any = {
               id: img.id,
               alt_text: newAltText,
-              sort_order: newSortOrder
+              sort_order: newSortOrder,
             };
-
-
 
             imagesToUpdate.push(updateData);
           }
@@ -544,7 +568,7 @@ const EditProduct = () => {
       newImages.push({
         image_file: primaryImageFile,
         alt_text: primaryAltText,
-        is_primary: true
+        is_primary: true,
       });
     }
 
@@ -563,7 +587,7 @@ const EditProduct = () => {
           newImages.push({
             image_file: albumImageFile,
             alt_text: albumAltText,
-            is_primary: false
+            is_primary: false,
           });
         }
       });
@@ -591,12 +615,21 @@ const EditProduct = () => {
       if (imagesData.update) {
         imagesData.update.forEach((img: any, index: number) => {
           formData.append(`images[update][${index}][id]`, String(img.id));
-          formData.append(`images[update][${index}][alt_text]`, img.alt_text || "");
+          formData.append(
+            `images[update][${index}][alt_text]`,
+            img.alt_text || ""
+          );
           if (img.sort_order) {
-            formData.append(`images[update][${index}][sort_order]`, String(img.sort_order));
+            formData.append(
+              `images[update][${index}][sort_order]`,
+              String(img.sort_order)
+            );
           }
-          if (img.hasOwnProperty('is_primary')) {
-            formData.append(`images[update][${index}][is_primary]`, img.is_primary ? "1" : "0");
+          if (img.hasOwnProperty("is_primary")) {
+            formData.append(
+              `images[update][${index}][is_primary]`,
+              img.is_primary ? "1" : "0"
+            );
           }
         });
       }
@@ -604,8 +637,14 @@ const EditProduct = () => {
       if (imagesData.new) {
         imagesData.new.forEach((img: any, index: number) => {
           formData.append(`images[new][${index}][image_file]`, img.image_file);
-          formData.append(`images[new][${index}][alt_text]`, img.alt_text || "");
-          formData.append(`images[new][${index}][is_primary]`, img.is_primary ? "1" : "0");
+          formData.append(
+            `images[new][${index}][alt_text]`,
+            img.alt_text || ""
+          );
+          formData.append(
+            `images[new][${index}][is_primary]`,
+            img.is_primary ? "1" : "0"
+          );
         });
       }
     }
@@ -631,7 +670,7 @@ const EditProduct = () => {
 
   return (
     <div className="p-5">
-      <h2 className="mb-4 text-2xl font-bold">Edit Product</h2>
+      <h2 className="mb-4 text-2xl font-bold">Sửa Sản Phẩm</h2>
       <Form
         form={form}
         layout="vertical"
@@ -745,7 +784,9 @@ const EditProduct = () => {
 
                       if (!deletedImageIdsRef.current.includes(imageId)) {
                         deletedImageIdsRef.current.push(imageId);
-                        message.success("Ảnh chính sẽ được xóa khi lưu sản phẩm");
+                        message.success(
+                          "Ảnh chính sẽ được xóa khi lưu sản phẩm"
+                        );
                       }
                     }
 
@@ -798,9 +839,15 @@ const EditProduct = () => {
                                   if (file.uid && !isNaN(Number(file.uid))) {
                                     const imageId = Number(file.uid);
 
-                                    if (!deletedImageIdsRef.current.includes(imageId)) {
+                                    if (
+                                      !deletedImageIdsRef.current.includes(
+                                        imageId
+                                      )
+                                    ) {
                                       deletedImageIdsRef.current.push(imageId);
-                                      message.success("Ảnh phụ sẽ được xóa khi lưu sản phẩm");
+                                      message.success(
+                                        "Ảnh phụ sẽ được xóa khi lưu sản phẩm"
+                                      );
                                     }
                                   }
 
@@ -875,17 +922,27 @@ const EditProduct = () => {
                 <div className="flex items-center gap-4">
                   {hasVariants && (
                     <div className="text-sm text-gray-500">
-                      {form.getFieldValue('variants')?.length || 0} variants
-                      {form.getFieldValue('variants')?.length > 0 && (
+                      {form.getFieldValue("variants")?.length || 0} variants
+                      {form.getFieldValue("variants")?.length > 0 && (
                         <span className="ml-2">
-                          (<span className="text-green-600">
-                            {form.getFieldValue('variants')?.filter((v: any) => v?.status !== false)?.length || 0} hoạt động
-                          </span>)
+                          (
+                          <span className="text-green-600">
+                            {form
+                              .getFieldValue("variants")
+                              ?.filter((v: any) => v?.status !== false)
+                              ?.length || 0}{" "}
+                            hoạt động
+                          </span>
+                          )
                         </span>
                       )}
                     </div>
                   )}
-                  <Form.Item name="has_variants" valuePropName="checked" noStyle>
+                  <Form.Item
+                    name="has_variants"
+                    valuePropName="checked"
+                    noStyle
+                  >
                     <Switch
                       checkedChildren="Có biến thể"
                       unCheckedChildren="Không biến thể"
@@ -899,215 +956,244 @@ const EditProduct = () => {
                   {(fields, { add, remove }) => (
                     <>
                       {fields.map(({ key, name, ...restField }) => {
-                        const currentVariant = form.getFieldValue(['variants', name]);
+                        const currentVariant = form.getFieldValue([
+                          "variants",
+                          name,
+                        ]);
                         const isExistingVariant = currentVariant?.id;
 
                         return (
-                        <Card key={key} className="mb-4" size="small">
-                          <Row gutter={16}>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "variant_name"]}
-                                label="Tên biến thể"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Tên biến thể là bắt buộc",
-                                  },
-                                ]}
-                              >
-                                <Input placeholder="Tên biến thể (VD: 250g, 500g)" />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "sku_code"]}
-                                label="SKU Code"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "SKU Code là bắt buộc",
-                                  },
-                                ]}
-                              >
-                                <Input placeholder="SKU Code" />
-                              </Form.Item>
-                            </Col>
-
-                            {/* Attribute fields */}
-                            {selectedAttributeTypes.map((attrName: string) => {
-                              const attrGroups = attributeGroups as any;
-                              const attributes = attrGroups?.attributes;
-                              const attrGroup = attributes?.find(
-                                (g: any) => g.attribute_name === attrName
-                              );
-
-                              if (!attrGroup || !attrGroup.values) return null;
-
-                              return (
-                                <Col span={12} key={attrName}>
-                                  <Form.Item
-                                    {...restField}
-                                    name={[name, attrName]}
-                                    label={attrName}
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: `Vui lòng chọn ${attrName}`,
-                                      },
-                                    ]}
-                                  >
-                                    <Select placeholder={`Chọn ${attrName}`}>
-                                      {attrGroup.values.map((value: any) => (
-                                        <Option key={value.id} value={value.id}>
-                                          {value.value}
-                                        </Option>
-                                      ))}
-                                    </Select>
-                                  </Form.Item>
-                                </Col>
-                              );
-                            })}
-
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "price"]}
-                                label="Giá"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Giá là bắt buộc",
-                                  },
-                                ]}
-                              >
-                                <InputNumber
-                                  className="w-full"
-                                  min={0}
-                                  placeholder="Giá"
-                                  formatter={(value) =>
-                                    `${value}`.replace(
-                                      /\B(?=(\d{3})+(?!\d))/g,
-                                      ","
-                                    )
-                                  }
-                                />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "stock_quantity"]}
-                                label="Số lượng trong kho"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: "Số lượng là bắt buộc",
-                                  },
-                                ]}
-                              >
-                                <InputNumber
-                                  className="w-full"
-                                  min={0}
-                                  placeholder="Số lượng trong kho"
-                                />
-                              </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "image"]}
-                                label="Ảnh biến thể"
-                                valuePropName="fileList"
-                                getValueFromEvent={normFile}
-                              >
-                                <Upload
-                                  listType="picture-card"
-                                  accept="image/*"
-                                  beforeUpload={() => false}
-                                  maxCount={1}
-                                  onRemove={(file) => {
-                                    handleImageRemove(file, "variant");
-                                    return false; // Prevent Antd from removing the field
-                                  }}
-                                  showUploadList={{
-                                    showPreviewIcon: true,
-                                    showRemoveIcon: true,
-                                  }}
+                          <Card key={key} className="mb-4" size="small">
+                            <Row gutter={16}>
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "variant_name"]}
+                                  label="Tên biến thể"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Tên biến thể là bắt buộc",
+                                    },
+                                  ]}
                                 >
-                                  <div>
-                                    <UploadOutlined />
-                                    <div style={{ marginTop: 8 }}>
-                                      Tải ảnh lên
-                                    </div>
-                                  </div>
-                                </Upload>
-                              </Form.Item>
-                            </Col>
-                          </Row>
+                                  <Input placeholder="Tên biến thể (VD: 250g, 500g)" />
+                                </Form.Item>
+                              </Col>
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "sku_code"]}
+                                  label="SKU Code"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "SKU Code là bắt buộc",
+                                    },
+                                  ]}
+                                >
+                                  <Input placeholder="SKU Code" />
+                                </Form.Item>
+                              </Col>
 
-                          {/* Status và Actions Row */}
-                          <Row gutter={16} className="mt-4">
-                            <Col span={12}>
-                              <Form.Item
-                                {...restField}
-                                name={[name, "status"]}
-                                label="Trạng thái variant"
-                                valuePropName="checked"
-                                tooltip="Bật/tắt variant này. Variant bị tắt sẽ không hiển thị trên website"
-                              >
-                                <Switch
-                                  checkedChildren="Hoạt động"
-                                  unCheckedChildren="Tạm dừng"
-                                  defaultChecked={true}
-                                />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <div className="text-right pt-6">
-                                {isExistingVariant && (
-                                  <div className="text-xs text-gray-500 mb-2">
-                                    ID: {currentVariant.id}
-                                  </div>
-                                )}
-                                <div className="text-xs text-gray-500">
-                                  {isExistingVariant ? 'Variant hiện có' : 'Variant mới'}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
+                              {/* Attribute fields */}
+                              {selectedAttributeTypes.map(
+                                (attrName: string) => {
+                                  const attrGroups = attributeGroups as any;
+                                  const attributes = attrGroups?.attributes;
+                                  const attrGroup = attributes?.find(
+                                    (g: any) => g.attribute_name === attrName
+                                  );
 
-                          <Button
-                            type="text"
-                            danger
-                            onClick={() => {
-                              // Get current form values to find the image ID
-                              const currentValues = form.getFieldsValue();
-                              const albumImages = currentValues.album_images || [];
-                              const imageToRemove = albumImages[name];
+                                  if (!attrGroup || !attrGroup.values)
+                                    return null;
 
-                              // If this is an existing image, add to delete list
-                              if (imageToRemove?.image?.[0]?.uid && !isNaN(Number(imageToRemove.image[0].uid))) {
-                                const imageId = Number(imageToRemove.image[0].uid);
-
-                                if (!deletedImageIdsRef.current.includes(imageId)) {
-                                  deletedImageIdsRef.current.push(imageId);
-                                  setDeletedImageIds([...deletedImageIdsRef.current]);
-                                  message.success("Ảnh phụ sẽ được xóa khi lưu sản phẩm");
+                                  return (
+                                    <Col span={12} key={attrName}>
+                                      <Form.Item
+                                        {...restField}
+                                        name={[name, attrName]}
+                                        label={attrName}
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: `Vui lòng chọn ${attrName}`,
+                                          },
+                                        ]}
+                                      >
+                                        <Select
+                                          placeholder={`Chọn ${attrName}`}
+                                        >
+                                          {attrGroup.values.map(
+                                            (value: any) => (
+                                              <Option
+                                                key={value.id}
+                                                value={value.id}
+                                              >
+                                                {value.value}
+                                              </Option>
+                                            )
+                                          )}
+                                        </Select>
+                                      </Form.Item>
+                                    </Col>
+                                  );
                                 }
-                              }
+                              )}
 
-                              // Remove from form
-                              remove(name);
-                            }}
-                            icon={<MinusCircleOutlined />}
-                            className="absolute top-2 right-2"
-                          >
-                            Xóa
-                          </Button>
-                        </Card>
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "price"]}
+                                  label="Giá"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Giá là bắt buộc",
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber
+                                    className="w-full"
+                                    min={0}
+                                    placeholder="Giá"
+                                    formatter={(value) =>
+                                      `${value}`.replace(
+                                        /\B(?=(\d{3})+(?!\d))/g,
+                                        ","
+                                      )
+                                    }
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "stock_quantity"]}
+                                  label="Số lượng trong kho"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Số lượng là bắt buộc",
+                                    },
+                                  ]}
+                                >
+                                  <InputNumber
+                                    className="w-full"
+                                    min={0}
+                                    placeholder="Số lượng trong kho"
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={24}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "image"]}
+                                  label="Ảnh biến thể"
+                                  valuePropName="fileList"
+                                  getValueFromEvent={normFile}
+                                >
+                                  <Upload
+                                    listType="picture-card"
+                                    accept="image/*"
+                                    beforeUpload={() => false}
+                                    maxCount={1}
+                                    onRemove={(file) => {
+                                      handleImageRemove(file, "variant");
+                                      return false; // Prevent Antd from removing the field
+                                    }}
+                                    showUploadList={{
+                                      showPreviewIcon: true,
+                                      showRemoveIcon: true,
+                                    }}
+                                  >
+                                    <div>
+                                      <UploadOutlined />
+                                      <div style={{ marginTop: 8 }}>
+                                        Tải ảnh lên
+                                      </div>
+                                    </div>
+                                  </Upload>
+                                </Form.Item>
+                              </Col>
+                            </Row>
+
+                            {/* Status và Actions Row */}
+                            <Row gutter={16} className="mt-4">
+                              <Col span={12}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "status"]}
+                                  label="Trạng thái variant"
+                                  valuePropName="checked"
+                                  tooltip="Bật/tắt variant này. Variant bị tắt sẽ không hiển thị trên website"
+                                >
+                                  <Switch
+                                    checkedChildren="Hoạt động"
+                                    unCheckedChildren="Tạm dừng"
+                                    defaultChecked={true}
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={12}>
+                                <div className="text-right pt-6">
+                                  {isExistingVariant && (
+                                    <div className="text-xs text-gray-500 mb-2">
+                                      ID: {currentVariant.id}
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-gray-500">
+                                    {isExistingVariant
+                                      ? "Variant hiện có"
+                                      : "Variant mới"}
+                                  </div>
+                                </div>
+                              </Col>
+                            </Row>
+
+                            <Button
+                              type="text"
+                              danger
+                              onClick={() => {
+                                // Get current form values to find the image ID
+                                const currentValues = form.getFieldsValue();
+                                const albumImages =
+                                  currentValues.album_images || [];
+                                const imageToRemove = albumImages[name];
+
+                                // If this is an existing image, add to delete list
+                                if (
+                                  imageToRemove?.image?.[0]?.uid &&
+                                  !isNaN(Number(imageToRemove.image[0].uid))
+                                ) {
+                                  const imageId = Number(
+                                    imageToRemove.image[0].uid
+                                  );
+
+                                  if (
+                                    !deletedImageIdsRef.current.includes(
+                                      imageId
+                                    )
+                                  ) {
+                                    deletedImageIdsRef.current.push(imageId);
+                                    setDeletedImageIds([
+                                      ...deletedImageIdsRef.current,
+                                    ]);
+                                    message.success(
+                                      "Ảnh phụ sẽ được xóa khi lưu sản phẩm"
+                                    );
+                                  }
+                                }
+
+                                // Remove from form
+                                remove(name);
+                              }}
+                              icon={<MinusCircleOutlined />}
+                              className="absolute top-2 right-2"
+                            >
+                              Xóa
+                            </Button>
+                          </Card>
                         );
                       })}
                       <Form.Item>
@@ -1264,7 +1350,7 @@ const EditProduct = () => {
             </Card>
 
             {/* Hidden field to track deleted images */}
-            <Form.Item name="deleted_image_ids" style={{ display: 'none' }}>
+            <Form.Item name="deleted_image_ids" style={{ display: "none" }}>
               <input type="hidden" value={JSON.stringify(deletedImageIds)} />
             </Form.Item>
 
@@ -1278,7 +1364,6 @@ const EditProduct = () => {
                 >
                   Sửa Sản Phẩm
                 </Button>
-
               </div>
             </Form.Item>
           </Col>

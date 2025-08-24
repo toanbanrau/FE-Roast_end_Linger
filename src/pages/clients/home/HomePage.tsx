@@ -32,7 +32,8 @@ export default function HomePage() {
               Trải Nghiệm Nghệ Thuật Cà Phê Đỉnh Cao
             </h1>
             <p className="text-xl text-gray-200 md:text-2xl">
-              Thưởng thức bộ sưu tập cà phê cao cấp, rang thủ công, có nguồn gốc đạo đức.
+              Thưởng thức bộ sưu tập cà phê cao cấp, rang thủ công, có nguồn gốc
+              đạo đức.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -45,7 +46,8 @@ export default function HomePage() {
                 to="/about"
                 className="inline-flex items-center justify-center rounded-md border border-white bg-transparent px-4 py-2 text-sm font-medium text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
-                Câu Chuyện Của Chúng Tôi <ChevronRight className="ml-2 h-5 w-5" />
+                Câu Chuyện Của Chúng Tôi{" "}
+                <ChevronRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -61,7 +63,8 @@ export default function HomePage() {
             </h2>
             <div className="w-20 h-1 bg-amber-800 my-6"></div>
             <p className="text-lg text-stone-600 max-w-2xl">
-              Khám phá những sản phẩm cà phê đặc biệt nhất được chúng tôi tuyển chọn kỹ lưỡng từ khắp nơi trên thế giới.
+              Khám phá những sản phẩm cà phê đặc biệt nhất được chúng tôi tuyển
+              chọn kỹ lưỡng từ khắp nơi trên thế giới.
             </p>
           </div>
 
@@ -85,7 +88,9 @@ export default function HomePage() {
           {/* Error State */}
           {isErrorFeatured && (
             <div className="text-center py-12">
-              <p className="text-red-500 mb-4">Không thể tải sản phẩm nổi bật</p>
+              <p className="text-red-500 mb-4">
+                Không thể tải sản phẩm nổi bật
+              </p>
               <button
                 onClick={() => window.location.reload()}
                 className="text-amber-800 hover:text-amber-900 font-medium"
@@ -105,8 +110,13 @@ export default function HomePage() {
                 >
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src={product.primary_image?.image_url || "/placeholder.svg?height=400&width=400"}
-                      alt={product.primary_image?.alt_text || product.product_name}
+                      src={
+                        product.primary_image?.image_url ||
+                        "/placeholder.svg?height=400&width=400"
+                      }
+                      alt={
+                        product.primary_image?.alt_text || product.product_name
+                      }
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   </div>
@@ -115,7 +125,9 @@ export default function HomePage() {
                       {product.product_name}
                     </h3>
                     <p className="mt-2 text-stone-600 line-clamp-2">
-                      {product.short_description || product.flavor_profile || "Cà phê chất lượng cao"}
+                      {product.short_description ||
+                        product.flavor_profile ||
+                        "Cà phê chất lượng cao"}
                     </p>
                     <div className="mt-4 flex items-center justify-between">
                       <span className="text-lg font-semibold text-amber-800">
@@ -158,14 +170,18 @@ export default function HomePage() {
             </div>
             <div className="space-y-6">
               <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
-                Niềm Đam Mê Hoàn Hảo
+                Đam Mê Hoàn Hảo
               </h2>
               <div className="w-20 h-1 bg-amber-600"></div>
               <p className="text-lg text-stone-300">
-                Trong hơn 30 năm, chúng tôi đã đi khắp thế giới để tìm kiếm những hạt cà phê chất lượng nhất, kết nối với nông dân cùng chia sẻ giá trị bền vững.
+                Trong hơn 30 năm, chúng tôi đã đi khắp thế giới để tìm kiếm
+                những hạt cà phê chất lượng nhất, kết nối với nông dân cùng chia
+                sẻ giá trị bền vững.
               </p>
               <p className="text-lg text-stone-300">
-                Mỗi mẻ cà phê được chọn lọc kỹ càng, rang chuẩn xác và giao đến bạn ở độ tươi ngon nhất. Những người thợ rang của chúng tôi mang đến trải nghiệm cà phê đẳng cấp.
+                Mỗi mẻ cà phê được chọn lọc kỹ càng, rang chuẩn xác và giao đến
+                bạn ở độ tươi ngon nhất. Những người thợ rang của chúng tôi mang
+                đến trải nghiệm cà phê đẳng cấp.
               </p>
               <Link
                 to="/about"
@@ -249,7 +265,8 @@ export default function HomePage() {
               Gia Nhập Câu Lạc Bộ Cà Phê
             </h2>
             <p className="text-lg text-amber-100">
-              Đăng ký để nhận ưu đãi độc quyền, mẹo pha chế và thông tin về sản phẩm giới hạn.
+              Đăng ký để nhận ưu đãi độc quyền, mẹo pha chế và thông tin về sản
+              phẩm giới hạn.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
               <input

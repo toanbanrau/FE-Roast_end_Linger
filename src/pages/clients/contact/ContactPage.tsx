@@ -136,7 +136,7 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-amber-800 mt-1" />
                 <div>
-                  <p className="font-medium">Trụ Sở Chính Élite Coffee</p>
+                  <p className="font-medium">Trụ Sở Chính Roast And Linger</p>
                   <p className="text-stone-600">FPT Polytechnic</p>
                   <p className="text-stone-600">Trịnh Văn Bô</p>
                 </div>

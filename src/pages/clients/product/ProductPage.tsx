@@ -54,27 +54,25 @@ export default function ProductsPage() {
     return (
       <div className="text-center py-12 text-red-500">
         Lỗi tải dữ liệu:{" "}
-        {(categoriesError instanceof Error
+        {categoriesError instanceof Error
           ? categoriesError.message
           : brandsError instanceof Error
           ? brandsError.message
           : originsError instanceof Error
           ? originsError.message
-          : "Unknown error")}
+          : "Unknown error"}
       </div>
     );
-
-
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
       <div className="mb-8">
         <h1 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl">
-          Our Coffee Collection
+          Bộ Sưu Tập Cà Phê
         </h1>
         <p className="mt-4 text-lg text-stone-600">
-          Explore our curated selection of premium coffee beans from around the
-          world.
+          Khám phá bộ sưu tập hạt cà phê cao cấp được tuyển chọn kỹ lưỡng của
+          chúng tôi từ khắp nơi trên thế giới.
         </p>
 
         {/* Search Input */}
@@ -285,9 +283,13 @@ export default function ProductsPage() {
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
                   <label className="text-sm font-medium">
-                    {level === "light" ? "Rang nhẹ" :
-                     level === "medium" ? "Rang vừa" :
-                     level === "dark" ? "Rang đậm" : "Rang rất đậm"}
+                    {level === "light"
+                      ? "Rang nhẹ"
+                      : level === "medium"
+                      ? "Rang vừa"
+                      : level === "dark"
+                      ? "Rang đậm"
+                      : "Rang rất đậm"}
                   </label>
                 </div>
               ))}
@@ -302,14 +304,18 @@ export default function ProductsPage() {
                   type="number"
                   placeholder="Giá từ"
                   value={filters.minPrice}
-                  onChange={(e) => updateSearchParams({ min_price: e.target.value })}
+                  onChange={(e) =>
+                    updateSearchParams({ min_price: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
                 <input
                   type="number"
                   placeholder="Giá đến"
                   value={filters.maxPrice}
-                  onChange={(e) => updateSearchParams({ max_price: e.target.value })}
+                  onChange={(e) =>
+                    updateSearchParams({ max_price: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
               </div>
@@ -362,9 +368,7 @@ export default function ProductsPage() {
               <select
                 className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 value={filters.sort}
-                onChange={(e) =>
-                  updateSearchParams({ sort: e.target.value })
-                }
+                onChange={(e) => updateSearchParams({ sort: e.target.value })}
               >
                 <option value="created_at">Mới nhất</option>
                 <option value="product_name">Tên sản phẩm</option>
@@ -385,9 +389,7 @@ export default function ProductsPage() {
               <select
                 className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 value={filters.sort}
-                onChange={(e) =>
-                  updateSearchParams({ sort: e.target.value })
-                }
+                onChange={(e) => updateSearchParams({ sort: e.target.value })}
               >
                 <option value="created_at">Mới nhất</option>
                 <option value="product_name">Tên sản phẩm</option>

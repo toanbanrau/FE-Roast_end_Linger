@@ -32,8 +32,17 @@ const AddPromotion: React.FC = () => {
       navigate("/admin/promotion");
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
     },
-    onError: (error) => {
-      toast.error("Có lỗi xảy ra khi thêm khuyến mãi!");
+    onError: (error: any) => {
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errors = error.response.data.errors;
+        Object.values(errors).forEach((err: any) => {
+          err.forEach((errMsg: string) => {
+            toast.error(errMsg);
+          });
+        });
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm khuyến mãi!");
+      }
     },
   });
 
