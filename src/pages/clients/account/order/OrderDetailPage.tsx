@@ -1,42 +1,44 @@
-import {
-  ArrowLeft,
-  Truck,
-  Package,
-  CheckCircle,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Truck, Package, CheckCircle, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AccountNav from "../../../../components/AccountNav";
-import { getMyOrderById } from "../../../../services/checkoutService";
+import {
+  getMyOrderById,
+  confirmDelivery,
+} from "../../../../services/checkoutService";
 import { getOrderReviewableProducts } from "../../../../services/reviewService";
 import type { IOrder } from "../../../../interfaces/order";
+import type { IReviewableProduct } from "../../../../interfaces/review";
 import CancelOrderModal from "../../../../components/order/CancelOrderModal";
 import CreateReviewModal from "../../../../components/CreateReviewModal";
+import ConfirmModal from "../../../../components/ConfirmModal"; // Import the general confirm modal
 import { canCancelOrder } from "../../../../utils/orderStatus";
-import { toast } from "react-hot-toast";
 import { getStatusText } from "../../../../utils/orderStatusUtils";
+import { toast } from "react-toastify";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<
     number | undefined
   >();
-  const [reviewableProducts, setReviewableProducts] = useState<any[]>([]);
-  const [isLoadingReviewable, setIsLoadingReviewable] = useState(false);
+  const [isConfirmDeliveryModalOpen, setIsConfirmDeliveryModalOpen] =
+    useState(false);
 
-  // Debug state changes
-  useEffect(() => {
-    console.log("🔄 reviewableProducts state changed:", {
-      length: reviewableProducts.length,
-      productIds: reviewableProducts.map(item => item.product.id)
-    });
-  }, [reviewableProducts]);
-
-  const queryClient = useQueryClient();
+  // Mutation to confirm delivery
+  const confirmDeliveryMutation = useMutation({
+    mutationFn: confirmDelivery,
+    onSuccess: () => {
+      toast.success("Xác nhận đã nhận hàng thành công!");
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+    },
+  });
 
   const {
     data: order,
@@ -48,97 +50,63 @@ export default function OrderDetailPage() {
     enabled: !!id,
   });
 
+  const isOrderCompleted = ["delivered", "completed"].includes(
+    order?.status.name?.toLowerCase() || ""
+  );
 
-
-  // Debug order status
-  console.log("🔍 Order Status Debug:", {
-    statusName: order?.status.name,
-    statusId: order?.status.id,
-    fullStatus: order?.status,
-  });
-
-  const isOrderCompleted = [
-    "delivered",
-    "completed",
-  ].includes(order?.status.name?.toLowerCase() || "");
-
-  console.log("✅ isOrderCompleted:", isOrderCompleted);
-  console.log("📊 Component state:", {
-    isOrderCompleted,
-    reviewableProductsLength: reviewableProducts.length,
-    isLoadingReviewable
-  });
-
-  // Fetch reviewable products when order is completed
-  useEffect(() => {
-    console.log("🔄 useEffect triggered:", { isOrderCompleted, order: !!order });
-
-    if (isOrderCompleted && order) {
-      console.log("🚀 Fetching reviewable products...");
-      setIsLoadingReviewable(true);
-      const fetchReviewableProducts = async () => {
-        try {
-          console.log(`📞 Calling getOrderReviewableProducts API for order ${order.id}...`);
-          const response = await getOrderReviewableProducts(order.id);
-          console.log("📋 Raw API Response:", response);
-
-          // Handle response format - should be single order with items
-          const orderData = response?.data || response || {};
-          console.log("📦 Order data:", orderData);
-
-          // Extract items from the order
-          const items = orderData.items?.map((item: any) => ({
+  // Fetch reviewable products when order is completed using useQuery
+  const { data: reviewableProducts = [], isLoading: isLoadingReviewable } =
+    useQuery({
+      queryKey: ["order-reviewable-products", order?.id],
+      queryFn: () => getOrderReviewableProducts(order!.id),
+      enabled: isOrderCompleted && !!order,
+      select: (response) => {
+        const orderData = response?.data || response || {};
+        return (
+          orderData.items?.map((item: any) => ({
             ...item,
             order_id: orderData.order_id,
             order_number: orderData.order_number,
             purchased_at: orderData.purchased_at,
-            days_since_purchase: orderData.days_since_purchase
-          })) || [];
-
-          console.log("📦 Order items:", items);
-          setReviewableProducts(items);
-          console.log("✅ Reviewable products set:", items.length);
-        } catch (error) {
-          console.error("❌ Failed to fetch order reviewable products:", error);
-          // If API fails, set empty array to avoid showing loading forever
-          setReviewableProducts([]);
-        } finally {
-          setIsLoadingReviewable(false);
-        }
-      };
-      fetchReviewableProducts();
-    } else {
-      console.log("⏹️ Order not completed or no order ID, skipping fetch");
-    }
-  }, [isOrderCompleted, order?.id]);
+            days_since_purchase: orderData.days_since_purchase,
+          })) || []
+        );
+      },
+    });
 
   // Check if a product can be reviewed or has been reviewed
   const getProductReviewStatus = (productId: number) => {
     // Find all items for this product (could be multiple from different orders)
-    const productItems = reviewableProducts.filter(item => item.product.id === productId);
+    const productItems = reviewableProducts.filter(
+      (item: IReviewableProduct) => item.product.id === productId
+    );
 
     // Filter items that can be reviewed (can_review = true)
-    const reviewableItems = productItems.filter(item => item.can_review === true);
+    const reviewableItems = productItems.filter(
+      (item: IReviewableProduct) => item.can_review === true
+    );
 
     // Filter items that have been reviewed (has_reviewed = true)
-    const reviewedItems = productItems.filter(item => item.has_reviewed === true);
+    const reviewedItems = productItems.filter(
+      (item: IReviewableProduct) => item.has_reviewed === true
+    );
 
     console.log(`🔍 getProductReviewStatus for productId ${productId}:`, {
       reviewableProductsLength: reviewableProducts.length,
       productItemsFound: productItems.length,
       reviewableItemsFound: reviewableItems.length,
       reviewedItemsFound: reviewedItems.length,
-      productItems: productItems.map(item => ({
+      productItems: productItems.map((item) => ({
         orderItemId: item.order_item_id,
         orderNumber: item.order_number,
         canReview: item.can_review,
-        hasReviewed: item.has_reviewed
-      }))
+        hasReviewed: item.has_reviewed,
+      })),
     });
 
     // If no items found for this product
     if (productItems.length === 0) {
-      return { canReview: false, hasReviewed: false, status: 'not_eligible' };
+      return { canReview: false, hasReviewed: false, status: "not_eligible" };
     }
 
     // If has reviewable items (can_review = true)
@@ -146,9 +114,9 @@ export default function OrderDetailPage() {
       return {
         canReview: true,
         hasReviewed: reviewedItems.length > 0,
-        status: 'can_review',
+        status: "can_review",
         review: reviewedItems[0]?.review,
-        items: productItems
+        items: productItems,
       };
     }
 
@@ -157,9 +125,9 @@ export default function OrderDetailPage() {
       return {
         canReview: false,
         hasReviewed: true,
-        status: 'already_reviewed',
+        status: "already_reviewed",
         review: reviewedItems[0]?.review,
-        items: productItems
+        items: productItems,
       };
     }
 
@@ -167,8 +135,8 @@ export default function OrderDetailPage() {
     return {
       canReview: false,
       hasReviewed: false,
-      status: 'not_eligible',
-      items: productItems
+      status: "not_eligible",
+      items: productItems,
     };
   };
 
@@ -193,8 +161,6 @@ export default function OrderDetailPage() {
       minute: "2-digit",
     });
   };
-
-
 
   if (isLoading) {
     return (
@@ -265,10 +231,16 @@ export default function OrderDetailPage() {
                       Hủy đơn hàng
                     </button>
                   )}
-
-
-
-
+                  {order.status.name.toLowerCase() === "delivered" && (
+                    <button
+                      onClick={() => setIsConfirmDeliveryModalOpen(true)}
+                      className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
+                      disabled={confirmDeliveryMutation.isPending}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Đã nhận được hàng
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -281,7 +253,8 @@ export default function OrderDetailPage() {
                       <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100 text-green-600">
                         {history.new_status.name.toLowerCase() === "pending" ? (
                           <Package className="h-4 w-4" />
-                        ) : history.new_status.name.toLowerCase() === "processing" ? (
+                        ) : history.new_status.name.toLowerCase() ===
+                          "processing" ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -297,7 +270,8 @@ export default function OrderDetailPage() {
                             <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"></path>
                             <path d="M6 12h12"></path>
                           </svg>
-                        ) : history.new_status.name.toLowerCase() === "shipped" ? (
+                        ) : history.new_status.name.toLowerCase() ===
+                          "shipped" ? (
                           <Truck className="h-4 w-4" />
                         ) : (
                           <CheckCircle className="h-4 w-4" />
@@ -308,7 +282,9 @@ export default function OrderDetailPage() {
                       )}
                     </div>
                     <div className="pt-1">
-                      <h3 className="font-medium">{getStatusText(history.new_status.name)}</h3>
+                      <h3 className="font-medium">
+                        {getStatusText(history.new_status.name)}
+                      </h3>
                       <p className="text-sm text-stone-500">
                         {formatDate(history.created_at)} lúc{" "}
                         {formatTime(history.created_at)}
@@ -399,39 +375,45 @@ export default function OrderDetailPage() {
                       {item.formatted_total_price}
                     </div>
                     {/* Show review status and button if order is completed */}
-                    {isOrderCompleted && !isLoadingReviewable && (() => {
-                      const reviewStatus = getProductReviewStatus(item.product.id);
+                    {isOrderCompleted &&
+                      !isLoadingReviewable &&
+                      (() => {
+                        const reviewStatus = getProductReviewStatus(
+                          item.product.id
+                        );
 
-                      // Ưu tiên canReview trước hasReviewed
-                      if (reviewStatus.canReview) {
-                        return (
-                          <button
-                            onClick={() => handleCreateReview(item.product.id)}
-                            className="mt-2 inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
-                          >
-                            ⭐ Viết đánh giá
-                          </button>
-                        );
-                      } else if (reviewStatus.hasReviewed) {
-                        return (
-                          <button
-                            disabled
-                            className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
-                          >
-                            ✓ Bạn đã đánh giá rồi
-                          </button>
-                        );
-                      } else {
-                        return (
-                          <button
-                            disabled
-                            className="mt-2 inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
-                          >
-                            ⚪ Không thể đánh giá
-                          </button>
-                        );
-                      }
-                    })()}
+                        // Ưu tiên canReview trước hasReviewed
+                        if (reviewStatus.canReview) {
+                          return (
+                            <button
+                              onClick={() =>
+                                handleCreateReview(item.product.id)
+                              }
+                              className="mt-2 inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
+                            >
+                              ⭐ Viết đánh giá
+                            </button>
+                          );
+                        } else if (reviewStatus.hasReviewed) {
+                          return (
+                            <button
+                              disabled
+                              className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
+                            >
+                              ✓ Bạn đã đánh giá rồi
+                            </button>
+                          );
+                        } else {
+                          return (
+                            <button
+                              disabled
+                              className="mt-2 inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium text-sm cursor-not-allowed"
+                            >
+                              ⚪ Không thể đánh giá
+                            </button>
+                          );
+                        }
+                      })()}
                   </div>
                 </div>
               ))}
@@ -482,7 +464,8 @@ export default function OrderDetailPage() {
                         : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
+                    {order.payment_status_text ||
+                      (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
                   </span>
                 </div>
                 <div className="space-y-2 border-t pt-4">
@@ -544,6 +527,23 @@ export default function OrderDetailPage() {
               >
                 Xem FAQ
               </Link>
+
+              {/* Confirm Delivery Modal */}
+              <ConfirmModal
+                isOpen={isConfirmDeliveryModalOpen}
+                onClose={() => setIsConfirmDeliveryModalOpen(false)}
+                onConfirm={() => {
+                  if (order) {
+                    confirmDeliveryMutation.mutate(order.id);
+                  }
+                  setIsConfirmDeliveryModalOpen(false);
+                }}
+                title="Xác nhận đã nhận hàng"
+                message="Bạn có chắc chắn đã nhận được đơn hàng này không? Hành động này sẽ hoàn tất đơn hàng."
+                confirmText="Xác nhận"
+                cancelText="Hủy"
+                isLoading={confirmDeliveryMutation.isPending}
+              />
               <Link
                 to="/returns"
                 className="bg-white border hover:bg-stone-50 px-4 py-2 rounded-md font-medium text-center"
@@ -573,8 +573,6 @@ export default function OrderDetailPage() {
         productId={selectedProductId}
         orderId={order?.id}
       />
-
-
     </div>
   );
 }

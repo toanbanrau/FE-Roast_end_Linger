@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -15,20 +14,19 @@ import {
   Col,
   Divider,
   Image,
+  Tooltip,
 } from "antd";
-import {
-  ArrowLeftOutlined,
-  EditOutlined,
-  PrinterOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { IOrder, OrderItemDetail } from "../../../interfaces/order";
+import type { OrderItemDetail } from "../../../interfaces/order";
 import {
   getOrderById,
   updateOrderStatus,
+  updatePaymentStatus,
   getOrderStatuses,
 } from "../../../services/adminOrderService";
-import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
+import { getStatusText } from "../../../utils/orderStatusUtils";
+import { toast } from "react-toastify";
 
 const { Option } = Select;
 
@@ -36,14 +34,9 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isEditingStatus, setIsEditingStatus] = useState(false);
 
   // Lấy chi tiết đơn hàng
-  const {
-    data: order,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order-detail", id],
     queryFn: () => {
       console.log("Fetching order with ID:", id);
@@ -72,22 +65,108 @@ export default function OrderDetail() {
     },
     onSuccess: (data) => {
       console.log("✅ Mutation success:", data);
-      message.success("Cập nhật trạng thái đơn hàng thành công");
+      toast.success("Cập nhật trạng thái đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-order-detail", id] });
-      setIsEditingStatus(false);
     },
     onError: (error) => {
       console.error("❌ Mutation error:", error);
-      message.error("Cập nhật trạng thái thất bại");
+      toast.error("Cập nhật trạng thái thất bại");
     },
   });
 
+  // Mutation cập nhật trạng thái thanh toán
+  const updatePaymentStatusMutation = useMutation({
+    mutationFn: ({ orderId, isPaid }: { orderId: number; isPaid: boolean }) =>
+      updatePaymentStatus(orderId, isPaid),
+    onSuccess: () => {
+      toast.success("Cập nhật trạng thái thanh toán thành công");
+      queryClient.invalidateQueries({ queryKey: ["admin-order-detail", id] });
+    },
+    onError: () => {
+      toast.error("Cập nhật trạng thái thanh toán thất bại");
+    },
+  });
+
+  // Định nghĩa thứ tự trạng thái (từ thấp đến cao) - theo database
+  const statusOrder = [
+    "pending", // 1. Chờ xử lý
+    "confirmed", // 2. Đã xác nhận
+    "processing", // 3. Đang xử lý
+    "shipping", // 4. Đang vận chuyển
+    "delivered", // 5. Đã giao hàng
+    "completed", // 6. Hoàn thành
+  ];
+
+  // Trạng thái cuối (không thể chỉnh sửa)
+  const finalStatuses = ["completed", "cancelled", "refunded"];
+
+  // Kiểm tra xem có thể chuyển trạng thái không
+  const canChangeStatus = (
+    currentStatus: string | undefined | null,
+    newStatusId: number
+  ) => {
+    const newStatus = orderStatuses?.find((s) => s.id === newStatusId);
+    if (!newStatus || !newStatus.status_name) return false;
+
+    const newStatusName = newStatus.status_name.toLowerCase();
+    const currentStatusName = (currentStatus || "").toLowerCase();
+
+    if (finalStatuses.includes(currentStatusName)) {
+      return false;
+    }
+
+    if (newStatusName === "cancelled") {
+      return true;
+    }
+
+    if (currentStatusName === "cancelled") {
+      return false;
+    }
+
+    const currentIndex = statusOrder.indexOf(currentStatusName);
+    const newIndex = statusOrder.indexOf(newStatusName);
+
+    if (currentIndex === -1 || newIndex === -1) {
+      return true;
+    }
+
+    return newIndex >= currentIndex;
+  };
+
   const handleStatusChange = (statusId: number) => {
-    console.log("🔄 handleStatusChange called:", {
-      orderId: Number(id),
-      statusId,
-    });
-    console.log("🚀 Calling mutation directly (no confirmation)");
+    if (!order) return;
+
+    const newStatus = orderStatuses?.find((s) => s.id === statusId);
+
+    // Validate: Cannot complete an unpaid order
+    if (
+      newStatus?.status_name.toLowerCase() === "completed" &&
+      !order.is_paid
+    ) {
+      toast.error("Đơn hàng phải được thanh toán trước khi hoàn thành!");
+      return;
+    }
+
+    const currentStatusName = order.status.name;
+
+    if (!canChangeStatus(currentStatusName, statusId)) {
+      const newStatusText = newStatus
+        ? getStatusText(newStatus.status_name)
+        : "Unknown";
+      const currentStatusText = getStatusText(currentStatusName);
+
+      if (finalStatuses.includes(currentStatusName.toLowerCase())) {
+        toast.error(
+          `Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`
+        );
+      } else {
+        toast.error(
+          `Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`
+        );
+      }
+      return;
+    }
+
     updateStatusMutation.mutate({ orderId: Number(id), statusId });
   };
 
@@ -104,8 +183,6 @@ export default function OrderDetail() {
     };
     return colorMap[statusName] || "default";
   };
-
-
 
   const getPaymentMethodText = (method: string) => {
     const textMap: { [key: string]: string } = {
@@ -221,53 +298,51 @@ export default function OrderDetail() {
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái" span={1}>
-                <div className="flex items-center space-x-2">
-                  <Tag color={order.status.color}>
-                    {getStatusText(order.status.name)}
-                  </Tag>
-                  {!isEditingStatus ? (
-                    <Button
-                      size="small"
-                      icon={<EditOutlined />}
-                      onClick={() => setIsEditingStatus(true)}
-                    >
-                      Sửa
-                    </Button>
-                  ) : (
-                    <Space>
-                      <Select
-                        value={order.status.id}
-                        style={{ width: 150 }}
-                        onChange={handleStatusChange}
-                        loading={updateStatusMutation.isPending}
-                      >
-                        {orderStatuses?.map((status) => (
-                          <Option key={status.id} value={status.id}>
-                            <Tag color={status.color}>
-                              {getStatusText(status.status_name)}
-                            </Tag>
-                          </Option>
-                        ))}
-                      </Select>
-                      <Button
-                        size="small"
-                        onClick={() => setIsEditingStatus(false)}
-                      >
-                        Hủy
-                      </Button>
-                    </Space>
+                <Select
+                  value={order.status.id}
+                  style={{ width: 180 }}
+                  onChange={handleStatusChange}
+                  loading={updateStatusMutation.isPending}
+                  disabled={finalStatuses.includes(
+                    order.status.name.toLowerCase()
                   )}
-                </div>
+                >
+                  {orderStatuses?.map((status) => (
+                    <Option
+                      key={status.id}
+                      value={status.id}
+                      disabled={!canChangeStatus(order.status.name, status.id)}
+                    >
+                      <Tag color={status.color}>
+                        {getStatusText(status.status_name)}
+                      </Tag>
+                    </Option>
+                  ))}
+                </Select>
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán" span={1}>
                 {getPaymentMethodText(order.payment_method)}
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái thanh toán" span={1}>
-                <Tag
-                  color={order.payment_status || order.is_paid ? "green" : "orange"}
+                <Select
+                  value={order.is_paid}
+                  style={{ width: 150 }}
+                  loading={updatePaymentStatusMutation.isPending}
+                  disabled={updatePaymentStatusMutation.isPending}
+                  onChange={(value: boolean) => {
+                    updatePaymentStatusMutation.mutate({
+                      orderId: order.id,
+                      isPaid: value,
+                    });
+                  }}
                 >
-                  {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
-                </Tag>
+                  <Option value={false}>
+                    <Tag color="orange">Chưa thanh toán</Tag>
+                  </Option>
+                  <Option value={true}>
+                    <Tag color="green">Đã thanh toán</Tag>
+                  </Option>
+                </Select>
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức giao hàng" span={1}>
                 <div>

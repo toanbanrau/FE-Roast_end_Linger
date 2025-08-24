@@ -64,10 +64,10 @@ export default function CheckoutPage() {
 
   // Function format giá tiền
   const formatPrice = (price: number | string) => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(numPrice || 0);
@@ -347,7 +347,8 @@ export default function CheckoutPage() {
     // Tính lại discount khi subtotal thay đổi
     let newDiscount = 0;
     if (appliedPromotion.discount_type === "percentage") {
-      newDiscount = (subtotal * parseFloat(appliedPromotion.discount_value)) / 100;
+      newDiscount =
+        (subtotal * parseFloat(appliedPromotion.discount_value)) / 100;
       // Áp dụng giới hạn discount tối đa
       const maxDiscount = parseFloat(appliedPromotion.maximum_discount_amount);
       if (newDiscount > maxDiscount) {
@@ -788,9 +789,7 @@ export default function CheckoutPage() {
                   <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <p className="text-sm text-amber-800">
                       💡{" "}
-                      <strong>
-                        Mua thêm {formatPrice(500000 - subtotal)}
-                      </strong>{" "}
+                      <strong>Mua thêm {formatPrice(500000 - subtotal)}</strong>{" "}
                       để được miễn phí vận chuyển!
                     </p>
                   </div>
@@ -1074,9 +1073,7 @@ export default function CheckoutPage() {
             <div className="space-y-3 pt-3">
               <div className="flex justify-between">
                 <span className="text-stone-600">Tổng Tiền Sản Phẩm</span>
-                <span className="font-medium">
-                  {formatPrice(subtotal)}
-                </span>
+                <span className="font-medium">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-600">Phí Vận Chuyển</span>
@@ -1187,10 +1184,16 @@ export default function CheckoutPage() {
                               <p className="text-xs text-gray-500">
                                 {promo.description}
                               </p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 flex-wrap">
                                 <span>
                                   Đơn tối thiểu: {promo.formatted_minimum_order}
                                 </span>
+                                {promo.formatted_maximum_discount && (
+                                  <span>
+                                    Giảm tối đa:{" "}
+                                    {promo.formatted_maximum_discount}
+                                  </span>
+                                )}
                                 <span>
                                   Còn lại: {promo.remaining_usage}/
                                   {promo.usage_limit}

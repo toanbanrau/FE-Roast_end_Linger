@@ -27,6 +27,7 @@ import {
   updatePaymentStatus,
 } from "../../../services/adminOrderService";
 import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
+import { toast } from "react-toastify";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -92,7 +93,7 @@ export default function ListOrder() {
     },
     onSuccess: (data) => {
       console.log("✅ Mutation success:", data);
-      message.success("Cập nhật trạng thái đơn hàng thành công");
+      toast.success("Cập nhật trạng thái đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
     },
@@ -116,7 +117,7 @@ export default function ListOrder() {
     },
     onSuccess: (data) => {
       console.log("✅ Payment status mutation success:", data);
-      message.success(`Cập nhật trạng thái thanh toán thành công: ${data.payment_status_text}`);
+      toast.success(`Cập nhật trạng thái thanh toán thành công: ${data.payment_status_text}`);
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
     },
@@ -188,9 +189,9 @@ export default function ListOrder() {
       const currentStatusText = getStatusText(currentStatusName);
 
       if (finalStatuses.includes(currentStatusName.toLowerCase())) {
-        message.error(`Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`);
+        toast.error(`Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`);
       } else {
-        message.error(`Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`);
+        toast.error(`Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`);
       }
       return;
     }

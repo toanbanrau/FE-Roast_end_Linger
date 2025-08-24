@@ -76,6 +76,7 @@ export interface IReviewableProduct {
   purchased_at: string;
   days_since_purchase: number;
   can_review: boolean;
+  has_reviewed: boolean;
 }
 
 // Review Form Data

@@ -1,10 +1,20 @@
 import React from "react";
-import { Form, Input, Button, message, Select, DatePicker, InputNumber, Switch } from "antd";
+import dayjs from "dayjs";
+import {
+  Form,
+  Input,
+  Button,
+  message,
+  Select,
+  DatePicker,
+  InputNumber,
+  Switch,
+} from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPromotion } from "../../../services/promotionService";
 import { useNavigate } from "react-router-dom";
 import type { IPromotionCreate } from "../../../interfaces/promotion";
-import {toast} from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -17,7 +27,7 @@ const AddPromotion: React.FC = () => {
   const mutation = useMutation({
     mutationFn: createPromotion,
     onSuccess: () => {
-      message.success("Thêm khuyến mãi thành công!");
+      toast.success("Thêm khuyến mãi thành công!");
       form.resetFields();
       navigate("/admin/promotion");
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
@@ -42,7 +52,7 @@ const AddPromotion: React.FC = () => {
     status: boolean;
   }) => {
     console.log("Form values:", values);
-    
+
     const formData: IPromotionCreate = {
       promotion_name: values.promotion_name,
       promotion_code: values.promotion_code,
@@ -50,7 +60,9 @@ const AddPromotion: React.FC = () => {
       discount_type: values.discount_type,
       discount_value: values.discount_value.toString(),
       minimum_order_value: values.minimum_order_value.toString(),
-      maximum_discount_amount: values.maximum_discount_amount ? values.maximum_discount_amount.toString() : null,
+      maximum_discount_amount: values.maximum_discount_amount
+        ? values.maximum_discount_amount.toString()
+        : null,
       start_date: values.start_date.format("YYYY-MM-DD HH:mm:ss"),
       end_date: values.end_date.format("YYYY-MM-DD HH:mm:ss"),
       usage_limit: values.usage_limit || null,
@@ -64,7 +76,7 @@ const AddPromotion: React.FC = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Thêm khuyến mãi mới</h1>
-      
+
       <Form
         form={form}
         layout="vertical"
@@ -100,28 +112,40 @@ const AddPromotion: React.FC = () => {
           <Form.Item
             label="Loại giảm giá"
             name="discount_type"
-            rules={[{ required: true, message: "Vui lòng chọn loại giảm giá!" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn loại giảm giá!" },
+            ]}
           >
-            <Select>
+            <Select disabled>
               <Option value="percentage">Phần trăm (%)</Option>
-              <Option value="fixed_amount">Số tiền cố định (VNĐ)</Option>
             </Select>
           </Form.Item>
 
           <Form.Item
             label="Giá trị giảm"
             name="discount_value"
-            rules={[{ required: true, message: "Vui lòng nhập giá trị giảm!" }]}
+            validateTrigger="onChange"
+            extra="Giá trị khuyến mãi phải trong khoảng từ 1 đến 50."
+            rules={[
+              { required: true, message: "Vui lòng nhập giá trị giảm!" },
+              () => ({
+                validator(_, value) {
+                  if (value && (value < 1 || value > 50)) {
+                    return Promise.reject(
+                      new Error("Giá trị khuyến mãi phải từ 1 đến 50%!")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <InputNumber
-              min={0}
-              max={100}
-              placeholder="Nhập giá trị"
+              min={1}
+              max={50}
+              placeholder="Nhập giá trị (1-50)"
               className="w-full"
-              formatter={(value) => {
-                const discountType = form.getFieldValue("discount_type");
-                return discountType === "percentage" ? `${value}%` : `${value}`;
-              }}
+              formatter={(value) => `${value}%`}
               parser={(value) => Number(value?.replace(/[^\d.]/g, ""))}
             />
           </Form.Item>
@@ -131,13 +155,17 @@ const AddPromotion: React.FC = () => {
           <Form.Item
             label="Giá trị đơn hàng tối thiểu"
             name="minimum_order_value"
-            rules={[{ required: true, message: "Vui lòng nhập giá trị tối thiểu!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập giá trị tối thiểu!" },
+            ]}
           >
             <InputNumber
               min={0}
               placeholder="Nhập giá trị (VNĐ)"
               className="w-full"
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
               parser={(value) => Number(value?.replace(/\$\s?|(,*)/g, ""))}
             />
           </Form.Item>
@@ -151,7 +179,9 @@ const AddPromotion: React.FC = () => {
               min={0}
               placeholder="Nhập giá trị (VNĐ)"
               className="w-full"
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
               parser={(value) => Number(value?.replace(/\$\s?|(,*)/g, ""))}
             />
           </Form.Item>
@@ -161,26 +191,93 @@ const AddPromotion: React.FC = () => {
           <Form.Item
             label="Ngày bắt đầu"
             name="start_date"
-            rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
+            extra="Ngày và giờ bắt đầu không được ở trong quá khứ."
+            rules={[
+              { required: true, message: "Vui lòng chọn ngày bắt đầu!" },
+              () => ({
+                validator(_, value) {
+                  if (value && value.isBefore(dayjs())) {
+                    return Promise.reject(
+                      new Error("Ngày/giờ bắt đầu không được ở trong quá khứ!")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <DatePicker
               showTime
               format="YYYY-MM-DD HH:mm:ss"
               placeholder="Chọn ngày bắt đầu"
               className="w-full"
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+              disabledTime={(date) => {
+                if (date && date.isSame(dayjs(), "date")) {
+                  const now = dayjs();
+                  const range = (start: number, end: number) => {
+                    const result = [];
+                    for (let i = start; i < end; i++) {
+                      result.push(i);
+                    }
+                    return result;
+                  };
+                  return {
+                    disabledHours: () => range(0, now.hour()),
+                    disabledMinutes: (hour) => {
+                      if (hour === now.hour()) {
+                        return range(0, now.minute());
+                      }
+                      return [];
+                    },
+                    disabledSeconds: (hour, minute) => {
+                      if (hour === now.hour() && minute === now.minute()) {
+                        return range(0, now.second());
+                      }
+                      return [];
+                    },
+                  };
+                }
+                return {};
+              }}
             />
           </Form.Item>
 
           <Form.Item
             label="Ngày kết thúc"
             name="end_date"
-            rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc!" }]}
+            dependencies={["start_date"]}
+            rules={[
+              { required: true, message: "Vui lòng chọn ngày kết thúc!" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || !getFieldValue("start_date")) {
+                    return Promise.resolve();
+                  }
+                  if (value.isBefore(getFieldValue("start_date"))) {
+                    return Promise.reject(
+                      new Error("Ngày kết thúc không được trước ngày bắt đầu!")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <DatePicker
               showTime
               format="YYYY-MM-DD HH:mm:ss"
               placeholder="Chọn ngày kết thúc"
               className="w-full"
+              disabledDate={(current) => {
+                const startDate = form.getFieldValue("start_date");
+                if (!startDate) {
+                  return false;
+                }
+                return current && current < startDate.startOf("day");
+              }}
             />
           </Form.Item>
         </div>
@@ -201,7 +298,9 @@ const AddPromotion: React.FC = () => {
           <Form.Item
             label="Áp dụng cho"
             name="applies_to"
-            rules={[{ required: true, message: "Vui lòng chọn đối tượng áp dụng!" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn đối tượng áp dụng!" },
+            ]}
           >
             <Select>
               <Option value="all">Tất cả sản phẩm</Option>
@@ -211,22 +310,20 @@ const AddPromotion: React.FC = () => {
           </Form.Item>
         </div>
 
-        <Form.Item
-          label="Trạng thái"
-          name="status"
-          valuePropName="checked"
-        >
+        <Form.Item label="Trạng thái" name="status" valuePropName="checked">
           <Switch checkedChildren="Hoạt động" unCheckedChildren="Tạm dừng" />
         </Form.Item>
 
         <Form.Item className="mb-0">
           <div className="flex gap-4">
-            <Button type="primary" htmlType="submit" loading={mutation.isPending}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={mutation.isPending}
+            >
               Thêm khuyến mãi
             </Button>
-            <Button onClick={() => navigate("/admin/promotion")}>
-              Hủy
-            </Button>
+            <Button onClick={() => navigate("/admin/promotion")}>Hủy</Button>
           </div>
         </Form.Item>
       </Form>

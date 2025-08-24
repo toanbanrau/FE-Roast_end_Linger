@@ -109,11 +109,9 @@ export default function ListContact() {
 
   const columns: ColumnsType<IContact> = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
-      sorter: true,
+      title: "STT",
+      key: "stt",
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Thông tin khách hàng",
@@ -190,7 +188,7 @@ export default function ListContact() {
       key: "actions",
       width: 120,
       render: (_, record) => (
-        <Space size="small">
+        <Space size="middle">
           <Tooltip title="Xem chi tiết">
             <Button
               type="text"
@@ -220,14 +218,14 @@ export default function ListContact() {
           <h1 className="text-2xl font-bold text-gray-800">Quản lý liên hệ</h1>
           <p className="text-gray-600">Quản lý các liên hệ từ khách hàng</p>
         </div>
-        <Button
+        {/* <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/contact/add")}
           className="bg-blue-600 hover:bg-blue-700"
         >
           Thêm liên hệ mới
-        </Button>
+        </Button> */}
       </div>
 
       {/* Filters */}
@@ -277,7 +275,7 @@ export default function ListContact() {
               setFilters((prev) => ({ ...prev, page, per_page: pageSize }));
             },
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
         />
       </Card>
     </div>

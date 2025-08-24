@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  Modal,
-  Form,
-  Rate,
-  Input,
-  Upload,
-  Button,
-  message,
-  Select,
-} from "antd";
+import { Modal, Form, Rate, Input, Upload, Button, Select } from "antd";
+import { toast } from "react-toastify";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UploadFile } from "antd/es/upload/interface";
@@ -43,7 +35,10 @@ export default function CreateReviewModal({
   // Fetch reviewable products for specific order
   const { data: reviewableProducts, isLoading: isLoadingProducts } = useQuery({
     queryKey: ["order-reviewable-products", orderId],
-    queryFn: () => orderId ? getOrderReviewableProducts(orderId) : Promise.resolve({ data: { items: [] } }),
+    queryFn: () =>
+      orderId
+        ? getOrderReviewableProducts(orderId)
+        : Promise.resolve({ data: { items: [] } }),
     enabled: visible && !!orderId,
   });
 
@@ -67,21 +62,22 @@ export default function CreateReviewModal({
     },
     onSuccess: (data) => {
       console.log("✅ Mutation success:", data);
-      message.success("Đánh giá của bạn đã được gửi thành công!");
-      queryClient.invalidateQueries({ queryKey: ["product-reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["reviewable-products"] });
+      toast.success("Đánh giá của bạn đã được gửi thành công!");
+      // Làm mới lại danh sách review của sản phẩm này
+      queryClient.invalidateQueries({
+        queryKey: ["product-reviews", productId],
+      });
+      // Làm mới lại danh sách các sản phẩm có thể review của đơn hàng này
+      queryClient.invalidateQueries({
+        queryKey: ["order-reviewable-products", orderId],
+      });
       handleCancel();
     },
     onError: (error: any) => {
       console.error("❌ Mutation error:", error);
-      console.error("❌ Error details:", {
-        message: error?.message,
-        response: error?.response?.data,
-        status: error?.response?.status,
-      });
       const errorMessage =
         error?.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá!";
-      message.error(errorMessage);
+      toast.error(errorMessage);
     },
     onSettled: () => {
       console.log("🏁 Mutation settled (completed)");
@@ -92,25 +88,31 @@ export default function CreateReviewModal({
   const orderItems = reviewableProducts?.items || [];
 
   // Filter products based on productId prop
-  const filteredProducts = orderItems.filter((item: any) => {
+  const filteredProducts = orderItems.filter((item: IReviewableProduct) => {
     const matchesProduct = productId ? item.product.id === productId : true;
     return matchesProduct;
   });
 
   // Check if specific productId was requested but not found in reviewable list
   const isSpecificProductRequested = !!productId;
-  const productFoundInList = filteredProducts.some(item => item.product.id === productId);
+  const productFoundInList = filteredProducts.some(
+    (item: IReviewableProduct) => item.product.id === productId
+  );
 
   // Check if product was found but already reviewed
-  const hasProductButReviewed = filteredProducts.some(item =>
-    item.product.id === productId && item.can_review === false
+  const hasProductButReviewed = filteredProducts.some(
+    (item: IReviewableProduct) =>
+      item.product.id === productId && item.can_review === false
   );
 
   // Only show reviewable products (can_review = true)
-  const reviewableFilteredProducts = filteredProducts.filter(item => item.can_review === true);
+  const reviewableFilteredProducts = filteredProducts.filter(
+    (item: IReviewableProduct) => item.can_review === true
+  );
 
   // Determine if we should show "not eligible" message
-  const shouldShowNotEligible = isSpecificProductRequested && !productFoundInList;
+  const shouldShowNotEligible =
+    isSpecificProductRequested && !productFoundInList;
 
   // Debug log
   console.log("CreateReviewModal Debug:", {
@@ -130,13 +132,20 @@ export default function CreateReviewModal({
     console.log("🔄 Auto-select useEffect triggered:", {
       reviewableFilteredProductsLength: reviewableFilteredProducts.length,
       hasSelectedProduct: !!selectedProduct,
-      shouldAutoSelect: reviewableFilteredProducts.length > 0 && !selectedProduct
+      shouldAutoSelect:
+        reviewableFilteredProducts.length > 0 && !selectedProduct,
     });
 
     if (reviewableFilteredProducts.length > 0 && !selectedProduct) {
-      console.log("🔄 Auto-selecting first product:", reviewableFilteredProducts[0]);
+      console.log(
+        "🔄 Auto-selecting first product:",
+        reviewableFilteredProducts[0]
+      );
       setSelectedProduct(reviewableFilteredProducts[0]);
-      form.setFieldValue("order_item_id", reviewableFilteredProducts[0].order_item_id);
+      form.setFieldValue(
+        "order_item_id",
+        reviewableFilteredProducts[0].order_item_id
+      );
       console.log(
         "✅ Set order_item_id to form:",
         reviewableFilteredProducts[0].order_item_id
@@ -152,8 +161,6 @@ export default function CreateReviewModal({
     }
   }, [reviewableFilteredProducts, selectedProduct, form]);
 
-
-
   const handleCancel = () => {
     form.resetFields();
     setFileList([]);
@@ -163,7 +170,7 @@ export default function CreateReviewModal({
 
   const handleProductSelect = (orderItemId: number) => {
     const product = filteredProducts.find(
-      (item) => item.order_item_id === orderItemId
+      (item: IReviewableProduct) => item.order_item_id === orderItemId
     );
     setSelectedProduct(product || null);
   };
@@ -179,13 +186,13 @@ export default function CreateReviewModal({
   const beforeUpload = (file: File) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
-      message.error("Chỉ có thể upload file ảnh!");
+      toast.error("Chỉ có thể upload file ảnh!");
       return false;
     }
 
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error("Ảnh phải nhỏ hơn 2MB!");
+      toast.error("Ảnh phải nhỏ hơn 2MB!");
       return false;
     }
 
@@ -197,7 +204,7 @@ export default function CreateReviewModal({
     console.log("selectedProduct:", selectedProduct);
 
     if (!selectedProduct) {
-      message.error("Vui lòng chọn sản phẩm để đánh giá!");
+      toast.error("Vui lòng chọn sản phẩm để đánh giá!");
       return;
     }
 
@@ -211,7 +218,7 @@ export default function CreateReviewModal({
 
     // Validate required fields
     if (!values.rating) {
-      message.error("Vui lòng chọn số sao đánh giá!");
+      toast.error("Vui lòng chọn số sao đánh giá!");
       return;
     }
 
@@ -223,7 +230,7 @@ export default function CreateReviewModal({
     }
 
     if (!orderItemId) {
-      message.error("Thiếu thông tin order item!");
+      toast.error("Thiếu thông tin order item!");
       return;
     }
 
@@ -280,7 +287,8 @@ export default function CreateReviewModal({
               : "Không có sản phẩm nào để đánh giá"}
           </div>
           <div className="text-sm text-gray-400 mb-4">
-            💡 Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành và chưa được đánh giá
+            💡 Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành và chưa
+            được đánh giá
           </div>
           <Button onClick={handleCancel}>Đóng</Button>
         </div>

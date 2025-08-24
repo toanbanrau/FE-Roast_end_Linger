@@ -13,10 +13,10 @@ export interface IContact {
 
 // Contact form interface for creating/updating
 export interface IContactForm {
-  full_name: string;
+  name: string;
   email: string;
-  phone_number?: string;
-  subject?: string;
+  phone?: string;
+  subject: string;
   message: string;
 }
 
