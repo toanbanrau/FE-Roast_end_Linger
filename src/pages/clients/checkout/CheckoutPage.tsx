@@ -62,6 +62,17 @@ export default function CheckoutPage() {
   const [currentShippingFee, setCurrentShippingFee] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
 
+  // Function format giá tiền
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numPrice || 0);
+  };
+
   // Address selection states
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(
     null
@@ -758,14 +769,14 @@ export default function CheckoutPage() {
                         ) : (subtotal || 0) >= 500000 ? (
                           <div className="text-right">
                             <span className="line-through text-stone-400 text-sm">
-                              {(method.cost || 0).toLocaleString("vi-VN")}₫
+                              {formatPrice(method.cost || 0)}
                             </span>
                             <div className="text-green-600 font-bold">
                               Miễn phí
                             </div>
                           </div>
                         ) : (
-                          `${(method.cost || 0).toLocaleString("vi-VN")}₫`
+                          formatPrice(method.cost || 0)
                         )}
                       </div>
                     </div>
@@ -778,7 +789,7 @@ export default function CheckoutPage() {
                     <p className="text-sm text-amber-800">
                       💡{" "}
                       <strong>
-                        Mua thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫
+                        Mua thêm {formatPrice(500000 - subtotal)}
                       </strong>{" "}
                       để được miễn phí vận chuyển!
                     </p>
@@ -939,7 +950,7 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <div className="font-medium">
-                          {item.total_price.toLocaleString("vi-VN")}₫
+                          {formatPrice(item.total_price)}
                         </div>
                       </div>
                     ))}
@@ -993,7 +1004,7 @@ export default function CheckoutPage() {
                         <strong>Phí vận chuyển:</strong>{" "}
                         {(shippingFee || 0) === 0
                           ? "Miễn phí"
-                          : `${(shippingFee || 0).toLocaleString("vi-VN")}₫`}
+                          : formatPrice(shippingFee || 0)}
                       </p>
                     </div>
                   </div>
@@ -1053,7 +1064,7 @@ export default function CheckoutPage() {
                       {item.quantity} × {item.product.name}
                     </span>
                     <span className="font-medium">
-                      {item.total_price.toLocaleString("vi-VN")}₫
+                      {formatPrice(item.total_price)}
                     </span>
                   </div>
                 ))}
@@ -1064,7 +1075,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <span className="text-stone-600">Tổng Tiền Sản Phẩm</span>
                 <span className="font-medium">
-                  {subtotal.toLocaleString("vi-VN")}₫
+                  {formatPrice(subtotal)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -1072,7 +1083,7 @@ export default function CheckoutPage() {
                 <span className="font-medium">
                   {(shippingFee || 0) === 0
                     ? "Miễn phí"
-                    : `${(shippingFee || 0).toLocaleString("vi-VN")}₫`}
+                    : formatPrice(shippingFee || 0)}
                 </span>
               </div>
 

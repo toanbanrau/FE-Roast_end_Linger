@@ -40,8 +40,8 @@ export default function GoogleCallbackPage() {
     onError: (error: any) => {
       console.error("Google callback error:", error);
       toast.error(
-        error?.response?.data?.message || 
-        "Đăng nhập Google thất bại. Vui lòng thử lại!"
+        error?.response?.data?.message ||
+          "Đăng nhập Google thất bại. Vui lòng thử lại!"
       );
       navigate("/auth/login", { replace: true });
     },
@@ -64,7 +64,7 @@ export default function GoogleCallbackPage() {
         userId,
         userName: decodeURIComponent(userName),
         userEmail: decodeURIComponent(userEmail),
-        expiresAt
+        expiresAt,
       });
 
       // Save token first
@@ -75,15 +75,15 @@ export default function GoogleCallbackPage() {
       const fetchUserData = async () => {
         try {
           // Set token in axios header for this request
-          const response = await clientAxios.get("/auth/me", {
+          const response = await clientAxios.get("/user", {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           });
 
-          if (response.data.success && response.data.data) {
+          if (response.data.success || response.data) {
             console.log("Full user data from backend:", response.data.data);
-            setUser(response.data.data);
+            setUser(response.data);
             // Chỉ hiển thị toast một lần ở cuối
           } else {
             throw new Error("Không thể lấy thông tin user");
@@ -123,7 +123,10 @@ export default function GoogleCallbackPage() {
     if (success === "true" && token && userParam) {
       try {
         const user = JSON.parse(atob(userParam));
-        console.log("Direct success from backend (old format):", { user, token });
+        console.log("Direct success from backend (old format):", {
+          user,
+          token,
+        });
 
         setUser(user);
         setToken(token);
@@ -174,9 +177,7 @@ export default function GoogleCallbackPage() {
           <h2 className="text-xl font-semibold text-stone-900 mb-2">
             Đang xử lý đăng nhập Google...
           </h2>
-          <p className="text-stone-600 mb-4">
-            Vui lòng đợi trong giây lát
-          </p>
+          <p className="text-stone-600 mb-4">Vui lòng đợi trong giây lát</p>
 
           {/* Fallback buttons nếu bị stuck */}
           <div className="mt-8 space-y-2">
@@ -185,9 +186,10 @@ export default function GoogleCallbackPage() {
                 onClick={() => {
                   // Thử lấy data từ backend response nếu có
                   const currentUrl = window.location.href;
-                  if (currentUrl.includes('127.0.0.1:8000')) {
+                  if (currentUrl.includes("127.0.0.1:8000")) {
                     // User đang ở backend URL, redirect về frontend
-                    window.location.href = 'http://localhost:5173/auth/google/callback';
+                    window.location.href =
+                      "http://localhost:5173/auth/google/callback";
                   } else {
                     navigate("/auth/login");
                   }

@@ -17,7 +17,7 @@ export const getAdminReviews = async (
   params?: IAdminReviewQueryParams
 ): Promise<IAdminReviewsResponse> => {
   const queryParams = new URLSearchParams();
-  
+
   if (params) {
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.per_page) queryParams.append('per_page', params.per_page.toString());
@@ -94,7 +94,7 @@ export const bulkApproveReviews = async (reviewIds: number[]): Promise<IAdminRev
 
 // Bulk reject reviews
 export const bulkRejectReviews = async (
-  reviewIds: number[], 
+  reviewIds: number[],
   reason?: string
 ): Promise<IAdminReviewActionResponse> => {
   const data = reason ? { review_ids: reviewIds, reason } : { review_ids: reviewIds };
@@ -114,7 +114,7 @@ export const exportReviews = async (
   format: 'csv' | 'excel' = 'csv'
 ): Promise<Blob> => {
   const queryParams = new URLSearchParams();
-  
+
   if (params) {
     if (params.status) queryParams.append('status', params.status);
     if (params.rating) queryParams.append('rating', params.rating.toString());
@@ -126,10 +126,20 @@ export const exportReviews = async (
     if (params.date_to) queryParams.append('date_to', params.date_to);
     queryParams.append('format', format);
   }
-  
+
   const response = await clientAxios.get(`/admin/reviews/export?${queryParams.toString()}`, {
     responseType: 'blob'
   });
-  
+
   return response.data;
+};
+
+// Reply to a review
+export const replyToReview = async (payload: {
+  review_id: number;
+  content: string;
+  status?: string;
+}): Promise<IAdminReviewActionResponse> => {
+  const response = await adminAxios.post("/review-replies", payload);
+  return response.data.data;
 };

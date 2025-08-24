@@ -1,9 +1,21 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Rate, Button, Select, Pagination, Avatar, Image, message } from 'antd';
-import { LikeOutlined, DislikeOutlined, UserOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { getProductReviews, markReviewHelpfulness } from '../services/reviewService';
-import type { IReview, IReviewQueryParams, IReviewsResponse } from '../interfaces/review';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Rate, Button, Select, Pagination, Avatar, Image, message } from "antd";
+import {
+  LikeOutlined,
+  DislikeOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import {
+  getProductReviews,
+  markReviewHelpfulness,
+} from "../services/reviewService";
+import type {
+  IReview,
+  IReviewQueryParams,
+  IReviewsResponse,
+} from "../interfaces/review";
 
 const { Option } = Select;
 
@@ -13,51 +25,66 @@ interface ProductReviewsProps {
   onCreateReview?: () => void;
 }
 
-export default function ProductReviews({ 
-  productId, 
+export default function ProductReviews({
+  productId,
   showCreateButton = true,
-  onCreateReview 
+  onCreateReview,
 }: ProductReviewsProps) {
   const queryClient = useQueryClient();
   const [queryParams, setQueryParams] = useState<IReviewQueryParams>({
-    sort_by: 'newest',
+    sort_by: "newest",
     per_page: 10,
     page: 1,
   });
 
   // Fetch reviews
   const { data, isLoading } = useQuery({
-    queryKey: ['product-reviews', productId, queryParams],
+    queryKey: ["product-reviews", productId, queryParams],
     queryFn: () => getProductReviews(productId, queryParams),
   });
 
   // Mark helpfulness mutation
   const helpfulnessMutation = useMutation({
-    mutationFn: ({ reviewId, isHelpful }: { reviewId: number; isHelpful: boolean }) =>
-      markReviewHelpfulness(productId, reviewId, { is_helpful: isHelpful }),
+    mutationFn: ({
+      reviewId,
+      isHelpful,
+    }: {
+      reviewId: number;
+      isHelpful: boolean;
+    }) => markReviewHelpfulness(productId, reviewId, { is_helpful: isHelpful }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-reviews', productId] });
-      message.success('Cảm ơn phản hồi của bạn!');
+      queryClient.invalidateQueries({
+        queryKey: ["product-reviews", productId],
+      });
+      message.success("Cảm ơn phản hồi của bạn!");
     },
     onError: () => {
-      message.error('Có lỗi xảy ra. Vui lòng thử lại!');
+      message.error("Có lỗi xảy ra. Vui lòng thử lại!");
     },
   });
 
   const handleSortChange = (sortBy: string) => {
-    setQueryParams(prev => ({ ...prev, sort_by: sortBy as any, page: 1 }));
+    setQueryParams((prev) => ({ ...prev, sort_by: sortBy as any, page: 1 }));
   };
 
   const handleRatingFilter = (rating: number | undefined) => {
-    setQueryParams(prev => ({ ...prev, rating, page: 1 }));
+    setQueryParams((prev) => ({ ...prev, rating, page: 1 }));
   };
 
   const handleVerifiedFilter = (verifiedOnly: boolean | undefined) => {
-    setQueryParams(prev => ({ ...prev, verified_only: verifiedOnly, page: 1 }));
+    setQueryParams((prev) => ({
+      ...prev,
+      verified_only: verifiedOnly,
+      page: 1,
+    }));
   };
 
   const handlePageChange = (page: number, pageSize?: number) => {
-    setQueryParams(prev => ({ ...prev, page, per_page: pageSize || prev.per_page }));
+    setQueryParams((prev) => ({
+      ...prev,
+      page,
+      per_page: pageSize || prev.per_page,
+    }));
   };
 
   const handleHelpfulness = (reviewId: number, isHelpful: boolean) => {
@@ -84,26 +111,37 @@ export default function ProductReviews({
             <div className="text-4xl font-bold text-gray-900 mb-2">
               {statistics.average_rating.toFixed(1)}
             </div>
-            <Rate disabled value={statistics.average_rating} allowHalf className="mb-2" />
+            <Rate
+              disabled
+              value={statistics.average_rating}
+              allowHalf
+              className="mb-2"
+            />
             <div className="text-gray-600">
-              {statistics.total_reviews} đánh giá ({statistics.verified_purchase_count} đã mua hàng)
+              {statistics.total_reviews} đánh giá (
+              {statistics.verified_purchase_count} đã mua hàng)
             </div>
           </div>
 
           {/* Rating Distribution */}
           <div className="space-y-2">
-            {[5, 4, 3, 2, 1].map(rating => {
-              const dist = statistics.rating_distribution[rating.toString() as keyof typeof statistics.rating_distribution];
+            {[5, 4, 3, 2, 1].map((rating) => {
+              const dist =
+                statistics.rating_distribution[
+                  rating.toString() as keyof typeof statistics.rating_distribution
+                ];
               return (
                 <div key={rating} className="flex items-center gap-2">
                   <span className="w-8 text-sm">{rating} ⭐</span>
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-yellow-400 h-2 rounded-full"
                       style={{ width: `${dist.percentage}%` }}
                     />
                   </div>
-                  <span className="w-12 text-sm text-gray-600">{dist.count}</span>
+                  <span className="w-12 text-sm text-gray-600">
+                    {dist.count}
+                  </span>
                 </div>
               );
             })}
@@ -133,8 +171,10 @@ export default function ProductReviews({
             onChange={handleRatingFilter}
             style={{ width: 120 }}
           >
-            {[5, 4, 3, 2, 1].map(rating => (
-              <Option key={rating} value={rating}>{rating} ⭐</Option>
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <Option key={rating} value={rating}>
+                {rating} ⭐
+              </Option>
             ))}
           </Select>
 
@@ -179,7 +219,7 @@ export default function ProductReviews({
             onChange={handlePageChange}
             showSizeChanger
             showQuickJumper
-            showTotal={(total, range) => 
+            showTotal={(total, range) =>
               `${range[0]}-${range[1]} của ${total} đánh giá`
             }
           />
@@ -206,7 +246,10 @@ function ReviewItem({ review, onHelpfulness, isLoading }: ReviewItemProps) {
           <div className="flex items-center gap-2">
             <span className="font-medium">{review.user.name}</span>
             {review.is_verified_purchase && (
-              <CheckCircleOutlined className="text-green-500" title="Đã mua hàng" />
+              <CheckCircleOutlined
+                className="text-green-500"
+                title="Đã mua hàng"
+              />
             )}
           </div>
           <div className="text-sm text-gray-500">{review.time_ago}</div>
@@ -222,9 +265,7 @@ function ReviewItem({ review, onHelpfulness, isLoading }: ReviewItemProps) {
       </div>
 
       {/* Comment */}
-      {review.comment && (
-        <p className="text-gray-700 mb-3">{review.comment}</p>
-      )}
+      {review.comment && <p className="text-gray-700 mb-3">{review.comment}</p>}
 
       {/* Images */}
       {review.images.length > 0 && (
@@ -246,14 +287,16 @@ function ReviewItem({ review, onHelpfulness, isLoading }: ReviewItemProps) {
 
       {/* Helpfulness */}
       <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600">Đánh giá này có hữu ích không?</span>
+        <span className="text-sm text-gray-600">
+          Đánh giá này có hữu ích không?
+        </span>
         <div className="flex items-center gap-2">
           <Button
             size="small"
             icon={<LikeOutlined />}
             onClick={() => onHelpfulness(review.id, true)}
             loading={isLoading}
-            type={review.user_helpfulness === true ? 'primary' : 'default'}
+            type={review.user_helpfulness === true ? "primary" : "default"}
           >
             {review.helpful_count}
           </Button>
@@ -262,7 +305,7 @@ function ReviewItem({ review, onHelpfulness, isLoading }: ReviewItemProps) {
             icon={<DislikeOutlined />}
             onClick={() => onHelpfulness(review.id, false)}
             loading={isLoading}
-            type={review.user_helpfulness === false ? 'primary' : 'default'}
+            type={review.user_helpfulness === false ? "primary" : "default"}
           >
             {review.not_helpful_count}
           </Button>
@@ -271,6 +314,41 @@ function ReviewItem({ review, onHelpfulness, isLoading }: ReviewItemProps) {
           {review.helpfulness_ratio.toFixed(1)}% hữu ích
         </span>
       </div>
+
+      {/* Replies Section */}
+      {review.replies && review.replies.length > 0 && (
+        <div className="mt-4 pl-10 space-y-4">
+          {review.replies.map((reply: any) => (
+            <div key={reply.id} className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center gap-3 mb-2">
+                <Avatar className="bg-blue-500 text-white">
+                  {reply.admin.name.charAt(0)}
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-blue-600">
+                      {reply.admin.name}
+                    </span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">
+                      Admin
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(reply.created_at).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {reply.content}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

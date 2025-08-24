@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { X, MapPin } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { createAddress, updateAddress } from '../../services/addressUserServices';
-import type { UserAddress, CreateAddressRequest, UpdateAddressRequest, AddressType } from '../../interfaces/address';
-import { ADDRESS_TYPE_OPTIONS } from '../../interfaces/address';
+import React, { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { X, MapPin } from "lucide-react";
+import toast from "react-hot-toast";
+import {
+  createAddress,
+  updateAddress,
+} from "../../services/addressUserServices";
+import type {
+  UserAddress,
+  CreateAddressRequest,
+  UpdateAddressRequest,
+  AddressType,
+} from "../../interfaces/address";
+import { ADDRESS_TYPE_OPTIONS } from "../../interfaces/address";
 
 interface AddressModalProps {
   isOpen: boolean;
@@ -28,19 +36,24 @@ interface FormData {
   is_default: boolean;
 }
 
-export default function AddressModal({ isOpen, onClose, address, onSuccess }: AddressModalProps) {
+export default function AddressModal({
+  isOpen,
+  onClose,
+  address,
+  onSuccess,
+}: AddressModalProps) {
   const [formData, setFormData] = useState<FormData>({
-    label: '',
-    recipient_name: '',
-    phone_number: '',
-    address_line_1: '',
-    address_line_2: '',
-    ward: '',
-    district: '',
-    city: '',
-    postal_code: '',
-    type: 'home',
-    delivery_notes: '',
+    label: "",
+    recipient_name: "",
+    phone_number: "",
+    address_line_1: "",
+    address_line_2: "",
+    ward: "",
+    district: "",
+    city: "",
+    postal_code: "",
+    type: "home",
+    delivery_notes: "",
     is_default: false,
   });
 
@@ -51,32 +64,32 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
     if (isOpen) {
       if (address) {
         setFormData({
-          label: address.label || '',
+          label: address.label || "",
           recipient_name: address.recipient_name,
           phone_number: address.phone_number,
           address_line_1: address.address_line_1,
-          address_line_2: address.address_line_2 || '',
+          address_line_2: address.address_line_2 || "",
           ward: address.ward,
           district: address.district,
           city: address.city,
-          postal_code: address.postal_code || '',
+          postal_code: address.postal_code || "",
           type: address.type,
-          delivery_notes: address.delivery_notes || '',
+          delivery_notes: address.delivery_notes || "",
           is_default: address.is_default,
         });
       } else {
         setFormData({
-          label: '',
-          recipient_name: '',
-          phone_number: '',
-          address_line_1: '',
-          address_line_2: '',
-          ward: '',
-          district: '',
-          city: '',
-          postal_code: '',
-          type: 'home',
-          delivery_notes: '',
+          label: "",
+          recipient_name: "",
+          phone_number: "",
+          address_line_1: "",
+          address_line_2: "",
+          ward: "",
+          district: "",
+          city: "",
+          postal_code: "",
+          type: "home",
+          delivery_notes: "",
           is_default: false,
         });
       }
@@ -88,14 +101,16 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
   const createMutation = useMutation({
     mutationFn: createAddress,
     onSuccess: () => {
-      toast.success('Đã thêm địa chỉ thành công');
+      toast.success("Đã thêm địa chỉ thành công");
       onSuccess();
     },
     onError: (error: any) => {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       } else {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi thêm địa chỉ');
+        toast.error(
+          error.response?.data?.message || "Có lỗi xảy ra khi thêm địa chỉ"
+        );
       }
     },
   });
@@ -105,28 +120,35 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
     mutationFn: ({ id, data }: { id: number; data: UpdateAddressRequest }) =>
       updateAddress(id, data),
     onSuccess: () => {
-      toast.success('Đã cập nhật địa chỉ thành công');
+      toast.success("Đã cập nhật địa chỉ thành công");
       onSuccess();
     },
     onError: (error: any) => {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       } else {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật địa chỉ');
+        toast.error(
+          error.response?.data?.message || "Có lỗi xảy ra khi cập nhật địa chỉ"
+        );
       }
     },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -134,29 +156,31 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
     const newErrors: Record<string, string> = {};
 
     if (!formData.recipient_name.trim()) {
-      newErrors.recipient_name = 'Tên người nhận là bắt buộc';
+      newErrors.recipient_name = "Tên người nhận là bắt buộc";
     }
 
     if (!formData.phone_number.trim()) {
-      newErrors.phone_number = 'Số điện thoại là bắt buộc';
-    } else if (!/^[0-9]{10,11}$/.test(formData.phone_number.replace(/\s/g, ''))) {
-      newErrors.phone_number = 'Số điện thoại không hợp lệ';
+      newErrors.phone_number = "Số điện thoại là bắt buộc";
+    } else if (
+      !/^[0-9]{10,11}$/.test(formData.phone_number.replace(/\s/g, ""))
+    ) {
+      newErrors.phone_number = "Số điện thoại không hợp lệ";
     }
 
     if (!formData.address_line_1.trim()) {
-      newErrors.address_line_1 = 'Địa chỉ là bắt buộc';
+      newErrors.address_line_1 = "Địa chỉ là bắt buộc";
     }
 
     if (!formData.ward.trim()) {
-      newErrors.ward = 'Phường/Xã là bắt buộc';
+      newErrors.ward = "Phường/Xã là bắt buộc";
     }
 
     if (!formData.district.trim()) {
-      newErrors.district = 'Quận/Huyện là bắt buộc';
+      newErrors.district = "Quận/Huyện là bắt buộc";
     }
 
     if (!formData.city.trim()) {
-      newErrors.city = 'Tỉnh/Thành phố là bắt buộc';
+      newErrors.city = "Tỉnh/Thành phố là bắt buộc";
     }
 
     setErrors(newErrors);
@@ -165,7 +189,7 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -190,11 +214,14 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-opacity-10 flex items-center justify-center z-50 p-4"
+    >
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-medium">
-            {address ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}
+            {address ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}
           </h2>
           <button
             onClick={onClose}
@@ -252,11 +279,13 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
                 value={formData.recipient_name}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                  errors.recipient_name ? 'border-red-500' : ''
+                  errors.recipient_name ? "border-red-500" : ""
                 }`}
               />
               {errors.recipient_name && (
-                <p className="text-red-500 text-sm mt-1">{errors.recipient_name}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.recipient_name}
+                </p>
               )}
             </div>
 
@@ -270,11 +299,13 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
                 value={formData.phone_number}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                  errors.phone_number ? 'border-red-500' : ''
+                  errors.phone_number ? "border-red-500" : ""
                 }`}
               />
               {errors.phone_number && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.phone_number}
+                </p>
               )}
             </div>
           </div>
@@ -291,11 +322,13 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
               onChange={handleInputChange}
               placeholder="Số nhà, tên đường..."
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                errors.address_line_1 ? 'border-red-500' : ''
+                errors.address_line_1 ? "border-red-500" : ""
               }`}
             />
             {errors.address_line_1 && (
-              <p className="text-red-500 text-sm mt-1">{errors.address_line_1}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.address_line_1}
+              </p>
             )}
           </div>
 
@@ -325,7 +358,7 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
                 value={formData.ward}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                  errors.ward ? 'border-red-500' : ''
+                  errors.ward ? "border-red-500" : ""
                 }`}
               />
               {errors.ward && (
@@ -343,7 +376,7 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
                 value={formData.district}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                  errors.district ? 'border-red-500' : ''
+                  errors.district ? "border-red-500" : ""
                 }`}
               />
               {errors.district && (
@@ -361,7 +394,7 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
                 value={formData.city}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800 ${
-                  errors.city ? 'border-red-500' : ''
+                  errors.city ? "border-red-500" : ""
                 }`}
               />
               {errors.city && (
@@ -429,7 +462,11 @@ export default function AddressModal({ isOpen, onClose, address, onSuccess }: Ad
               disabled={isLoading}
               className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50"
             >
-              {isLoading ? 'Đang xử lý...' : address ? 'Cập nhật' : 'Thêm địa chỉ'}
+              {isLoading
+                ? "Đang xử lý..."
+                : address
+                ? "Cập nhật"
+                : "Thêm địa chỉ"}
             </button>
           </div>
         </form>

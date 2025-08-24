@@ -23,7 +23,7 @@ const RegisterPage = () => {
       alert(
         "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
       );
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("auth/login"), 1500);
     },
     onError: (error: unknown) => {
       if (
@@ -236,12 +236,12 @@ const RegisterPage = () => {
           </button>
           <div className="text-center mt-2">
             Đã có tài khoản?{" "}
-            <a
-              href="/login"
+            <Link
+              to="/auth/login"
               className="text-amber-800 hover:text-amber-900 font-medium"
             >
               Đăng nhập
-            </a>
+            </Link>
           </div>
         </form>
       </div>

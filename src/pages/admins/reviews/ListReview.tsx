@@ -10,7 +10,6 @@ import {
   Select,
   Space,
   Card,
-  message,
   Modal,
   Tooltip,
   Rate,
@@ -22,6 +21,7 @@ import {
   Avatar,
   Typography,
   Checkbox,
+  Form,
 } from "antd";
 import {
   DeleteOutlined,
@@ -31,6 +31,7 @@ import {
   UserOutlined,
   VerifiedOutlined,
   EyeOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -44,8 +45,11 @@ import {
   deleteAdminReview,
   bulkApproveReviews,
   bulkRejectReviews,
+  replyToReview,
 } from "../../../services/adminReviewService";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -61,6 +65,19 @@ export default function ListReview() {
     page: 1,
     per_page: 15,
   });
+  const [form] = Form.useForm();
+  const [isReplyModalVisible, setIsReplyModalVisible] = useState(false);
+  const [currentReview, setCurrentReview] = useState<IAdminReview | null>(null);
+
+  // State cho confirm modals
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectingReview, setRejectingReview] = useState<IAdminReview | null>(
+    null
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingReview, setDeletingReview] = useState<IAdminReview | null>(
+    null
+  );
 
   // Lấy danh sách reviews
   const { data: reviewsData, isLoading } = useQuery({
@@ -72,11 +89,11 @@ export default function ListReview() {
   const approveMutation = useMutation({
     mutationFn: approveReview,
     onSuccess: () => {
-      message.success("Đã duyệt đánh giá thành công!");
+      toast.success("Đã duyệt đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi duyệt đánh giá!");
+      toast.error("Có lỗi xảy ra khi duyệt đánh giá!");
     },
   });
 
@@ -85,11 +102,11 @@ export default function ListReview() {
     mutationFn: ({ reviewId, reason }: { reviewId: number; reason?: string }) =>
       rejectReview(reviewId, reason),
     onSuccess: () => {
-      message.success("Đã từ chối đánh giá thành công!");
+      toast.success("Đã từ chối đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi từ chối đánh giá!");
+      toast.error("Có lỗi xảy ra khi từ chối đánh giá!");
     },
   });
 
@@ -97,11 +114,11 @@ export default function ListReview() {
   const deleteMutation = useMutation({
     mutationFn: deleteAdminReview,
     onSuccess: () => {
-      message.success("Đã xóa đánh giá thành công!");
+      toast.success("Đã xóa đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi xóa đánh giá!");
+      toast.error("Có lỗi xảy ra khi xóa đánh giá!");
     },
   });
 
@@ -109,12 +126,12 @@ export default function ListReview() {
   const bulkApproveMutation = useMutation({
     mutationFn: bulkApproveReviews,
     onSuccess: () => {
-      message.success("Đã duyệt các đánh giá được chọn!");
+      toast.success("Đã duyệt các đánh giá được chọn!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
       setSelectedRowKeys([]);
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi duyệt đánh giá!");
+      toast.error("Có lỗi xảy ra khi duyệt đánh giá!");
     },
   });
 
@@ -128,14 +145,51 @@ export default function ListReview() {
       reason?: string;
     }) => bulkRejectReviews(reviewIds, reason),
     onSuccess: () => {
-      message.success("Đã từ chối các đánh giá được chọn!");
+      toast.success("Đã từ chối các đánh giá được chọn!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
       setSelectedRowKeys([]);
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi từ chối đánh giá!");
+      toast.error("Có lỗi xảy ra khi từ chối đánh giá!");
     },
   });
+
+  // Mutation để trả lời review
+  const replyMutation = useMutation({
+    mutationFn: replyToReview,
+    onSuccess: () => {
+      toast.success("Đã gửi trả lời thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+      setIsReplyModalVisible(false);
+      form.resetFields();
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra khi gửi trả lời!");
+    },
+  });
+
+  // Xử lý mở modal trả lời
+  const showReplyModal = (review: IAdminReview) => {
+    setCurrentReview(review);
+    setIsReplyModalVisible(true);
+  };
+
+  // Xử lý đóng modal
+  const handleCancelReply = () => {
+    setIsReplyModalVisible(false);
+    form.resetFields();
+  };
+
+  // Xử lý submit form trả lời
+  const handleReplySubmit = (values: { content: string }) => {
+    if (currentReview) {
+      replyMutation.mutate({
+        review_id: currentReview.id,
+        content: values.content,
+        status: "active",
+      });
+    }
+  };
 
   // Xử lý thay đổi filters
   const handleFilterChange = (
@@ -182,30 +236,40 @@ export default function ListReview() {
     });
   };
 
-  // Xử lý reject review
-  const handleReject = (reviewId: number) => {
-    Modal.confirm({
-      title: "Xác nhận từ chối đánh giá",
-      content: "Bạn có chắc chắn muốn từ chối đánh giá này?",
-      onOk: () => rejectMutation.mutate({ reviewId }),
-    });
+  // Xử lý reject review - mở modal
+  const handleReject = (review: IAdminReview) => {
+    setRejectingReview(review);
+    setIsRejectModalOpen(true);
   };
 
-  // Xử lý xóa review
-  const handleDelete = (reviewId: number) => {
-    Modal.confirm({
-      title: "Xác nhận xóa đánh giá",
-      content:
-        "Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.",
-      okType: "danger",
-      onOk: () => deleteMutation.mutate(reviewId),
-    });
+  // Xử lý xóa review - mở modal
+  const handleDelete = (review: IAdminReview) => {
+    setDeletingReview(review);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xác nhận reject
+  const handleConfirmReject = () => {
+    if (rejectingReview) {
+      rejectMutation.mutate({ reviewId: rejectingReview.id });
+      setIsRejectModalOpen(false);
+      setRejectingReview(null);
+    }
+  };
+
+  // Xử lý xác nhận delete
+  const handleConfirmDelete = () => {
+    if (deletingReview) {
+      deleteMutation.mutate(deletingReview.id);
+      setIsDeleteModalOpen(false);
+      setDeletingReview(null);
+    }
   };
 
   // Xử lý bulk actions
   const handleBulkApprove = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("Vui lòng chọn ít nhất một đánh giá!");
+      toast.warning("Vui lòng chọn ít nhất một đánh giá!");
       return;
     }
     Modal.confirm({
@@ -217,7 +281,7 @@ export default function ListReview() {
 
   const handleBulkReject = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("Vui lòng chọn ít nhất một đánh giá!");
+      toast.warning("Vui lòng chọn ít nhất một đánh giá!");
       return;
     }
     Modal.confirm({
@@ -264,9 +328,7 @@ export default function ListReview() {
             <div className="font-medium text-gray-900 truncate max-w-[150px]">
               {record.product.name}
             </div>
-            <div className="text-gray-500 text-sm">
-              ID: {record.product.id}
-            </div>
+            <div className="text-gray-500 text-sm">ID: {record.product.id}</div>
           </div>
         </div>
       ),
@@ -280,9 +342,7 @@ export default function ListReview() {
           <div className="font-medium text-gray-900">
             {record.user.full_name}
           </div>
-          <div className="text-gray-500 text-sm">
-            {record.user.email}
-          </div>
+          <div className="text-gray-500 text-sm">{record.user.email}</div>
         </div>
       ),
     },
@@ -292,11 +352,7 @@ export default function ListReview() {
       width: 120,
       render: (_, record) => (
         <div className="text-center">
-          <Rate
-            disabled
-            value={record.rating}
-            style={{ fontSize: 14 }}
-          />
+          <Rate disabled value={record.rating} style={{ fontSize: 14 }} />
           <div className="text-gray-500 text-xs mt-1">
             {record.rating}/5 sao
           </div>
@@ -317,11 +373,14 @@ export default function ListReview() {
           <div className="text-gray-600 text-sm line-clamp-2">
             {record.comment}
           </div>
-          {record.images && record.images.length > 0 && (
-            <div className="text-blue-500 text-xs mt-1">
-              📷 {record.images.length} ảnh
-            </div>
-          )}
+          <div className="mt-1 space-x-1">
+            {record.images && record.images.length > 0 && (
+              <Tag>📷 {record.images.length} ảnh</Tag>
+            )}
+            {record.replies && record.replies.length > 0 && (
+              <Tag color="purple">Đã trả lời</Tag>
+            )}
+          </div>
         </div>
       ),
     },
@@ -363,27 +422,47 @@ export default function ListReview() {
       title: "Hành động",
       key: "actions",
       width: 150,
+      fixed: "right",
       render: (_, record) => (
-        <Space size="middle">
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => navigate(`/admin/reviews/${record.id}`)}
-          />
-
-          {!record.is_approved ? (
+        <Space size="small">
+          <Tooltip title="Xem chi tiết">
             <Button
-              type="primary"
-              icon={<CheckOutlined />}
-              onClick={() => handleApprove(record.id)}
-              loading={approveMutation.isPending}
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/admin/reviews/${record.id}`)}
             />
+          </Tooltip>
+          <Tooltip title="Trả lời">
+            <Button
+              icon={<CommentOutlined />}
+              onClick={() => showReplyModal(record)}
+            />
+          </Tooltip>
+          {/* {!record.is_approved ? (
+            <Tooltip title="Duyệt">
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={() => handleApprove(record.id)}
+                loading={approveMutation.isPending}
+              />
+            </Tooltip>
           ) : (
+            <Tooltip title="Từ chối">
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => handleReject(record)}
+                loading={rejectMutation.isPending}
+              />
+            </Tooltip>
+          )} */}
+          <Tooltip title="Xóa">
             <Button
-              icon={<CloseOutlined />}
-              onClick={() => handleReject(record.id)}
-              loading={rejectMutation.isPending}
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+              loading={deleteMutation.isPending}
             />
-          )}
+          </Tooltip>
         </Space>
       ),
     },
@@ -564,6 +643,70 @@ export default function ListReview() {
           }}
         />
       </Card>
+
+      {/* Reply Modal */}
+      <Modal
+        title={`Trả lời đánh giá của ${currentReview?.user.full_name}`}
+        open={isReplyModalVisible}
+        onCancel={handleCancelReply}
+        footer={null}
+        destroyOnClose
+      >
+        <Form form={form} layout="vertical" onFinish={handleReplySubmit}>
+          <Form.Item
+            name="content"
+            label="Nội dung trả lời"
+            rules={[
+              { required: true, message: "Vui lòng nhập nội dung trả lời!" },
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Nhập câu trả lời của bạn..."
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={replyMutation.isPending}
+            >
+              Gửi trả lời
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Confirm Modals */}
+      <ConfirmModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setRejectingReview(null);
+        }}
+        onConfirm={handleConfirmReject}
+        title="Xác nhận từ chối đánh giá"
+        message={`Bạn có chắc muốn từ chối đánh giá này?`}
+        confirmText="Từ chối"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={rejectMutation.isPending}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingReview(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa đánh giá"
+        message={`Bạn có chắc muốn xóa vĩnh viễn đánh giá của "${deletingReview?.user.full_name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

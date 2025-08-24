@@ -5,6 +5,9 @@ export interface IAdminReviewUser {
   name: string;
   email: string;
   full_name: string;
+  avatar?: string;
+  total_reviews?: number;
+  average_rating?: number;
 }
 
 export interface IAdminReviewProduct {
@@ -12,12 +15,30 @@ export interface IAdminReviewProduct {
   name: string;
   slug: string;
   image: string;
+  price?: number;
+  brand?: { name: string };
+  average_rating?: number;
+  total_reviews?: number;
 }
 
 export interface IAdminReviewOrder {
   id: number;
   order_number: string;
-  status: string;
+  status?: { name: string; color: string };
+  total_amount?: number;
+  created_at?: string;
+}
+
+export interface IAdminReviewReplyAdmin {
+  name: string;
+  is_admin: boolean;
+}
+
+export interface IAdminReviewReply {
+  id: number;
+  content: string;
+  created_at: string;
+  admin: IAdminReviewReplyAdmin;
 }
 
 export interface IAdminReview {
@@ -35,6 +56,7 @@ export interface IAdminReview {
   user: IAdminReviewUser;
   product: IAdminReviewProduct;
   order: IAdminReviewOrder;
+  replies?: IAdminReviewReply[];
 }
 
 export interface IAdminReviewStatistics {

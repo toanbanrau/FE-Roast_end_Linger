@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import {
-    Table,
-    Button,
-    Space,
-    Input,
-    Select,
-    Card,
-    Row,
-    Col,
-    message,
-    Tag,
+  Table,
+  Button,
+  Space,
+  Input,
+  Select,
+  Card,
+  Row,
+  Col,
+  message,
+  Tag,
 } from "antd";
 import {
   SearchOutlined,
@@ -27,6 +27,7 @@ import {
 import type { IUser } from "../../../interfaces/user";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { toast } from "react-toastify";
+import { useUserStore } from "../../../stores/useUserStore";
 
 const { Option } = Select;
 
@@ -40,12 +41,17 @@ interface UserQueryParams {
 const ListUser: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const currentUser = useUserStore((state) => state.user);
   const [filters, setFilters] = useState<UserQueryParams>({});
   const [searchEmail, setSearchEmail] = useState("");
 
   // State cho confirm modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<{id: number, name: string, email: string} | null>(null);
+  const [deletingUser, setDeletingUser] = useState<{
+    id: number;
+    name: string;
+    email: string;
+  } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", filters],
@@ -79,7 +85,10 @@ const ListUser: React.FC = () => {
 
   // Handle delete - mở confirm modal
   const handleDelete = (id: number, name: string, email: string) => {
-    console.log('Delete button clicked for user:', id, name, email); // Debug log
+    if (currentUser && currentUser.id === id) {
+      toast.error("Bạn không thể tự xóa tài khoản của chính mình.");
+      return;
+    }
     setDeletingUser({ id, name, email });
     setIsConfirmModalOpen(true);
   };
@@ -87,7 +96,7 @@ const ListUser: React.FC = () => {
   // Xử lý xác nhận xóa
   const handleConfirmDelete = () => {
     if (deletingUser) {
-      console.log('Confirming delete for user:', deletingUser.id); // Debug log
+      console.log("Confirming delete for user:", deletingUser.id); // Debug log
       deleteMutation.mutate(deletingUser.id);
       setIsConfirmModalOpen(false);
       setDeletingUser(null);
@@ -95,9 +104,9 @@ const ListUser: React.FC = () => {
   };
 
   const columns = [
-      {
-          title: "STT",
-          render: (_: any, __: any, index: number) => index + 1,
+    {
+      title: "STT",
+      render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "Tên",
@@ -155,27 +164,24 @@ const ListUser: React.FC = () => {
           <Button
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/user/${record.id}`)}
-          >
-
-          </Button>
+          ></Button>
           <Button
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/user/edit/${record.id}`)}
-          >
-
-          </Button>
+          ></Button>
           <Button
             danger
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(
-              record.id,
-              record.name || record.full_name || 'Người dùng',
-              record.email
-            )}
+            onClick={() =>
+              handleDelete(
+                record.id,
+                record.name || record.full_name || "Người dùng",
+                record.email
+              )
+            }
             loading={deleteMutation.isPending}
-          >
-
-          </Button>
+            disabled={!!(currentUser && currentUser.id === record.id)}
+          ></Button>
         </Space>
       ),
     },

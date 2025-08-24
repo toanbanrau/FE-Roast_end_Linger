@@ -19,15 +19,17 @@ import {
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
+import { useUserStore } from "../stores/useUserStore";
 
 const { Header, Content, Sider } = Layout;
 
 const LayoutAdmin: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate(); // ✅ Hook điều hướng
-
+  const { logout } = useUserStore();
   const handlelogout = () => {
-    console.log("logout");
+    logout();
+    navigate("/auth/login");
   };
   const items: MenuProps["items"] = [
     {

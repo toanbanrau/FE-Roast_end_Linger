@@ -9,6 +9,7 @@ import {
   UserPlus,
   User,
   ChevronDown,
+  LayoutGrid,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import HomeNav from "./HomeNav";
@@ -86,6 +87,16 @@ export default function Header() {
                           </p>
                           <p className="text-xs text-stone-500">{user.email}</p>
                         </div>
+                        {user.role === "admin" && (
+                          <Link
+                            to="/admin"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-stone-50 font-medium"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <LayoutGrid className="h-4 w-4" />
+                            Trang Quản Trị
+                          </Link>
+                        )}
                         <Link
                           to="/account"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
@@ -229,6 +240,15 @@ export default function Header() {
                 {user && (
                   <>
                     <div className="border-t my-4"></div>
+                    {user.role === "admin" && (
+                      <Link
+                        to="/admin/dashboard"
+                        className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50 text-blue-600"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Trang Quản Trị
+                      </Link>
+                    )}
                     <Link
                       to="/account"
                       className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50"
