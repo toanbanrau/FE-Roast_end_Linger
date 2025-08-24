@@ -43,8 +43,6 @@ import {
   approveReview,
   rejectReview,
   deleteAdminReview,
-  bulkApproveReviews,
-  bulkRejectReviews,
   replyToReview,
 } from "../../../services/adminReviewService";
 import dayjs from "dayjs";
@@ -54,13 +52,13 @@ import ConfirmModal from "../../../components/ConfirmModal";
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 export default function ListReview() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
   const [filters, setFilters] = useState<IAdminReviewQueryParams>({
     page: 1,
     per_page: 15,
@@ -138,38 +136,6 @@ export default function ListReview() {
     },
     onError: () => {
       toast.error("Có lỗi xảy ra khi xóa đánh giá!");
-    },
-  });
-
-  // Mutation để bulk approve
-  const bulkApproveMutation = useMutation({
-    mutationFn: bulkApproveReviews,
-    onSuccess: () => {
-      toast.success("Đã duyệt các đánh giá được chọn!");
-      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
-      setSelectedRowKeys([]);
-    },
-    onError: () => {
-      toast.error("Có lỗi xảy ra khi duyệt đánh giá!");
-    },
-  });
-
-  // Mutation để bulk reject
-  const bulkRejectMutation = useMutation({
-    mutationFn: ({
-      reviewIds,
-      reason,
-    }: {
-      reviewIds: number[];
-      reason?: string;
-    }) => bulkRejectReviews(reviewIds, reason),
-    onSuccess: () => {
-      toast.success("Đã từ chối các đánh giá được chọn!");
-      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
-      setSelectedRowKeys([]);
-    },
-    onError: () => {
-      toast.error("Có lỗi xảy ra khi từ chối đánh giá!");
     },
   });
 
@@ -293,44 +259,6 @@ export default function ListReview() {
       setIsDeleteModalOpen(false);
       setDeletingReview(null);
     }
-  };
-
-  // Xử lý bulk actions
-  const handleBulkApprove = () => {
-    if (selectedRowKeys.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một đánh giá!");
-      return;
-    }
-    Modal.confirm({
-      title: "Xác nhận duyệt đánh giá",
-      content: `Bạn có chắc chắn muốn duyệt ${selectedRowKeys.length} đánh giá được chọn?`,
-      onOk: () => bulkApproveMutation.mutate(selectedRowKeys as number[]),
-    });
-  };
-
-  const handleBulkReject = () => {
-    if (selectedRowKeys.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một đánh giá!");
-      return;
-    }
-    Modal.confirm({
-      title: "Xác nhận từ chối đánh giá",
-      content: `Bạn có chắc chắn muốn từ chối ${selectedRowKeys.length} đánh giá được chọn?`,
-      onOk: () =>
-        bulkRejectMutation.mutate({ reviewIds: selectedRowKeys as number[] }),
-    });
-  };
-
-  // Cấu hình row selection
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (newSelectedRowKeys: React.Key[]) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-    },
-    getCheckboxProps: (record: IAdminReview) => ({
-      disabled: false,
-      name: record.id.toString(),
-    }),
   };
 
   // Cấu hình columns cho table
@@ -620,53 +548,26 @@ export default function ListReview() {
         </Row>
       </Card>
 
-      {/* Bulk Actions */}
-      {selectedRowKeys.length > 0 && (
-        <Card style={{ marginBottom: 16 }}>
-          <Space>
-            <Text>Đã chọn {selectedRowKeys.length} đánh giá</Text>
-            <Button
-              type="primary"
-              icon={<CheckOutlined />}
-              onClick={handleBulkApprove}
-              loading={bulkApproveMutation.isPending}
-            >
-              Duyệt tất cả
-            </Button>
-            <Button
-              danger
-              icon={<CloseOutlined />}
-              onClick={handleBulkReject}
-              loading={bulkRejectMutation.isPending}
-            >
-              Từ chối tất cả
-            </Button>
-          </Space>
-        </Card>
-      )}
-
       {/* Table */}
       <Card>
         <Table
-          rowSelection={rowSelection}
           columns={columns}
           dataSource={reviewsData?.reviews.data}
           rowKey="id"
           loading={isLoading}
           pagination={{
-            current: currentPage,
-            pageSize: filters.per_page || 15,
-            total: reviewsData?.reviews.total || 0,
-            showSizeChanger: true,
+            current: reviewsData?.reviews.current_page,
+            pageSize: reviewsData?.reviews.per_page,
+            total: reviewsData?.reviews.total,
+            showSizeChanger: false, // Tắt chức năng thay đổi per_page
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} đánh giá`,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
+            onChange: (page) => {
+              // Chỉ xử lý thay đổi trang
               setFilters((prev) => ({
                 ...prev,
                 page,
-                per_page: pageSize,
               }));
             },
           }}

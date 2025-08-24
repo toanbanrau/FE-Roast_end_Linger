@@ -30,7 +30,6 @@ import { Link, useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import {
   getAttributes,
-  bulkDeleteAttributes,
   toggleAttributeStatus,
   deleteAttribute,
 } from "../../../services/attributeService";
@@ -49,12 +48,13 @@ const ListAttribute: React.FC = () => {
   // State
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   // State cho confirm modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [deletingAttribute, setDeletingAttribute] = useState<{id: number, name: string} | null>(null);
-  const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [deletingAttribute, setDeletingAttribute] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   // Queries
   const { data: attributes = [], isLoading } = useQuery({
@@ -66,23 +66,6 @@ const ListAttribute: React.FC = () => {
         sort: "sort_order",
         order: "asc",
       }),
-  });
-
-  // Mutations
-  const bulkDeleteMutation = useMutation({
-    mutationFn: bulkDeleteAttributes,
-    onSuccess: (data) => {
-      toast.success(
-        `Xóa thành công ${data.deleted_count} thuộc tính${
-          data.failed_count > 0 ? `. ${data.failed_count} thuộc tính không thể xóa.` : ""
-        }`
-      );
-      setSelectedRowKeys([]);
-      queryClient.invalidateQueries({ queryKey: ["attributes"] });
-    },
-    onError: () => {
-      toast.error("Có lỗi xảy ra khi xóa thuộc tính!");
-    },
   });
 
   const deleteMutation = useMutation({
@@ -109,8 +92,11 @@ const ListAttribute: React.FC = () => {
 
   // Filtered data
   const filteredAttributes = attributes.filter((attr) => {
-    const matchSearch = attr.attribute_name.toLowerCase().includes(searchText.toLowerCase());
-    const matchStatus = statusFilter === "all" || 
+    const matchSearch = attr.attribute_name
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchStatus =
+      statusFilter === "all" ||
       (statusFilter === "active" && attr.status) ||
       (statusFilter === "inactive" && !attr.status);
     return matchSearch && matchStatus;
@@ -120,45 +106,22 @@ const ListAttribute: React.FC = () => {
   const totalAttributes = attributes.length;
   const activeAttributes = attributes.filter((attr) => attr.status).length;
   const inactiveAttributes = attributes.filter((attr) => !attr.status).length;
-  const requiredAttributes = attributes.filter((attr) => attr.is_required).length;
+  const requiredAttributes = attributes.filter(
+    (attr) => attr.is_required
+  ).length;
 
   // Handlers
-  const handleBulkDelete = () => {
-    if (selectedRowKeys.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một thuộc tính để xóa!");
-      return;
-    }
-
-    setDeletingAttribute({
-      id: 0, // Bulk delete không cần id cụ thể
-      name: `${selectedRowKeys.length} thuộc tính đã chọn`
-    });
-    setIsBulkDelete(true);
-    setIsConfirmModalOpen(true);
-  };
-
-  // Handle delete single attribute
   const handleDeleteAttribute = (id: number, name: string) => {
-    console.log('Delete button clicked for attribute:', id, name); // Debug log
     setDeletingAttribute({ id, name });
-    setIsBulkDelete(false);
     setIsConfirmModalOpen(true);
   };
 
   // Xử lý xác nhận xóa
   const handleConfirmDelete = () => {
     if (deletingAttribute) {
-      console.log('Confirming delete for attribute:', deletingAttribute.id); // Debug log
-
-      if (isBulkDelete) {
-        bulkDeleteMutation.mutate({ ids: selectedRowKeys as number[] });
-      } else {
-        deleteMutation.mutate(deletingAttribute.id);
-      }
-
+      deleteMutation.mutate(deletingAttribute.id);
       setIsConfirmModalOpen(false);
       setDeletingAttribute(null);
-      setIsBulkDelete(false);
     }
   };
 
@@ -178,20 +141,20 @@ const ListAttribute: React.FC = () => {
       title: "Tên thuộc tính",
       dataIndex: "attribute_name",
       key: "attribute_name",
-        width:200,
+      width: 200,
       sorter: (a, b) => a.attribute_name.localeCompare(b.attribute_name),
     },
     {
       title: "Loại",
       dataIndex: "attribute_type",
       key: "attribute_type",
-        width:100,
+      width: 100,
       render: (type: string) => (
         <Tag color="blue">{type === "select" ? "Lựa chọn" : type}</Tag>
       ),
     },
     {
-        width:200,
+      width: 200,
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
@@ -201,7 +164,7 @@ const ListAttribute: React.FC = () => {
       title: "Bắt buộc",
       dataIndex: "is_required",
       key: "is_required",
-        width:80,
+      width: 80,
       render: (required: boolean) => (
         <Tag color={required ? "red" : "default"}>
           {required ? "Bắt buộc" : "Tùy chọn"}
@@ -218,7 +181,7 @@ const ListAttribute: React.FC = () => {
     {
       title: "Số giá trị",
       key: "values_count",
-        width:100,
+      width: 100,
       render: (_, record) => (
         <Tag color="green">{record.attribute_values?.length || 0}</Tag>
       ),
@@ -227,7 +190,7 @@ const ListAttribute: React.FC = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-        width:150,
+      width: 150,
       render: (status: boolean, record) => (
         <Switch
           checked={status}
@@ -269,10 +232,12 @@ const ListAttribute: React.FC = () => {
               danger
               size="small"
               icon={<DeleteOutlined />}
-              onClick={() => handleDeleteAttribute(
-                record.id,
-                record.attribute_name || 'Thuộc tính'
-              )}
+              onClick={() =>
+                handleDeleteAttribute(
+                  record.id,
+                  record.attribute_name || "Thuộc tính"
+                )
+              }
               loading={deleteMutation.isPending}
             >
               Xóa
@@ -282,14 +247,6 @@ const ListAttribute: React.FC = () => {
       ),
     },
   ];
-
-  // Row selection
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (newSelectedRowKeys: React.Key[]) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-    },
-  };
 
   return (
     <div style={{ padding: "24px" }}>
@@ -379,16 +336,6 @@ const ListAttribute: React.FC = () => {
           </Col>
           <Col span={12} style={{ textAlign: "right" }}>
             <Space>
-              {selectedRowKeys.length > 0 && (
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={handleBulkDelete}
-                  loading={bulkDeleteMutation.isPending}
-                >
-                  Xóa đã chọn ({selectedRowKeys.length})
-                </Button>
-              )}
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -409,7 +356,6 @@ const ListAttribute: React.FC = () => {
           dataSource={filteredAttributes}
           rowKey="id"
           loading={isLoading}
-          rowSelection={rowSelection}
           pagination={{
             total: filteredAttributes.length,
             pageSize: 10,
@@ -428,19 +374,14 @@ const ListAttribute: React.FC = () => {
         onClose={() => {
           setIsConfirmModalOpen(false);
           setDeletingAttribute(null);
-          setIsBulkDelete(false);
         }}
         onConfirm={handleConfirmDelete}
-        title={isBulkDelete ? "Xác nhận xóa nhiều thuộc tính" : "Xác nhận xóa thuộc tính"}
-        message={
-          isBulkDelete
-            ? `Bạn có chắc muốn xóa ${deletingAttribute?.name}? Hành động này không thể hoàn tác.`
-            : `Bạn có chắc muốn xóa thuộc tính "${deletingAttribute?.name}"? Hành động này không thể hoàn tác.`
-        }
+        title="Xác nhận xóa thuộc tính"
+        message={`Bạn có chắc muốn xóa thuộc tính "${deletingAttribute?.name}"? Hành động này không thể hoàn tác.`}
         confirmText="Xóa"
         cancelText="Hủy"
         type="danger"
-        isLoading={isBulkDelete ? bulkDeleteMutation.isPending : deleteMutation.isPending}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );
