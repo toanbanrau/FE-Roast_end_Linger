@@ -78,6 +78,10 @@ export default function ListReview() {
   const [deletingReview, setDeletingReview] = useState<IAdminReview | null>(
     null
   );
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [approvingReview, setApprovingReview] = useState<IAdminReview | null>(
+    null
+  );
 
   // Lấy danh sách reviews
   const { data: reviewsData, isLoading } = useQuery({
@@ -92,21 +96,36 @@ export default function ListReview() {
       toast.success("Đã duyệt đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
-    onError: () => {
-      toast.error("Có lỗi xảy ra khi duyệt đánh giá!");
+    onError: (error: any) => {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi duyệt đánh giá!");
+      }
     },
   });
 
   // Mutation để reject review
   const rejectMutation = useMutation({
-    mutationFn: ({ reviewId, reason }: { reviewId: number; reason?: string }) =>
-      rejectReview(reviewId, reason),
+    mutationFn: rejectReview, // Updated to use the new service function
     onSuccess: () => {
       toast.success("Đã từ chối đánh giá thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
     },
-    onError: () => {
-      toast.error("Có lỗi xảy ra khi từ chối đánh giá!");
+    onError: (error: any) => {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Có lỗi xảy ra khi từ chối đánh giá!");
+      }
     },
   });
 
@@ -227,13 +246,21 @@ export default function ListReview() {
     }
   };
 
-  // Xử lý approve review
-  const handleApprove = (reviewId: number) => {
-    Modal.confirm({
-      title: "Xác nhận duyệt đánh giá",
-      content: "Bạn có chắc chắn muốn duyệt đánh giá này?",
-      onOk: () => approveMutation.mutate(reviewId),
-    });
+  // Xử lý approve review - mở modal
+  const handleApprove = (review: IAdminReview) => {
+    setApprovingReview(review);
+    setIsApproveModalOpen(true);
+  };
+
+  // Xử lý xác nhận approve
+  const handleConfirmApprove = () => {
+    if (approvingReview) {
+      console.log(`[ACTION] Duyệt review ID: ${approvingReview.id}`);
+      console.log("[DATA] Dữ liệu service sẽ gửi đi:", { is_approved: 1 });
+      approveMutation.mutate(approvingReview.id);
+      setIsApproveModalOpen(false);
+      setApprovingReview(null);
+    }
   };
 
   // Xử lý reject review - mở modal
@@ -251,7 +278,9 @@ export default function ListReview() {
   // Xử lý xác nhận reject
   const handleConfirmReject = () => {
     if (rejectingReview) {
-      rejectMutation.mutate({ reviewId: rejectingReview.id });
+      console.log(`[ACTION] Từ chối review ID: ${rejectingReview.id}`);
+      console.log("[DATA] Dữ liệu service sẽ gửi đi:", { is_approved: 0 });
+      rejectMutation.mutate(rejectingReview.id); // Pass only the ID
       setIsRejectModalOpen(false);
       setRejectingReview(null);
     }
@@ -437,12 +466,12 @@ export default function ListReview() {
               onClick={() => showReplyModal(record)}
             />
           </Tooltip>
-          {/* {!record.is_approved ? (
+          {!record.is_approved ? (
             <Tooltip title="Duyệt">
               <Button
                 type="primary"
                 icon={<CheckOutlined />}
-                onClick={() => handleApprove(record.id)}
+                onClick={() => handleApprove(record)}
                 loading={approveMutation.isPending}
               />
             </Tooltip>
@@ -454,7 +483,7 @@ export default function ListReview() {
                 loading={rejectMutation.isPending}
               />
             </Tooltip>
-          )} */}
+          )}
           <Tooltip title="Xóa">
             <Button
               danger
@@ -706,6 +735,35 @@ export default function ListReview() {
         cancelText="Hủy"
         type="danger"
         isLoading={deleteMutation.isPending}
+      />
+
+      {/* Approve Modal */}
+      <ConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false);
+          setApprovingReview(null);
+        }}
+        onConfirm={handleConfirmApprove}
+        title="Xác nhận duyệt đánh giá"
+        message={`Bạn có chắc muốn duyệt đánh giá của "${approvingReview?.user.full_name}"?`}
+        confirmText="Duyệt"
+        cancelText="Hủy"
+        isLoading={approveMutation.isPending}
+      />
+
+      <ConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false);
+          setApprovingReview(null);
+        }}
+        onConfirm={handleConfirmApprove}
+        title="Xác nhận duyệt đánh giá"
+        message={`Bạn có chắc muốn duyệt đánh giá của "${approvingReview?.user.full_name}"?`}
+        confirmText="Duyệt"
+        cancelText="Hủy"
+        isLoading={approveMutation.isPending}
       />
     </div>
   );

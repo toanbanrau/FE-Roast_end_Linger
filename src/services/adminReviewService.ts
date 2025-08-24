@@ -43,20 +43,25 @@ export const getAdminReviewDetails = async (reviewId: number): Promise<IAdminRev
   return response.data.data;
 };
 
+// Update review approval status (Approve or Reject)
+export const updateReviewApproval = async (
+  reviewId: number,
+  is_approved: 0 | 1
+): Promise<IAdminReviewActionResponse> => {
+  const response = await adminAxios.put(`/reviews/${reviewId}/approval`, { is_approved });
+  return response.data.data;
+};
+
 // Approve a review
 export const approveReview = async (reviewId: number): Promise<IAdminReviewActionResponse> => {
-  const response = await adminAxios.post(`/reviews/${reviewId}/approve`);
-  return response.data.data;
+  return updateReviewApproval(reviewId, 1);
 };
 
 // Reject a review
 export const rejectReview = async (
-  reviewId: number,
-  reason?: string
+  reviewId: number
 ): Promise<IAdminReviewActionResponse> => {
-  const data = reason ? { reason } : {};
-  const response = await adminAxios.post(`/reviews/${reviewId}/reject`, data);
-  return response.data.data;
+  return updateReviewApproval(reviewId, 0);
 };
 
 // Delete a review (permanent removal)
@@ -74,19 +79,19 @@ export const updateAdminReview = async (
     rating?: number;
   }
 ): Promise<IAdminReview> => {
-  const response = await clientAxios.put(`/admin/reviews/${reviewId}`, updateData);
+  const response = await adminAxios.put(`/admin/reviews/${reviewId}`, updateData);
   return response.data.data;
 };
 
 // Get review statistics for admin dashboard
 export const getAdminReviewStatistics = async (): Promise<IAdminReviewStatistics> => {
-  const response = await clientAxios.get('/admin/reviews/statistics');
+  const response = await adminAxios.get('/admin/reviews/statistics');
   return response.data.data;
 };
 
 // Bulk approve reviews
 export const bulkApproveReviews = async (reviewIds: number[]): Promise<IAdminReviewActionResponse> => {
-  const response = await clientAxios.post('/admin/reviews/bulk-approve', {
+  const response = await adminAxios.post('/admin/reviews/bulk-approve', {
     review_ids: reviewIds
   });
   return response.data.data;
@@ -98,13 +103,13 @@ export const bulkRejectReviews = async (
   reason?: string
 ): Promise<IAdminReviewActionResponse> => {
   const data = reason ? { review_ids: reviewIds, reason } : { review_ids: reviewIds };
-  const response = await clientAxios.post('/admin/reviews/bulk-reject', data);
+  const response = await adminAxios.post('/admin/reviews/bulk-reject', data);
   return response.data.data;
 };
 
 // Get pending reviews count for admin dashboard
 export const getPendingReviewsCount = async (): Promise<number> => {
-  const response = await clientAxios.get('/admin/reviews/pending-count');
+  const response = await adminAxios.get('/admin/reviews/pending-count');
   return response.data.data.count;
 };
 
@@ -127,7 +132,7 @@ export const exportReviews = async (
     queryParams.append('format', format);
   }
 
-  const response = await clientAxios.get(`/admin/reviews/export?${queryParams.toString()}`, {
+  const response = await adminAxios.get(`/admin/reviews/export?${queryParams.toString()}`, {
     responseType: 'blob'
   });
 
