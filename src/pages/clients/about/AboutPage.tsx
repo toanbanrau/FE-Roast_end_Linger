@@ -133,22 +133,22 @@ export default function AboutPage() {
               {
                 name: "Thiều Văn Hạnh Toàn",
                 title: "Người sáng lập & Bậc thầy rang",
-                image: "/placeholder.svg?height=400&width=400",
+                image: "/user1.jpg",
               },
               {
                 name: "Cao Thế Anh",
                 title: "Trưởng bộ phận thu mua cà phê",
-                image: "/placeholder.svg?height=400&width=400",
+                image: "/user2.jpg",
               },
               {
                 name: "Nguyễn Duy",
                 title: "Giám đốc thử nếm",
-                image: "/placeholder.svg?height=400&width=400",
+                image: "/user3.jpg",
               },
               {
                 name: "Tuấn Ngô",
                 title: "Giám đốc phát triển bền vững",
-                image: "/placeholder.svg?height=400&width=400",
+                image: "/user4.jpg",
               },
             ].map((member, index) => (
               <div key={index} className="text-center">
@@ -175,7 +175,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="relative h-80 sm:h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
               <img
-                src="/placeholder.svg?height=1000&width=800"
+                src="/image.png"
                 alt="Canh tác cà phê bền vững"
                 className="object-cover w-full h-full"
               />
@@ -200,12 +200,13 @@ export default function AboutPage() {
                 năng lượng, chúng tôi không ngừng giảm thiểu dấu chân môi trường
                 trong khi vẫn duy trì chất lượng cà phê tốt nhất.
               </p>
-              <Link
-                to="/sustainability"
-                className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200"
-              >
-                Tìm Hiểu Thêm Về Sáng Kiến Của Chúng Tôi
-              </Link>
+              <p>
+                className="inline-flex items-center justify-center rounded-lg
+                bg-amber-600 px-5 py-2.5 text-sm font-medium text-white
+                hover:bg-amber-700 focus:outline-none focus:ring-2
+                focus:ring-amber-500 focus:ring-offset-2 transition-colors
+                duration-200" Tìm Hiểu Thêm Về Sáng Kiến Của Chúng Tôi
+              </p>
             </div>
           </div>
         </div>
@@ -223,12 +224,9 @@ export default function AboutPage() {
               Chúng tôi luôn tìm kiếm những cá nhân đam mê, cùng chia sẻ tình
               yêu với cà phê và cam kết chất lượng cùng phát triển bền vững.
             </p>
-            <Link
-              to="/careers"
-              className="inline-flex items-center justify-center rounded-lg bg-amber-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200"
-            >
+            <p className="inline-flex items-center justify-center rounded-lg bg-amber-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200">
               Xem Vị Trí Tuyển Dụng <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            </p>
           </div>
         </div>
       </section>
