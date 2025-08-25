@@ -11,7 +11,7 @@ import {
   ChevronDown,
   LayoutGrid,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HomeNav from "./HomeNav";
 import { useUserStore } from "../stores/useUserStore";
 import { useCartStore } from "../stores/useCartStore";
@@ -25,6 +25,11 @@ export default function Header() {
   const { user, logout } = useUserStore();
   const { cart } = useCartStore();
   const cartItemCount = cart?.total_items || 0;
+  const nav = useNavigate();
+  const handleLogout = () => {
+    logout();
+    nav("/auth/login");
+  };
 
   return (
     <>
@@ -128,7 +133,7 @@ export default function Header() {
                         </Link>
                         <div className="border-t mt-2 pt-2">
                           <button
-                            onClick={logout}
+                            onClick={handleLogout}
                             className="block w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
                           >
                             Đăng Xuất

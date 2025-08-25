@@ -110,7 +110,7 @@ export const useUserStore = create<UserState>()(
 
           set({ user: null, isAuthenticated: false, loading: false });
 
-          // Thông báo đăng xuất thành công
+          
           toast.success('Đăng xuất thành công!');
         } catch (error) {
           if (isAxiosError(error)) {

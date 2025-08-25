@@ -303,19 +303,25 @@ export default function ProductsPage() {
                 <input
                   type="number"
                   placeholder="Giá từ"
+                  min="0"
                   value={filters.minPrice}
-                  onChange={(e) =>
-                    updateSearchParams({ min_price: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (Number(value) < 0) return;
+                    updateSearchParams({ min_price: value });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
                 <input
                   type="number"
                   placeholder="Giá đến"
+                  min="0"
                   value={filters.maxPrice}
-                  onChange={(e) =>
-                    updateSearchParams({ max_price: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (Number(value) < 0) return;
+                    updateSearchParams({ max_price: value });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
                 />
               </div>
@@ -371,8 +377,6 @@ export default function ProductsPage() {
                 onChange={(e) => updateSearchParams({ sort: e.target.value })}
               >
                 <option value="created_at">Mới nhất</option>
-                <option value="product_name">Tên sản phẩm</option>
-                <option value="base_price">Giá</option>
                 <option value="sold_count">Bán chạy</option>
                 <option value="view_count">Xem nhiều</option>
               </select>
@@ -392,8 +396,6 @@ export default function ProductsPage() {
                 onChange={(e) => updateSearchParams({ sort: e.target.value })}
               >
                 <option value="created_at">Mới nhất</option>
-                <option value="product_name">Tên sản phẩm</option>
-                <option value="base_price">Giá</option>
                 <option value="sold_count">Bán chạy</option>
                 <option value="view_count">Xem nhiều</option>
               </select>
