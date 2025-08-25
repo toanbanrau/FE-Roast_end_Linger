@@ -116,7 +116,8 @@ export default function OrderDetail() {
     }
 
     if (newStatusName === "cancelled") {
-      return true;
+      // Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "Chờ xử lý" (pending)
+      return currentStatusName === "pending";
     }
 
     if (currentStatusName === "cancelled") {
@@ -130,7 +131,8 @@ export default function OrderDetail() {
       return true;
     }
 
-    return newIndex >= currentIndex;
+    // Chỉ cho phép tiến lên một bước
+    return newIndex === currentIndex + 1;
   };
 
   const handleStatusChange = (statusId: number) => {
@@ -269,6 +271,17 @@ export default function OrderDetail() {
     return <div className="p-6">Không tìm thấy đơn hàng</div>;
   }
 
+  const currentStatusName = order.status.name.toLowerCase();
+  const isFinalStatus = finalStatuses.includes(currentStatusName);
+
+  // Lọc các trạng thái có thể chuyển đến
+  const availableStatuses = orderStatuses?.filter(
+    (status) =>
+      !["completed", "cancelled", "refunded"].includes(
+        status.status_name.toLowerCase()
+      ) && canChangeStatus(order.status.name, status.id)
+  );
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -298,27 +311,41 @@ export default function OrderDetail() {
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái" span={1}>
-                <Select
-                  value={order.status.id}
-                  style={{ width: 180 }}
-                  onChange={handleStatusChange}
-                  loading={updateStatusMutation.isPending}
-                  disabled={finalStatuses.includes(
-                    order.status.name.toLowerCase()
-                  )}
+                <Tooltip
+                  title={
+                    isFinalStatus
+                      ? "Đơn hàng đã hoàn tất, không thể thay đổi trạng thái"
+                      : "Chỉ có thể chuyển lên trạng thái tiếp theo"
+                  }
                 >
-                  {orderStatuses?.map((status) => (
-                    <Option
-                      key={status.id}
-                      value={status.id}
-                      disabled={!canChangeStatus(order.status.name, status.id)}
-                    >
-                      <Tag color={status.color}>
-                        {getStatusText(status.status_name)}
+                  <Select
+                    value={order.status.id}
+                    style={{ width: 180 }}
+                    onChange={handleStatusChange}
+                    loading={updateStatusMutation.isPending}
+                    disabled={
+                      isFinalStatus ||
+                      !availableStatuses ||
+                      availableStatuses.length === 0
+                    }
+                  >
+                    {/* Hiển thị trạng thái hiện tại */}
+                    <Option key={order.status.id} value={order.status.id}>
+                      <Tag color={getStatusColor(currentStatusName)}>
+                        {getStatusText(order.status.name)}
                       </Tag>
                     </Option>
-                  ))}
-                </Select>
+
+                    {/* Hiển thị các trạng thái có thể chuyển đến */}
+                    {availableStatuses?.map((status) => (
+                      <Option key={status.id} value={status.id}>
+                        <Tag color={status.color}>
+                          {getStatusText(status.status_name)}
+                        </Tag>
+                      </Option>
+                    ))}
+                  </Select>
+                </Tooltip>
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán" span={1}>
                 {getPaymentMethodText(order.payment_method)}

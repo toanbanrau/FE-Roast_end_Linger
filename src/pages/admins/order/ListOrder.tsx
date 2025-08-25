@@ -191,9 +191,9 @@ export default function ListOrder() {
       return false;
     }
 
-    // Cho phép chuyển sang cancelled từ bất kỳ trạng thái nào (trừ final statuses)
     if (newStatusName === "cancelled") {
-      return true;
+      // Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "Chờ xử lý" (pending)
+      return currentStatusName === "pending";
     }
 
     // Không cho phép chuyển từ cancelled sang trạng thái khác
@@ -392,8 +392,11 @@ export default function ListOrder() {
 
         // Lọc các trạng thái có thể chuyển đến
         const availableStatuses =
-          orderStatuses?.filter((status) =>
-            canChangeStatus(currentStatusName, status.id)
+          orderStatuses?.filter(
+            (status) =>
+              !["completed", "refunded", "cancelled"].includes(
+                status.status_name.toLowerCase()
+              ) && canChangeStatus(currentStatusName, status.id)
           ) || [];
 
         return (
