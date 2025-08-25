@@ -66,8 +66,24 @@ const ListUser: React.FC = () => {
       toast.success("Xóa người dùng thành công!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
-    onError: (error) => {
-      toast.error("Có lỗi xảy ra khi xóa người dùng!");
+    onError: (error: any) => {
+      // Kiểm tra xem lỗi có phải là lỗi xác thực/phân quyền không
+      if (
+        error.response &&
+        (error.response.status === 401 || error.response.status === 403)
+      ) {
+        // Nếu là lỗi 401 hoặc 403, hiển thị thông báo lỗi mà không đăng xuất
+        const message =
+          error.response.status === 401
+            ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+            : "Bạn không có quyền thực hiện hành động này.";
+        toast.error(error.response.data.message || message);
+      } else {
+        // Các lỗi khác
+        toast.error(
+          error.response?.data?.message || "Có lỗi xảy ra khi xóa người dùng!"
+        );
+      }
     },
   });
 

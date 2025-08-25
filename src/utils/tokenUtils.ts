@@ -63,7 +63,8 @@ export const clearLocalDataOnTokenError = (): void => {
 // Xử lý token error từ axios interceptors
 export const handleTokenError = (error: any): boolean => {
   // Chỉ xử lý 401/403 errors
-  const isTokenError = error?.response?.status === 401 || error?.response?.status === 403;
+  const isTokenError = error?.response?.status === 401 
+  // || error?.response?.status === 403;
 
   if (isTokenError && !isTokenExpiredToastShown && !isManualLogout) {
     isTokenExpiredToastShown = true;

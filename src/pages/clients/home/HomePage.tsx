@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getFeaturedProducts } from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
+import MySlider from "../../../components/Slider";
 
 export default function HomePage() {
   // Lấy sản phẩm nổi bật từ API
@@ -21,11 +22,8 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       {/* Phần chính (Hero Section) */}
       <section className="relative h-[90vh] flex items-center">
-        <img
-          src="https://img.freepik.com/premium-psd/banner-template-coffee-sale-social-media-post_268949-63.jpg?semt=ais_items_boosted&w=740"
-          alt="Hạt cà phê cao cấp"
-          className="object-cover w-full h-full absolute inset-0  brightness-50"
-        />
+        <MySlider />
+
         <div className="container relative z-10 px-4 md:px-6">
           <div className="max-w-3xl space-y-6">
             <h1 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
@@ -55,7 +53,7 @@ export default function HomePage() {
       </section>
 
       {/* Sản phẩm nổi bật */}
-      <section className="py-20 bg-stone-50">
+      <section className="py-25 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">

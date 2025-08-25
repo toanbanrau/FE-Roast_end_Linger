@@ -28,6 +28,7 @@ import {
 } from "../../../services/adminOrderService";
 import { getStatusText, getStatusColor } from "../../../utils/orderStatusUtils";
 import { toast } from "react-toastify";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -44,6 +45,22 @@ export default function ListOrder() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<
     boolean | undefined
   >();
+
+  // State cho confirm modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [pendingPaymentUpdate, setPendingPaymentUpdate] = useState<{
+    orderId: number;
+    paymentStatus: boolean;
+  } | null>(null);
+
+  // State cho confirm modal status order
+  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] =
+    useState(false);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{
+    orderId: number;
+    statusId: number;
+    statusName: string;
+  } | null>(null);
 
   // Lấy danh sách đơn hàng
   const { data: ordersData, isLoading: ordersLoading } = useQuery({
@@ -96,10 +113,16 @@ export default function ListOrder() {
       toast.success("Cập nhật trạng thái đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
+      // Đóng modal và reset state
+      setIsStatusConfirmModalOpen(false);
+      setPendingStatusUpdate(null);
     },
     onError: (error) => {
       console.error("❌ Mutation error:", error);
       message.error("Cập nhật trạng thái thất bại");
+      // Đóng modal và reset state
+      setIsStatusConfirmModalOpen(false);
+      setPendingStatusUpdate(null);
     },
   });
 
@@ -112,42 +135,56 @@ export default function ListOrder() {
       orderId: number;
       paymentStatus: boolean;
     }) => {
-      console.log("🚀 Payment status mutation called:", { orderId, paymentStatus });
+      console.log("🚀 Payment status mutation called:", {
+        orderId,
+        paymentStatus,
+      });
       return updatePaymentStatus(orderId, paymentStatus);
     },
     onSuccess: (data) => {
       console.log("✅ Payment status mutation success:", data);
-      toast.success(`Cập nhật trạng thái thanh toán thành công: ${data.payment_status_text}`);
+      toast.success(
+        `Cập nhật trạng thái thanh toán thành công: ${data.payment_status_text}`
+      );
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
+      // Đóng modal và reset state
+      setIsConfirmModalOpen(false);
+      setPendingPaymentUpdate(null);
     },
     onError: (error) => {
       console.error("❌ Payment status mutation error:", error);
       message.error("Cập nhật trạng thái thanh toán thất bại");
+      // Đóng modal và reset state
+      setIsConfirmModalOpen(false);
+      setPendingPaymentUpdate(null);
     },
   });
 
   // Định nghĩa thứ tự trạng thái (từ thấp đến cao) - theo database
   const statusOrder = [
-    'pending',        // 1. Chờ xử lý
-    'confirmed',      // 2. Đã xác nhận
-    'processing',     // 3. Đang xử lý
-    'shipping',       // 4. Đang vận chuyển
-    'delivered',      // 5. Đã giao hàng
-    'completed',      // 6. Hoàn thành
+    "pending", // 1. Chờ xử lý
+    "confirmed", // 2. Đã xác nhận
+    "processing", // 3. Đang xử lý
+    "shipping", // 4. Đang vận chuyển
+    "delivered", // 5. Đã giao hàng
+    "completed", // 6. Hoàn thành
   ];
 
   // Trạng thái cuối (không thể chỉnh sửa)
-  const finalStatuses = ['completed', 'cancelled', 'refunded'];
+  const finalStatuses = ["completed", "cancelled", "refunded"];
 
   // Kiểm tra xem có thể chuyển trạng thái không
-  const canChangeStatus = (currentStatus: string | undefined | null, newStatusId: number) => {
+  const canChangeStatus = (
+    currentStatus: string | undefined | null,
+    newStatusId: number
+  ) => {
     // Tìm trạng thái mới
-    const newStatus = orderStatuses?.find(s => s.id === newStatusId);
+    const newStatus = orderStatuses?.find((s) => s.id === newStatusId);
     if (!newStatus || !newStatus.status_name) return false;
 
     const newStatusName = newStatus.status_name.toLowerCase();
-    const currentStatusName = (currentStatus || '').toLowerCase();
+    const currentStatusName = (currentStatus || "").toLowerCase();
 
     // Nếu trạng thái hiện tại là cuối thì không được chỉnh
     if (finalStatuses.includes(currentStatusName)) {
@@ -155,12 +192,12 @@ export default function ListOrder() {
     }
 
     // Cho phép chuyển sang cancelled từ bất kỳ trạng thái nào (trừ final statuses)
-    if (newStatusName === 'cancelled') {
+    if (newStatusName === "cancelled") {
       return true;
     }
 
     // Không cho phép chuyển từ cancelled sang trạng thái khác
-    if (currentStatusName === 'cancelled') {
+    if (currentStatusName === "cancelled") {
       return false;
     }
 
@@ -177,51 +214,96 @@ export default function ListOrder() {
     return newIndex >= currentIndex;
   };
 
-  const handleStatusChange = (orderId: number, statusId: number, currentOrder: IOrder) => {
+  const handleStatusChange = (
+    orderId: number,
+    statusId: number,
+    currentOrder: IOrder
+  ) => {
     console.log("🔄 handleStatusChange called:", { orderId, statusId });
 
     const currentStatusName = currentOrder.status.name;
 
     // Kiểm tra validation
     if (!canChangeStatus(currentStatusName, statusId)) {
-      const newStatus = orderStatuses?.find(s => s.id === statusId);
-      const newStatusText = newStatus ? getStatusText(newStatus.status_name) : 'Unknown';
+      const newStatus = orderStatuses?.find((s) => s.id === statusId);
+      const newStatusText = newStatus
+        ? getStatusText(newStatus.status_name)
+        : "Unknown";
       const currentStatusText = getStatusText(currentStatusName);
 
       if (finalStatuses.includes(currentStatusName.toLowerCase())) {
-        toast.error(`Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`);
+        toast.error(
+          `Không thể thay đổi trạng thái từ "${currentStatusText}" vì đơn hàng đã hoàn tất!`
+        );
       } else {
-        toast.error(`Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`);
+        toast.error(
+          `Không thể chuyển từ "${currentStatusText}" về "${newStatusText}". Chỉ có thể tiến lên trạng thái tiếp theo!`
+        );
       }
       return;
     }
 
     console.log("✅ Status change validation passed");
     console.log("🚀 Calling mutation");
-    updateStatusMutation.mutate({ orderId, statusId });
+    handleOrderStatusChange(orderId, statusId);
   };
 
-  const getPaymentMethodColor = (method: string) => {
-    const colorMap: { [key: string]: string } = {
-      cash_on_delivery: "orange",
-      bank_transfer: "blue",
-      credit_card: "green",
-      e_wallet: "purple",
-    };
-    return colorMap[method] || "default";
+  // Xử lý confirm thay đổi trạng thái thanh toán
+  const handlePaymentStatusChange = (
+    orderId: number,
+    paymentStatus: boolean,
+    currentPaymentStatus: boolean
+  ) => {
+    // Nếu đã thanh toán rồi thì không cho chuyển về chưa thanh toán
+    if (currentPaymentStatus === true && paymentStatus === false) {
+      toast.error("Không thể chuyển từ 'Đã thanh toán' về 'Chưa thanh toán'!");
+      return;
+    }
+
+    // Nếu chuyển từ chưa thanh toán -> đã thanh toán thì cần confirm
+    if (paymentStatus === true) {
+      setPendingPaymentUpdate({ orderId, paymentStatus });
+      setIsConfirmModalOpen(true);
+    }
   };
 
-  const getPaymentMethodText = (method: string) => {
-    const textMap: { [key: string]: string } = {
-      cash_on_delivery: "Thanh toán khi nhận hàng",
-      bank_transfer: "Chuyển khoản ngân hàng",
-      credit_card: "Thẻ tín dụng",
-      e_wallet: "Ví điện tử",
-    };
-    return textMap[method] || method;
+  // Xử lý confirm modal
+  const handleConfirmPaymentUpdate = () => {
+    if (pendingPaymentUpdate) {
+      updatePaymentStatusMutation.mutate(pendingPaymentUpdate);
+    }
   };
 
+  const handleCancelPaymentUpdate = () => {
+    setIsConfirmModalOpen(false);
+    setPendingPaymentUpdate(null);
+  };
 
+  // Xử lý confirm thay đổi trạng thái đơn hàng
+  const handleOrderStatusChange = (orderId: number, statusId: number) => {
+    // Tìm tên trạng thái từ danh sách
+    const statusName =
+      orderStatuses?.find((status) => status.id === statusId)?.status_name ||
+      "Không xác định";
+
+    setPendingStatusUpdate({ orderId, statusId, statusName });
+    setIsStatusConfirmModalOpen(true);
+  };
+
+  // Xử lý confirm modal status
+  const handleConfirmStatusUpdate = () => {
+    if (pendingStatusUpdate) {
+      updateStatusMutation.mutate({
+        orderId: pendingStatusUpdate.orderId,
+        statusId: pendingStatusUpdate.statusId,
+      });
+    }
+  };
+
+  const handleCancelStatusUpdate = () => {
+    setIsStatusConfirmModalOpen(false);
+    setPendingStatusUpdate(null);
+  };
 
   const columns: ColumnsType<IOrder> = [
     {
@@ -287,10 +369,7 @@ export default function ListOrder() {
             loading={updatePaymentStatusMutation.isPending}
             disabled={updatePaymentStatusMutation.isPending}
             onChange={(value: boolean) => {
-              updatePaymentStatusMutation.mutate({
-                orderId: record.id,
-                paymentStatus: value
-              });
+              handlePaymentStatusChange(record.id, value, isPaid);
             }}
           >
             <Option value={false}>
@@ -308,13 +387,14 @@ export default function ListOrder() {
       key: "status",
       width: 150,
       render: (_, record: IOrder) => {
-        const currentStatusName = record.status?.name?.toLowerCase() || '';
+        const currentStatusName = record.status?.name?.toLowerCase() || "";
         const isFinalStatus = finalStatuses.includes(currentStatusName);
 
         // Lọc các trạng thái có thể chuyển đến
-        const availableStatuses = orderStatuses?.filter(status =>
-          canChangeStatus(currentStatusName, status.id)
-        ) || [];
+        const availableStatuses =
+          orderStatuses?.filter((status) =>
+            canChangeStatus(currentStatusName, status.id)
+          ) || [];
 
         return (
           <div>
@@ -328,28 +408,30 @@ export default function ListOrder() {
               <Select
                 value={record.status.id}
                 style={{ width: "100%" }}
-                onChange={(statusId) => handleStatusChange(record.id, statusId, record)}
+                onChange={(statusId) =>
+                  handleStatusChange(record.id, statusId, record)
+                }
                 loading={updateStatusMutation.isPending}
                 disabled={isFinalStatus}
                 placeholder="Chọn trạng thái"
               >
-              {/* Hiển thị trạng thái hiện tại */}
-              <Option key={record.status.id} value={record.status.id}>
-                <Tag color={record.status.color}>
-                  {getStatusText(record.status.name)}
-                </Tag>
-              </Option>
-
-              {/* Hiển thị các trạng thái có thể chuyển đến */}
-              {availableStatuses
-                .filter(status => status.id !== record.status.id) // Loại bỏ trạng thái hiện tại
-                .map((status) => (
-                <Option key={status.id} value={status.id}>
-                  <Tag color={status.color}>
-                    {getStatusText(status.status_name)}
+                {/* Hiển thị trạng thái hiện tại */}
+                <Option key={record.status.id} value={record.status.id}>
+                  <Tag color={record.status.color}>
+                    {getStatusText(record.status.name)}
                   </Tag>
                 </Option>
-              ))}
+
+                {/* Hiển thị các trạng thái có thể chuyển đến */}
+                {availableStatuses
+                  .filter((status) => status.id !== record.status.id) // Loại bỏ trạng thái hiện tại
+                  .map((status) => (
+                    <Option key={status.id} value={status.id}>
+                      <Tag color={status.color}>
+                        {getStatusText(status.status_name)}
+                      </Tag>
+                    </Option>
+                  ))}
               </Select>
             </Tooltip>
 
@@ -501,6 +583,32 @@ export default function ListOrder() {
           scroll={{ x: 1000 }}
         />
       </Card>
+
+      {/* Confirm Modal Payment */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCancelPaymentUpdate}
+        onConfirm={handleConfirmPaymentUpdate}
+        title="Xác nhận thay đổi trạng thái thanh toán"
+        message="Bạn có chắc chắn muốn đánh dấu đơn hàng này là đã thanh toán?"
+        confirmText="Xác nhận"
+        cancelText="Hủy"
+        type="warning"
+        isLoading={updatePaymentStatusMutation.isPending}
+      />
+
+      {/* Confirm Modal Status */}
+      <ConfirmModal
+        isOpen={isStatusConfirmModalOpen}
+        onClose={handleCancelStatusUpdate}
+        onConfirm={handleConfirmStatusUpdate}
+        title="Xác nhận thay đổi trạng thái đơn hàng"
+        message={`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng thành "${pendingStatusUpdate?.statusName}"?`}
+        confirmText="Xác nhận"
+        cancelText="Hủy"
+        type="warning"
+        isLoading={updateStatusMutation.isPending}
+      />
     </div>
   );
 }

@@ -26,7 +26,12 @@ const { Header, Content, Sider } = Layout;
 const LayoutAdmin: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate(); // ✅ Hook điều hướng
-  const { logout } = useUserStore();
+  const { user, logout } = useUserStore();
+
+  if (user?.role !== "admin") {
+    navigate("/");
+  }
+
   const handlelogout = () => {
     logout();
     navigate("/auth/login");
