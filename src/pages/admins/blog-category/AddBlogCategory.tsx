@@ -1,9 +1,17 @@
 import { Form, Input, Button, InputNumber, Select, message } from "antd";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { IAdminBlogCategoryForm, IAdminBlogCategory } from "../../../interfaces/category";
-import { createBlogCategory, getAllBlogCategories } from "../../../services/blogCategoryService";
-
+import type {
+  IAdminBlogCategoryForm,
+  IAdminBlogCategory,
+} from "../../../interfaces/category";
+import {
+  createBlogCategory,
+  getAllBlogCategories,
+} from "../../../services/blogCategoryService";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 const AddBlogCategory = () => {
+  const nav = useNavigate();
   const { data: categories = [] } = useQuery({
     queryKey: ["blog-categories"],
     queryFn: getAllBlogCategories,
@@ -12,10 +20,11 @@ const AddBlogCategory = () => {
   const mutation = useMutation({
     mutationFn: createBlogCategory,
     onSuccess: () => {
-      message.success("Thêm danh mục blog thành công!");
+      toast.success("Thêm danh mục blog thành công!");
+      nav("/admin/blog-category");
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi thêm danh mục blog!");
+      toast.error("Có lỗi xảy ra khi thêm danh mục blog!");
     },
   });
 
@@ -74,7 +83,12 @@ const AddBlogCategory = () => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" className="w-full" loading={mutation.isPending}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          className="w-full"
+          loading={mutation.isPending}
+        >
           Thêm Danh Mục Blog
         </Button>
       </Form.Item>
@@ -82,4 +96,4 @@ const AddBlogCategory = () => {
   );
 };
 
-export default AddBlogCategory; 
+export default AddBlogCategory;

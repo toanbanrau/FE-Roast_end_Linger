@@ -11,6 +11,7 @@ import {
 import { getAllBlogCategories } from "../../../services/blogCategoryService";
 import type { IAdminBlogCategory } from "../../../interfaces/category";
 import type { UploadFile } from "antd/es/upload/interface";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -40,14 +41,27 @@ const EditBlogPost = () => {
     mutationFn: ({ id, data }: { id: number; data: IAdminBlogPostForm }) =>
       updateBlogPost(id, data),
     onSuccess: () => {
-      message.success("Cập nhật bài viết blog thành công!");
+      toast.success("Cập nhật bài viết blog thành công!");
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
       queryClient.invalidateQueries({ queryKey: ["blog-post", id] });
       navigate("/admin/blog-post");
     },
-    onError: (error: any) => {
-      console.error("Error updating blog post:", error);
-      message.error("Có lỗi xảy ra khi cập nhật bài viết blog!");
+    onError: (error: {
+      response?: { data?: { errors?: { [key: string]: string[] } } };
+    }) => {
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = error.response.data.errors;
+        Object.keys(errorMessages).forEach((key) => {
+          const messages = errorMessages[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message: string) => {
+              toast.error(message);
+            });
+          }
+        });
+      } else {
+        toast.error("Có lỗi xảy ra khi cập nhật bài viết blog!");
+      }
     },
   });
 

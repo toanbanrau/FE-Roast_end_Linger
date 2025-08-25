@@ -132,7 +132,7 @@ export default function HomePage() {
                         {product.display_price}
                       </span>
                       <Link
-                        to={`/product/${product.slug}`}
+                        to={`/products/${product.slug}`}
                         className="text-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium transition-colors"
                       >
                         Xem Chi Tiết

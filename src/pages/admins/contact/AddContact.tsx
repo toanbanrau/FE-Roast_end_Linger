@@ -1,10 +1,10 @@
-import { Form, Input, Button, message } from 'antd';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import type { IContactForm } from '../../../interfaces/contact';
-import { createContact } from '../../../services/adminContactService';
-
+import { Form, Input, Button, message } from "antd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import type { IContactForm } from "../../../interfaces/contact";
+import { createContact } from "../../../services/adminContactService";
+import { toast } from "react-toastify";
 const { TextArea } = Input;
 
 export default function AddContact() {
@@ -16,13 +16,13 @@ export default function AddContact() {
   const mutation = useMutation({
     mutationFn: createContact,
     onSuccess: () => {
-      message.success('Thêm liên hệ thành công!');
-      queryClient.invalidateQueries({ queryKey: ['admin-contacts'] });
-      navigate('/admin/contact');
+      message.success("Thêm liên hệ thành công!");
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
+      navigate("/admin/contact");
     },
     onError: (error: any) => {
-      console.error('Error creating contact:', error);
-      toast.error('Có lỗi xảy ra khi thêm liên hệ!');
+      console.error("Error creating contact:", error);
+      toast.error("Có lỗi xảy ra khi thêm liên hệ!");
     },
   });
 
@@ -36,13 +36,15 @@ export default function AddContact() {
       <div className="flex items-center gap-4 mb-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/admin/contact')}
+          onClick={() => navigate("/admin/contact")}
         >
           Quay lại
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Thêm liên hệ mới</h1>
-          <p className="text-gray-600">Tạo liên hệ mới từ cuộc gọi hoặc yêu cầu khách hàng</p>
+          <p className="text-gray-600">
+            Tạo liên hệ mới từ cuộc gọi hoặc yêu cầu khách hàng
+          </p>
         </div>
       </div>
 
@@ -59,12 +61,12 @@ export default function AddContact() {
               label="Họ và tên"
               name="full_name"
               rules={[
-                { required: true, message: 'Vui lòng nhập họ và tên!' },
-                { max: 100, message: 'Họ và tên không được quá 100 ký tự!' },
+                { required: true, message: "Vui lòng nhập họ và tên!" },
+                { max: 100, message: "Họ và tên không được quá 100 ký tự!" },
                 {
                   pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
-                  message: 'Họ và tên chỉ được chứa chữ cái và khoảng trắng!'
-                }
+                  message: "Họ và tên chỉ được chứa chữ cái và khoảng trắng!",
+                },
               ]}
             >
               <Input placeholder="Nhập họ và tên khách hàng" />
@@ -74,8 +76,8 @@ export default function AddContact() {
               label="Email"
               name="email"
               rules={[
-                { required: true, message: 'Vui lòng nhập email!' },
-                { type: 'email', message: 'Email không đúng định dạng!' }
+                { required: true, message: "Vui lòng nhập email!" },
+                { type: "email", message: "Email không đúng định dạng!" },
               ]}
             >
               <Input placeholder="Nhập email khách hàng" />
@@ -85,11 +87,12 @@ export default function AddContact() {
               label="Số điện thoại"
               name="phone_number"
               rules={[
-                { max: 20, message: 'Số điện thoại không được quá 20 ký tự!' },
+                { max: 20, message: "Số điện thoại không được quá 20 ký tự!" },
                 {
                   pattern: /^(0[3|5|7|8|9])+([0-9]{8})$/,
-                  message: 'Số điện thoại không đúng định dạng (VD: 0901234567)!'
-                }
+                  message:
+                    "Số điện thoại không đúng định dạng (VD: 0901234567)!",
+                },
               ]}
             >
               <Input placeholder="Nhập số điện thoại (tùy chọn)" />
@@ -102,7 +105,7 @@ export default function AddContact() {
               label="Chủ đề"
               name="subject"
               rules={[
-                { max: 200, message: 'Chủ đề không được quá 200 ký tự!' }
+                { max: 200, message: "Chủ đề không được quá 200 ký tự!" },
               ]}
             >
               <Input placeholder="Nhập chủ đề liên hệ (tùy chọn)" />
@@ -112,8 +115,8 @@ export default function AddContact() {
               label="Nội dung"
               name="message"
               rules={[
-                { required: true, message: 'Vui lòng nhập nội dung liên hệ!' },
-                { min: 10, message: 'Nội dung phải có ít nhất 10 ký tự!' }
+                { required: true, message: "Vui lòng nhập nội dung liên hệ!" },
+                { min: 10, message: "Nội dung phải có ít nhất 10 ký tự!" },
               ]}
             >
               <TextArea
@@ -129,7 +132,7 @@ export default function AddContact() {
         {/* Actions */}
         <div className="flex justify-end gap-4 mt-6 pt-6 border-t">
           <Button
-            onClick={() => navigate('/admin/contact')}
+            onClick={() => navigate("/admin/contact")}
             disabled={mutation.isPending}
           >
             Hủy

@@ -17,7 +17,8 @@ export default function AboutPage() {
               Câu Chuyện Của Chúng Tôi
             </h1>
             <p className="text-lg text-stone-200 sm:text-xl lg:text-2xl">
-              Hành trình của đam mê, chất lượng và bền vững trong từng tách cà phê.
+              Hành trình của đam mê, chất lượng và bền vững trong từng tách cà
+              phê.
             </p>
           </div>
         </div>
@@ -33,13 +34,22 @@ export default function AboutPage() {
               </h2>
               <div className="w-16 h-1 bg-amber-700"></div>
               <p className="text-base text-stone-600 leading-relaxed sm:text-lg">
-                Được thành lập vào năm 1992 bởi người đam mê cà phê Maria Rodriguez, Roast And Linger bắt đầu là một xưởng rang nhỏ tại Seattle với sứ mệnh đơn giản: tìm nguồn và rang những hạt cà phê ngon nhất thế giới với sự tận tâm và chân thành.
+                Được thành lập vào năm 1992 bởi người đam mê cà phê Maria
+                Rodriguez, Roast And Linger bắt đầu là một xưởng rang nhỏ tại
+                Seattle với sứ mệnh đơn giản: tìm nguồn và rang những hạt cà phê
+                ngon nhất thế giới với sự tận tâm và chân thành.
               </p>
               <p className="text-base text-stone-600 leading-relaxed sm:text-lg">
-                Từ một dự án đam mê, chúng tôi nhanh chóng được công nhận nhờ chất lượng vượt trội và cam kết với việc thu mua đạo đức. Sau hơn ba thập kỷ, chúng tôi đã phát triển từ một thương hiệu địa phương thành một tên tuổi quốc tế, nhưng giá trị cốt lõi thì vẫn vẹn nguyên.
+                Từ một dự án đam mê, chúng tôi nhanh chóng được công nhận nhờ
+                chất lượng vượt trội và cam kết với việc thu mua đạo đức. Sau
+                hơn ba thập kỷ, chúng tôi đã phát triển từ một thương hiệu địa
+                phương thành một tên tuổi quốc tế, nhưng giá trị cốt lõi thì vẫn
+                vẹn nguyên.
               </p>
               <p className="text-base text-stone-600 leading-relaxed sm:text-lg">
-                Ngày nay, chúng tôi vẫn tiếp tục rong ruổi khắp thế giới để tìm kiếm những hạt cà phê xuất sắc, xây dựng mối quan hệ lâu dài với nông dân có cùng cam kết về chất lượng và phát triển bền vững.
+                Ngày nay, chúng tôi vẫn tiếp tục rong ruổi khắp thế giới để tìm
+                kiếm những hạt cà phê xuất sắc, xây dựng mối quan hệ lâu dài với
+                nông dân có cùng cam kết về chất lượng và phát triển bền vững.
               </p>
             </div>
             <div className="relative h-80 sm:h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
@@ -58,11 +68,12 @@ export default function AboutPage() {
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-3xl mx-auto space-y-4">
             <h2 className="text-3xl font-serif font-bold tracking-tight text-stone-800 sm:text-4xl">
-              Giá Trị Cốt Lõi
+              Giá Trị Mang Lại
             </h2>
             <div className="w-16 h-1 bg-amber-700 mx-auto"></div>
             <p className="text-base text-stone-600 sm:text-lg">
-              Tại Roast And Linger, các giá trị là kim chỉ nam cho mọi hoạt động – từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
+              Tại Roast And Linger, các giá trị là kim chỉ nam cho mọi hoạt động
+              - từ cách chọn hạt cà phê cho đến cách phục vụ khách hàng.
             </p>
           </div>
 
@@ -84,12 +95,19 @@ export default function AboutPage() {
                   "Những bậc thầy rang của chúng tôi có hàng chục năm kinh nghiệm, tạo ra hồ sơ rang hoàn hảo để làm nổi bật từng đặc trưng của hạt cà phê.",
               },
             ].map((value, index) => (
-              <div key={index} className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
+              <div
+                key={index}
+                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300"
+              >
                 <div className="w-10 h-10 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mb-4 text-lg font-bold">
                   {index + 1}
                 </div>
-                <h3 className="text-lg font-semibold text-stone-800 mb-2">{value.title}</h3>
-                <p className="text-base text-stone-600 leading-relaxed">{value.description}</p>
+                <h3 className="text-lg font-semibold text-stone-800 mb-2">
+                  {value.title}
+                </h3>
+                <p className="text-base text-stone-600 leading-relaxed">
+                  {value.description}
+                </p>
               </div>
             ))}
           </div>
@@ -105,29 +123,30 @@ export default function AboutPage() {
             </h2>
             <div className="w-16 h-1 bg-amber-700 mx-auto"></div>
             <p className="text-base text-stone-600 sm:text-lg">
-              Những con người đằng sau Roast And Linger - những người tạo nên sự xuất sắc mỗi ngày.
+              Những con người đằng sau Roast And Linger - những người tạo nên sự
+              xuất sắc mỗi ngày.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {[
               {
-                name: "Maria Rodriguez",
+                name: "Thiều Văn Hạnh Toàn",
                 title: "Người sáng lập & Bậc thầy rang",
                 image: "/placeholder.svg?height=400&width=400",
               },
               {
-                name: "James Chen",
+                name: "Cao Thế Anh",
                 title: "Trưởng bộ phận thu mua cà phê",
                 image: "/placeholder.svg?height=400&width=400",
               },
               {
-                name: "Sophia Williams",
+                name: "Nguyễn Duy",
                 title: "Giám đốc thử nếm",
                 image: "/placeholder.svg?height=400&width=400",
               },
               {
-                name: "Michael Johnson",
+                name: "Tuấn Ngô",
                 title: "Giám đốc phát triển bền vững",
                 image: "/placeholder.svg?height=400&width=400",
               },
@@ -140,7 +159,9 @@ export default function AboutPage() {
                     className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <h3 className="text-lg font-semibold text-stone-800">{member.name}</h3>
+                <h3 className="text-lg font-semibold text-stone-800">
+                  {member.name}
+                </h3>
                 <p className="text-base text-stone-600">{member.title}</p>
               </div>
             ))}
@@ -161,17 +182,23 @@ export default function AboutPage() {
             </div>
             <div className="space-y-6">
               <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl">
-                Cam Kết Của Chúng Tôi Với Sự Bền Vững
+                Cam Đoan Của Chúng Tôi Với Sự Vững Mạnh
               </h2>
               <div className="w-16 h-1 bg-amber-600"></div>
               <p className="text-base text-stone-300 leading-relaxed sm:text-lg">
-                Chúng tôi tin rằng cà phê hảo hạng và trách nhiệm với môi trường luôn song hành. Cam kết bền vững của chúng tôi trải dài trên toàn chuỗi cung ứng.
+                Chúng tôi tin rằng cà phê hảo hạng và trách nhiệm với môi trường
+                luôn song hành. Cam kết bền vững của chúng tôi trải dài trên
+                toàn chuỗi cung ứng.
               </p>
               <p className="text-base text-stone-300 leading-relaxed sm:text-lg">
-                Chúng tôi hợp tác với nông dân sử dụng phương pháp hữu cơ và canh tác dưới bóng râm, giảm thiểu sử dụng phân bón hóa học và bảo tồn hệ sinh thái tự nhiên.
+                Chúng tôi hợp tác với nông dân sử dụng phương pháp hữu cơ và
+                canh tác dưới bóng râm, giảm thiểu sử dụng phân bón hóa học và
+                bảo tồn hệ sinh thái tự nhiên.
               </p>
               <p className="text-base text-stone-300 leading-relaxed sm:text-lg">
-                Từ bao bì thân thiện với môi trường đến nhà máy rang tiết kiệm năng lượng, chúng tôi không ngừng giảm thiểu dấu chân môi trường trong khi vẫn duy trì chất lượng cà phê tốt nhất.
+                Từ bao bì thân thiện với môi trường đến nhà máy rang tiết kiệm
+                năng lượng, chúng tôi không ngừng giảm thiểu dấu chân môi trường
+                trong khi vẫn duy trì chất lượng cà phê tốt nhất.
               </p>
               <Link
                 to="/sustainability"
@@ -193,7 +220,8 @@ export default function AboutPage() {
             </h2>
             <div className="w-16 h-1 bg-amber-700 mx-auto"></div>
             <p className="text-base text-stone-600 sm:text-lg">
-              Chúng tôi luôn tìm kiếm những cá nhân đam mê, cùng chia sẻ tình yêu với cà phê và cam kết chất lượng cùng phát triển bền vững.
+              Chúng tôi luôn tìm kiếm những cá nhân đam mê, cùng chia sẻ tình
+              yêu với cà phê và cam kết chất lượng cùng phát triển bền vững.
             </p>
             <Link
               to="/careers"

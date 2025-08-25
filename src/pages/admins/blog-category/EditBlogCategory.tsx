@@ -7,7 +7,11 @@ import {
   getBlogCategoryById,
   updateBlogCategory,
 } from "../../../services/blogCategoryService";
-import type { IAdminBlogCategory, IAdminBlogCategoryForm } from "../../../interfaces/category";
+import type {
+  IAdminBlogCategory,
+  IAdminBlogCategoryForm,
+} from "../../../interfaces/category";
+import { toast } from "react-toastify";
 
 const EditBlogCategory = () => {
   const [form] = Form.useForm();
@@ -30,14 +34,15 @@ const EditBlogCategory = () => {
 
   // Mutation cập nhật danh mục
   const mutation = useMutation({
-    mutationFn: (values: IAdminBlogCategoryForm) => updateBlogCategory(Number(id), values),
+    mutationFn: (values: IAdminBlogCategoryForm) =>
+      updateBlogCategory(Number(id), values),
     onSuccess: () => {
-      message.success("Cập nhật danh mục blog thành công!");
+      toast.success("Cập nhật danh mục blog thành công!");
       queryClient.invalidateQueries({ queryKey: ["blog-categories"] });
       navigate("/admin/blog-category");
     },
     onError: () => {
-      message.error("Có lỗi xảy ra khi cập nhật danh mục blog!");
+      toast.error("Có lỗi xảy ra khi cập nhật danh mục blog!");
     },
   });
 
@@ -123,4 +128,4 @@ const EditBlogCategory = () => {
   );
 };
 
-export default EditBlogCategory; 
+export default EditBlogCategory;

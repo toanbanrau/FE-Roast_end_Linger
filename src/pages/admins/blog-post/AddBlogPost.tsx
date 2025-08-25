@@ -8,6 +8,7 @@ import { createBlogPost } from "../../../services/blogPostService";
 import { getAllBlogCategories } from "../../../services/blogCategoryService";
 import type { IAdminBlogCategory } from "../../../interfaces/category";
 import type { UploadFile } from "antd/es/upload/interface";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -28,16 +29,26 @@ const AddBlogPost = () => {
   const mutation = useMutation({
     mutationFn: createBlogPost,
     onSuccess: () => {
-      message.success("Thêm bài viết blog thành công!");
+      toast.success("Thêm bài viết blog thành công!");
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
       navigate("/admin/blog-post");
     },
-    onError: (error: any) => {
-      console.error("Create blog post error:", error);
-      const errorMessage =
-        error?.response?.data?.message ||
-        "Có lỗi xảy ra khi thêm bài viết blog!";
-      message.error(errorMessage);
+    onError: (error: {
+      response?: { data?: { errors?: { [key: string]: string[] } } };
+    }) => {
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = error.response.data.errors;
+        Object.keys(errorMessages).forEach((key) => {
+          const messages = errorMessages[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message: string) => {
+              toast.error(message);
+            });
+          }
+        });
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm bài viết blog!");
+      }
     },
   });
 
@@ -60,13 +71,13 @@ const AddBlogPost = () => {
   const beforeUpload = (file: File) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
-      message.error("Chỉ có thể upload file ảnh!");
+      toast.error("Chỉ có thể upload file ảnh!");
       return false;
     }
 
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error("Ảnh phải nhỏ hơn 2MB!");
+      toast.error("Ảnh phải nhỏ hơn 2MB!");
       return false;
     }
 
