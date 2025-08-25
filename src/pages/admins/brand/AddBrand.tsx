@@ -5,6 +5,7 @@ import { createBrand } from "../../../services/brandService";
 import { useNavigate } from "react-router-dom";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { IBrandCreate } from "../../../interfaces/brand";
+import { toast } from "react-toastify";
 
 const AddBrand: React.FC = () => {
   const [form] = Form.useForm();
@@ -20,15 +21,29 @@ const AddBrand: React.FC = () => {
       navigate("/admin/brand");
       queryClient.invalidateQueries({ queryKey: ["brands"] });
     },
-    onError: (error) => {
+    onError: (error: {
+      response?: { data?: { errors?: { [key: string]: string[] } } };
+    }) => {
       console.error("Error details:", error);
-      message.error("Có lỗi xảy ra khi thêm thương hiệu!");
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = error.response.data.errors;
+        Object.keys(errorMessages).forEach((key) => {
+          const messages = errorMessages[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message: string) => {
+              toast.error(`${message}`);
+            });
+          }
+        });
+      } else {
+        toast.error("Có lỗi xảy ra khi thêm thương hiệu!");
+      }
     },
   });
 
   const onFinish = (values: IBrandCreate & { logo?: UploadFile[] }) => {
     console.log(values);
-    
+
     const formData = new FormData();
     formData.append("brand_name", values.brand_name);
     formData.append("description", values.description || "");

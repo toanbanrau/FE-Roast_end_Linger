@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getBrandById, updateBrand } from "../../../services/brandService";
 import type { IBrand } from "../../../interfaces/brand";
 import type { UploadFile } from "antd/es/upload/interface";
+import { toast } from "react-toastify";
 
 const EditBrand: React.FC = () => {
   const [form] = Form.useForm();
@@ -26,8 +27,22 @@ const EditBrand: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       navigate("/admin/brand");
     },
-    onError: () => {
-      message.error("Có lỗi xảy ra khi cập nhật thương hiệu!");
+    onError: (error: {
+      response?: { data?: { errors?: { [key: string]: string[] } } };
+    }) => {
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = error.response.data.errors;
+        Object.keys(errorMessages).forEach((key) => {
+          const messages = errorMessages[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message: string) => {
+              toast.error(`${message}`);
+            });
+          }
+        });
+      } else {
+        toast.error("Có lỗi xảy ra khi cập nhật thương hiệu!");
+      }
     },
   });
 

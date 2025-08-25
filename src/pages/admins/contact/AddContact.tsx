@@ -22,7 +22,7 @@ export default function AddContact() {
     },
     onError: (error: any) => {
       console.error('Error creating contact:', error);
-      message.error('Có lỗi xảy ra khi thêm liên hệ!');
+      toast.error('Có lỗi xảy ra khi thêm liên hệ!');
     },
   });
 

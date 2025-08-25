@@ -1,10 +1,10 @@
-import { Form, Input, Button, message, Spin } from 'antd';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getOriginById, updateOrigin } from '../../../services/originService';
-import type { IOriginUpdate } from '../../../interfaces/origin';
-import { useEffect } from 'react';
-
+import { Form, Input, Button, message, Spin } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getOriginById, updateOrigin } from "../../../services/originService";
+import type { IOriginUpdate } from "../../../interfaces/origin";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 const EditOrigin = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const EditOrigin = () => {
   const { id } = useParams();
 
   const { data: origin, isLoading } = useQuery({
-    queryKey: ['origin', id],
+    queryKey: ["origin", id],
     queryFn: () => getOriginById(Number(id)),
     enabled: !!id,
   });
@@ -26,12 +26,12 @@ const EditOrigin = () => {
   const mutation = useMutation({
     mutationFn: (values: IOriginUpdate) => updateOrigin(Number(id), values),
     onSuccess: () => {
-      message.success('Cập nhật xuất xứ thành công!');
-      queryClient.invalidateQueries({ queryKey: ['origins'] });
-      navigate('/admin/origin');
+      toast.success("Cập nhật xuất xứ thành công!");
+      queryClient.invalidateQueries({ queryKey: ["origins"] });
+      navigate("/admin/origin");
     },
     onError: () => {
-      message.error('Cập nhật xuất xứ thất bại!');
+      toast.error("Cập nhật xuất xứ thất bại!");
     },
   });
 
@@ -44,29 +44,25 @@ const EditOrigin = () => {
   return (
     <div className="p-5 max-w-xl mx-auto">
       <h2 className="mb-4 text-2xl font-bold">Chỉnh Sửa Xuất Xứ</h2>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-      >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="origin_name"
           label="Tên xuất xứ"
-          rules={[{ required: true, message: 'Vui lòng nhập tên xuất xứ!' }]}
+          rules={[{ required: true, message: "Vui lòng nhập tên xuất xứ!" }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
           name="country"
           label="Quốc gia"
-          rules={[{ required: true, message: 'Vui lòng nhập quốc gia!' }]}
+          rules={[{ required: true, message: "Vui lòng nhập quốc gia!" }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
           name="description"
           label="Mô tả"
-          rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+          rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
         >
           <Input.TextArea rows={3} />
         </Form.Item>
