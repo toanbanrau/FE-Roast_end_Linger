@@ -45,17 +45,14 @@ export default function CartPage() {
   });
 
   // Chọn nguồn dữ liệu phù hợp
-  const cartItems = isLoggedIn ? cart?.items || [] : guestCart.items || [];
-  const subtotal = isLoggedIn
-    ? cart?.subtotal || 0
-    : guestCart.totalAmount || 0;
+  const cartItems = isLoggedIn ? cart?.items || [] : guestCart?.items || [];
+  const subtotal = isLoggedIn ? cart?.subtotal || 0 : guestCart?.subtotal || 0;
 
   if (isLoggedIn && isLoading) return <div>Đang tải giỏ hàng...</div>;
   if (isLoggedIn && error) return <div>Lỗi khi tải giỏ hàng</div>;
 
   // Calculate totals
-  const shipping = subtotal >= 500000 ? 0 : 30000; // Free ship for orders >= 500,000 VND
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
@@ -214,14 +211,6 @@ export default function CartPage() {
                     {subtotal.toLocaleString()}₫
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-600">Phí vận chuyển</span>
-                  <span className="font-medium">
-                    {shipping === 0
-                      ? "Miễn phí"
-                      : `${shipping.toLocaleString()}₫`}
-                  </span>
-                </div>
 
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium text-lg">
@@ -229,32 +218,6 @@ export default function CartPage() {
                     <span>{total.toLocaleString()}₫</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="text-sm text-stone-600">
-                {shipping === 0 ? (
-                  <p className="flex items-center gap-1 text-emerald-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20 6L9 17l-5-5"></path>
-                    </svg>
-                    Bạn đã đủ điều kiện miễn phí vận chuyển!
-                  </p>
-                ) : (
-                  <p>
-                    💡 Mua thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫
-                    để được miễn phí vận chuyển!
-                  </p>
-                )}
               </div>
 
               <Link

@@ -329,8 +329,6 @@ const EditPromotion: React.FC = () => {
           >
             <Select>
               <Option value="all">Tất cả sản phẩm</Option>
-              <Option value="specific_categories">Danh mục cụ thể</Option>
-              <Option value="specific_products">Sản phẩm cụ thể</Option>
             </Select>
           </Form.Item>
         </div>

@@ -30,8 +30,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   };
 
   const subtotal = cart?.subtotal || 0;
-  const shipping = subtotal >= 500000 ? 0 : 30000; // Free ship for orders >= 500,000 VND
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   if (!isOpen) return null;
 
@@ -150,14 +149,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                   {subtotal.toLocaleString("vi-VN")}₫
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-stone-600">Phí Giao Hàng</span>
-                <span className="font-medium">
-                  {shipping === 0
-                    ? "Miễn phí"
-                    : `${shipping.toLocaleString("vi-VN")}₫`}
-                </span>
-              </div>
+
               <div className="flex justify-between font-medium text-lg pt-2 border-t">
                 <span>Tổng Tiền</span>
                 <span>{total.toLocaleString("vi-VN")}₫</span>
@@ -165,12 +157,6 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
             </div>
 
             {/* Free shipping notice */}
-            {shipping > 0 && (
-              <div className="text-xs text-stone-600 bg-amber-50 p-2 rounded">
-                💡 Thêm {(500000 - subtotal).toLocaleString("vi-VN")}₫ để được
-                miễn phí vận chuyển!
-              </div>
-            )}
 
             {/* Action Buttons */}
             <div className="space-y-2">
