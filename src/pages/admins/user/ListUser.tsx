@@ -190,10 +190,10 @@ const ListUser: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/user/${record.id}`)}
           ></Button>
-          <Button
+          {/* <Button
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/user/edit/${record.id}`)}
-          ></Button>
+          ></Button> */}
           <Button
             danger
             icon={<DeleteOutlined />}

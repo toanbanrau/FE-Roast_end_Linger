@@ -13,8 +13,10 @@ const { Option } = Select;
 
 interface UserFormData {
   name: string;
+  full_name: string;
   email: string;
   password?: string;
+  password_confirmation?: string;
   role: string;
   status: string;
 }
@@ -63,7 +65,7 @@ const UserForm: React.FC<{ mode: "add" | "edit" }> = ({ mode }) => {
   React.useEffect(() => {
     if (data && mode === "edit") {
       form.setFieldsValue({
-        name: data.name || data.full_name,
+        full_name: data.full_name || data.name, // Ưu tiên full_name
         email: data.email,
         role: data.role,
         status: data.status,
@@ -72,12 +74,12 @@ const UserForm: React.FC<{ mode: "add" | "edit" }> = ({ mode }) => {
   }, [data, mode, form]);
 
   const onFinish = (values: UserFormData) => {
-    // Loại bỏ password nếu rỗng khi edit
+    // Loại bỏ password và password_confirmation nếu rỗng khi edit
     if (mode === "edit" && !values.password) {
-      const { password, ...dataWithoutPassword } = values;
-      mutation.mutate(dataWithoutPassword);
+      const { password, password_confirmation, ...dataToSend } = values;
+      mutation.mutate(dataToSend as any);
     } else {
-      mutation.mutate(values);
+      mutation.mutate(values as any);
     }
   };
 
@@ -110,6 +112,17 @@ const UserForm: React.FC<{ mode: "add" | "edit" }> = ({ mode }) => {
           </Form.Item>
 
           <Form.Item
+            name="full_name"
+            label="Họ và tên"
+            rules={[
+              { required: true, message: "Vui lòng nhập họ và tên!" },
+              { min: 2, message: "Tên phải có ít nhất 2 ký tự!" },
+            ]}
+          >
+            <Input placeholder="Nhập họ và tên" />
+          </Form.Item>
+
+          <Form.Item
             name="email"
             label="Email"
             rules={[
@@ -135,8 +148,34 @@ const UserForm: React.FC<{ mode: "add" | "edit" }> = ({ mode }) => {
                   ]
                 : [{ min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự!" }]
             }
+            hasFeedback
           >
             <Input.Password placeholder="Nhập mật khẩu" />
+          </Form.Item>
+
+          <Form.Item
+            name="password_confirmation"
+            label="Xác nhận mật khẩu"
+            dependencies={["password"]}
+            hasFeedback
+            rules={[
+              {
+                required: mode === "add",
+                message: "Vui lòng xác nhận mật khẩu!",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!")
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Nhập lại mật khẩu" />
           </Form.Item>
 
           <Form.Item

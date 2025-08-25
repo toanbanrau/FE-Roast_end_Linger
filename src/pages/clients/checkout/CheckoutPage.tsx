@@ -834,23 +834,6 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="radio"
-                        id="online-payment"
-                        value="online"
-                        {...register("payment_method", {
-                          required: "Vui lòng chọn phương thức thanh toán",
-                        })}
-                        className="text-amber-800 focus:ring-amber-800"
-                      />
-                      <label htmlFor="online-payment" className="font-medium">
-                        Thanh Toán Online (VNPAY)
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="border p-4 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
                         id="bank-transfer"
                         value="bank_transfer"
                         {...register("payment_method", {
