@@ -210,8 +210,8 @@ export default function ListOrder() {
       return true;
     }
 
-    // Chỉ cho phép tiến lên hoặc giữ nguyên
-    return newIndex >= currentIndex;
+    // Chỉ cho phép tiến lên một bước
+    return newIndex === currentIndex + 1;
   };
 
   const handleStatusChange = (
