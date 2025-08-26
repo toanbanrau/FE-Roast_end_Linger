@@ -193,7 +193,7 @@ const EditProduct = () => {
                         uid: variant.id.toString(),
                         name: `variant-${variant.id}`,
                         status: "done" as const,
-                        url: variant.image_url,
+                        url: variant.image,
                       },
                     ]
                   : [],
