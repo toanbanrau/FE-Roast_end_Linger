@@ -177,8 +177,8 @@ export default function ContactPage() {
           <div className="bg-stone-50 p-6 rounded-lg">
             <h2 className="text-xl font-medium mb-4">Liên Hệ Phân Phối</h2>
             <p className="text-stone-600 mb-4">
-              Bạn muốn phục vụ Élite Coffee tại quán hoặc nhà hàng? Chúng tôi có
-              giá ưu đãi và hỗ trợ riêng cho đối tác phân phối.
+              Bạn muốn phục vụ Roast And Linger tại quán hoặc nhà hàng? Chúng
+              tôi có giá ưu đãi và hỗ trợ riêng cho đối tác phân phối.
             </p>
             <Link
               to="/wholesale"
