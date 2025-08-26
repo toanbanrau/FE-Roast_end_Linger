@@ -194,7 +194,7 @@ const ListUser: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => navigate(`/admin/user/edit/${record.id}`)}
           ></Button> */}
-          {/* <Button
+          <Button
             danger
             icon={<DeleteOutlined />}
             onClick={() =>
@@ -206,7 +206,7 @@ const ListUser: React.FC = () => {
             }
             loading={deleteMutation.isPending}
             disabled={!!(currentUser && currentUser.id === record.id)}
-          ></Button> */}
+          ></Button>
         </Space>
       ),
     },
@@ -245,7 +245,6 @@ const ListUser: React.FC = () => {
               onChange={(value) => handleFilterChange("role", value)}
             >
               <Option value="admin">Admin</Option>
-              <Option value="staff">Staff</Option>
               <Option value="user">User</Option>
             </Select>
           </Col>

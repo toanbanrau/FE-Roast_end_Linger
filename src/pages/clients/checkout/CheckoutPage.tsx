@@ -402,7 +402,7 @@ export default function CheckoutPage() {
           items: orderItems,
         };
 
-        const result = await checkout(orderData);
+        const result = await checkhout(orderData);
 
         // Kiểm tra phương thức thanh toán
         if (data.payment_method === "bank_transfer") {
@@ -917,7 +917,7 @@ export default function CheckoutPage() {
                       >
                         <div className="w-16 h-16 relative flex-shrink-0 bg-stone-50 rounded">
                           <img
-                            src={item.product.image || "/placeholder.svg"}
+                            src={item.variant.image || item.product.image || "/placeholder.svg"}
                             alt={item.product.name}
                             className="object-contain p-2"
                           />

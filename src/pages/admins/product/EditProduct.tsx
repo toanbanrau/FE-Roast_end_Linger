@@ -193,7 +193,7 @@ const EditProduct = () => {
                         uid: variant.id.toString(),
                         name: `variant-${variant.id}`,
                         status: "done" as const,
-                        url: variant.image,
+                        url: variant.image_url,
                       },
                     ]
                   : [],
@@ -416,6 +416,19 @@ const EditProduct = () => {
             value
           );
         });
+
+        // Xử lý ảnh variant nếu có
+        if (
+          variant.image &&
+          Array.isArray(variant.image) &&
+          variant.image.length > 0 &&
+          variant.image[0].originFileObj
+        ) {
+          formData.append(
+            `variants[${idx}][image_url]`,
+            variant.image[0].originFileObj
+          );
+        }
       });
     }
 

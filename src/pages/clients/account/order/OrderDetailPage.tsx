@@ -350,7 +350,7 @@ export default function OrderDetailPage() {
                 <div key={item.id} className="p-6 flex items-center">
                   <div className="relative w-16 h-16 flex-shrink-0 bg-stone-50 rounded">
                     <img
-                      src={item.product.image || "/placeholder.svg"}
+                      src={item.variant?.image || item.product.image || "/placeholder.svg"}
                       alt={item.product.name}
                       className="object-contain p-2"
                     />

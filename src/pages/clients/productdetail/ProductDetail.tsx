@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
   // State cho ảnh đang active
   const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
   useEffect(() => {
-    const variantImage = selectedVariant?.image || selectedVariant?.image_url;
+    const variantImage = selectedVariant?.image_url || selectedVariant?.image;
 
     // Ưu tiên ảnh variant khi có variant được chọn (ảnh variant sẽ thay thế ảnh chính)
     if (variantImage) {
