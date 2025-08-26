@@ -231,16 +231,17 @@ export default function OrderDetailPage() {
                       Hủy đơn hàng
                     </button>
                   )}
-                  {order.status.name.toLowerCase() === "delivered" && (
-                    <button
-                      onClick={() => setIsConfirmDeliveryModalOpen(true)}
-                      className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
-                      disabled={confirmDeliveryMutation.isPending}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Đã nhận được hàng
-                    </button>
-                  )}
+                  {order.status.name.toLowerCase() === "delivered" &&
+                    order.is_paid && (
+                      <button
+                        onClick={() => setIsConfirmDeliveryModalOpen(true)}
+                        className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md font-medium text-sm transition-colors"
+                        disabled={confirmDeliveryMutation.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        Đã nhận được hàng
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -299,7 +300,7 @@ export default function OrderDetailPage() {
                 ))}
               </div>
 
-              {order.status.name.toLowerCase() === "shipped" && (
+              {order.status.name.toLowerCase() === "delivered" && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Truck className="h-5 w-5 text-blue-600 mt-0.5" />

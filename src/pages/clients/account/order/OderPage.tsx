@@ -1,11 +1,13 @@
-import { ChevronRight, Package, Search, ChevronLeft } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { Link } from "react-router-dom"
-import { useState } from "react"
-import AccountNav from "../../../../components/AccountNav"
-import { getMyOrders, type PaginatedOrdersResponse, type OrdersQueryParams } from "../../../../services/checkoutService"
-import type { IOrder } from "../../../../interfaces/order"
-import { getStatusText } from "../../../../utils/orderStatusUtils"
+import { ChevronRight, Package, Search, ChevronLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import AccountNav from "../../../../components/AccountNav";
+import {
+  getMyOrders,
+  type PaginatedOrdersResponse,
+} from "../../../../services/checkoutService";
+import { getStatusText } from "../../../../utils/orderStatusUtils";
 
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,12 +21,13 @@ export default function OrdersPage() {
     isError,
   } = useQuery<PaginatedOrdersResponse>({
     queryKey: ["myOrders", currentPage, perPage, searchTerm, statusFilter],
-    queryFn: () => getMyOrders({
-      page: currentPage,
-      per_page: perPage,
-      search: searchTerm || undefined,
-      status: statusFilter
-    }),
+    queryFn: () =>
+      getMyOrders({
+        page: currentPage,
+        per_page: perPage,
+        search: searchTerm || undefined,
+        status: statusFilter,
+      }),
   });
 
   const orders = ordersData?.orders || [];
@@ -46,14 +49,14 @@ export default function OrdersPage() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    })
-  }
-
-
+    });
+  };
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">Đơn hàng của bạn</h1>
+      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">
+        Đơn hàng của bạn
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Điều hướng bên trái */}
@@ -82,13 +85,13 @@ export default function OrdersPage() {
                 className="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-800 focus:border-amber-800"
               >
                 <option value="all">Tất cả đơn</option>
-                <option value="pending">Đang xử lý</option>
-                <option value="confirmed">Đã xác nhận</option>
-                <option value="processing">Đang xử lý</option>
-                <option value="shipping">Đang vận chuyển</option>
-                <option value="delivered">Đã giao hàng</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
+                <option value="Pending">Chờ xử lý</option>
+                <option value="Confirmed">Đã xác nhận</option>
+                <option value="Processing">Đang xử lý</option>
+                <option value="Shipped">Đã giao vận</option>
+                <option value="Delivered">Đã giao hàng</option>
+                <option value="Completed">Hoàn thành</option>
+                <option value="Cancelled">Đã hủy</option>
               </select>
             </div>
           </div>
@@ -104,7 +107,9 @@ export default function OrdersPage() {
                 <Package className="h-16 w-16 text-stone-300" />
               </div>
               <h2 className="text-2xl font-medium mb-4">Chưa có đơn hàng</h2>
-              <p className="text-stone-600 mb-8">Bạn chưa từng đặt đơn hàng nào tại đây.</p>
+              <p className="text-stone-600 mb-8">
+                Bạn chưa từng đặt đơn hàng nào tại đây.
+              </p>
               <Link
                 to="/products"
                 className="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-md font-medium"
@@ -124,7 +129,9 @@ export default function OrdersPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium">Đơn #{order.order_number}</h3>
+                          <h3 className="font-medium">
+                            Đơn #{order.order_number}
+                          </h3>
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full`}
                             style={{
@@ -141,14 +148,21 @@ export default function OrdersPage() {
                                 : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
-                            {order.payment_status_text || (order.is_paid ? "Đã thanh toán" : "Chưa thanh toán")}
+                            {order.payment_status_text ||
+                              (order.is_paid
+                                ? "Đã thanh toán"
+                                : "Chưa thanh toán")}
                           </span>
                         </div>
-                        <p className="text-sm text-stone-500">Ngày đặt: {formatDate(order.dates.created_at)}</p>
+                        <p className="text-sm text-stone-500">
+                          Ngày đặt: {formatDate(order.dates.created_at)}
+                        </p>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                         <div className="text-right">
-                          <p className="font-medium">{order.order_totals.formatted_total}</p>
+                          <p className="font-medium">
+                            {order.order_totals.formatted_total}
+                          </p>
                         </div>
                         <ChevronRight className="h-5 w-5 text-stone-400" />
                       </div>
@@ -163,13 +177,16 @@ export default function OrdersPage() {
           {pagination && pagination.last_page > 1 && (
             <div className="flex items-center justify-between bg-white border rounded-lg p-4">
               <div className="text-sm text-stone-600">
-                Hiển thị {pagination.from}-{pagination.to} trong tổng số {pagination.total} đơn hàng
+                Hiển thị {pagination.from}-{pagination.to} trong tổng số{" "}
+                {pagination.total} đơn hàng
               </div>
 
               <div className="flex items-center gap-2">
                 {/* Previous Button */}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={currentPage === 1}
                   className="flex items-center gap-1 px-3 py-2 text-sm border rounded-md hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -179,37 +196,44 @@ export default function OrdersPage() {
 
                 {/* Page Numbers */}
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, pagination.last_page) }, (_, i) => {
-                    let pageNum;
-                    if (pagination.last_page <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= pagination.last_page - 2) {
-                      pageNum = pagination.last_page - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
+                  {Array.from(
+                    { length: Math.min(5, pagination.last_page) },
+                    (_, i) => {
+                      let pageNum;
+                      if (pagination.last_page <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= pagination.last_page - 2) {
+                        pageNum = pagination.last_page - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
 
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-2 text-sm border rounded-md ${
-                          currentPage === pageNum
-                            ? 'bg-amber-800 text-white border-amber-800'
-                            : 'hover:bg-stone-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-2 text-sm border rounded-md ${
+                            currentPage === pageNum
+                              ? "bg-amber-800 text-white border-amber-800"
+                              : "hover:bg-stone-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
                 </div>
 
                 {/* Next Button */}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, pagination.last_page)
+                    )
+                  }
                   disabled={currentPage === pagination.last_page}
                   className="flex items-center gap-1 px-3 py-2 text-sm border rounded-md hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -222,5 +246,5 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Form, Rate, Input, Upload, Button, Select } from "antd";
 import { toast } from "react-toastify";
-import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UploadFile } from "antd/es/upload/interface";
 import {
@@ -18,6 +18,13 @@ interface CreateReviewModalProps {
   onCancel: () => void;
   productId?: number; // If specified, only show this product
   orderId?: number; // Order ID to fetch reviewable products for
+}
+
+interface IReviewFormValues {
+  rating: number;
+  title: string;
+  comment: string;
+  order_item_id: number;
 }
 
 export default function CreateReviewModal({
@@ -71,9 +78,15 @@ export default function CreateReviewModal({
       queryClient.invalidateQueries({
         queryKey: ["order-reviewable-products", orderId],
       });
+      // Làm mới lại chi tiết sản phẩm để cập nhật rating
+      queryClient.invalidateQueries({ queryKey: ["product", productId] });
+      // Làm mới lại danh sách đơn hàng của user (để cập nhật trạng thái review)
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       handleCancel();
     },
-    onError: (error: any) => {
+    onError: (
+      error: Error & { response?: { data?: { message?: string } } }
+    ) => {
       console.error("❌ Mutation error:", error);
       const errorMessage =
         error?.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá!";
@@ -199,7 +212,7 @@ export default function CreateReviewModal({
     return false; // Prevent auto upload
   };
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: IReviewFormValues) => {
     console.log("onFinish called with values:", values);
     console.log("selectedProduct:", selectedProduct);
 
@@ -272,7 +285,6 @@ export default function CreateReviewModal({
       onCancel={handleCancel}
       footer={null}
       width={600}
-      destroyOnClose
     >
       {/* No products available message */}
       {!isLoadingProducts && reviewableFilteredProducts.length === 0 && (
@@ -317,7 +329,7 @@ export default function CreateReviewModal({
                 onChange={handleProductSelect}
                 loading={isLoadingProducts}
               >
-                {filteredProducts.map((item) => (
+                {filteredProducts.map((item: IReviewableProduct) => (
                   <Option key={item.order_item_id} value={item.order_item_id}>
                     <div className="flex items-center gap-3">
                       <img
