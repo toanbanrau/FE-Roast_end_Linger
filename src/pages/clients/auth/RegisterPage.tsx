@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  
   const {
     register,
     handleSubmit,
@@ -50,12 +50,10 @@ const RegisterPage = () => {
   });
 
   const onSubmit = (values: UserRegister) => {
-    setLoading(true);
     mutation.mutate({
       ...values,
       date_of_birth: values.date_of_birth || "",
     });
-    setLoading(false);
   };
 
   return (
@@ -81,22 +79,7 @@ const RegisterPage = () => {
           onSubmit={handleSubmit(onSubmit)}
         >
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700">
-                Tên
-              </label>
-              <input
-                type="text"
-                {...register("name", { required: "Vui lòng nhập tên!" })}
-                className="mt-1 block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm placeholder-stone-400 focus:outline-none focus:ring-amber-800 focus:border-amber-800"
-                placeholder="Nhập tên"
-              />
-              {errors.name && (
-                <span className="text-red-500 text-xs">
-                  {errors.name.message}
-                </span>
-              )}
-            </div>
+
             <div>
               <label className="block text-sm font-medium text-stone-700">
                 Họ và tên
@@ -147,7 +130,20 @@ const RegisterPage = () => {
                   required: "Vui lòng nhập mật khẩu!",
                   minLength: {
                     value: 8,
-                    message: "Mật khẩu tối thiểu 8 ký tự!",
+                    message: "Mật khẩu phải có ít nhất 8 ký tự!",
+                  },
+                  validate: {
+                    hasUpperCase: (value) =>
+                      /[A-Z]/.test(value) ||
+                      "Mật khẩu phải chứa ít nhất một chữ hoa.",
+                    hasLowerCase: (value) =>
+                      /[a-z]/.test(value) ||
+                      "Mật khẩu phải chứa ít nhất một chữ thường.",
+                    hasNumber: (value) =>
+                      /\d/.test(value) || "Mật khẩu phải chứa ít nhất một số.",
+                    hasSpecialChar: (value) =>
+                      /[!@#$%^&*(),.?\":{}|<>]/.test(value) ||
+                      "Mật khẩu phải chứa ít nhất một ký tự đặc biệt.",
                   },
                 })}
                 className="mt-1 block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm placeholder-stone-400 focus:outline-none focus:ring-amber-800 focus:border-amber-800"
@@ -230,10 +226,36 @@ const RegisterPage = () => {
           </div>
           <button
             type="submit"
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-amber-800 hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-800 mt-4"
-            disabled={loading || mutation.isPending}
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-amber-800 hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-800 mt-4 disabled:bg-amber-600"
+            disabled={mutation.isPending}
           >
-            Đăng ký
+            {mutation.isPending ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Đang xử lý...
+              </>
+            ) : (
+              "Đăng ký"
+            )}
           </button>
           <div className="text-center mt-2">
             Đã có tài khoản?{" "}

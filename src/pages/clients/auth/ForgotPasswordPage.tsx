@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
+import { toast } from "react-toastify";
 import { MailOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { forgotPassword } from "../../../services/authService";
@@ -13,17 +14,19 @@ export default function ForgotPasswordPage() {
     mutationFn: forgotPassword,
     onSuccess: () => {
       setIsEmailSent(true);
-      message.success("Email khôi phục mật khẩu đã được gửi!");
+      toast.success("Email khôi phục mật khẩu đã được gửi!");
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!";
-
-      // Specific error handling for backend issues
-      if (errorMessage.includes("Route") && errorMessage.includes("not defined")) {
-        message.error("Chức năng quên mật khẩu chưa được cấu hình trên server. Vui lòng liên hệ admin!");
-      } else {
-        message.error(errorMessage);
+      const errors = error?.response?.data?.errors;
+      if (errors && typeof errors === 'object') {
+        const errorMessages = Object.values(errors).flat();
+        if (errorMessages.length > 0) {
+          toast.error(errorMessages[0] as string);
+          return;
+        }
       }
+      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!";
+      toast.error(errorMessage);
     },
   });
 

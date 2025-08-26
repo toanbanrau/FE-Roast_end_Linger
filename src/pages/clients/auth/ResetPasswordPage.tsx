@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
+import { toast } from "react-toastify";
 import { LockOutlined, ArrowLeftOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../../../services/authService";
@@ -16,7 +17,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!token || !email) {
-      message.error("Link khôi phục mật khẩu không hợp lệ!");
+      toast.error("Link khôi phục mật khẩu không hợp lệ!");
       navigate("/auth/forgot-password");
     }
   }, [token, email, navigate]);
@@ -25,10 +26,19 @@ export default function ResetPasswordPage() {
     mutationFn: resetPassword,
     onSuccess: () => {
       setIsSuccess(true);
-      message.success("Đặt lại mật khẩu thành công!");
+      toast.success("Đặt lại mật khẩu thành công!");
     },
     onError: (error: any) => {
-      message.error(error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!");
+      const errors = error?.response?.data?.errors;
+      if (errors && typeof errors === 'object') {
+        const errorMessages = Object.values(errors).flat();
+        if (errorMessages.length > 0) {
+          toast.error(errorMessages[0] as string);
+          return;
+        }
+      }
+      const errorMessage = error?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại!";
+      toast.error(errorMessage);
     },
   });
 
