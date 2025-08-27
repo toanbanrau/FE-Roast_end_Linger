@@ -121,3 +121,10 @@ export const getFeaturedProducts = async (limit?: number): Promise<{
   const response = await clientAxios.get(url);
   return response.data;
 };
+
+
+export const getProductTopRated = async (): Promise<IProduct> => {
+  const url = "products/top-rated";
+  const response = await clientAxios.get(url);
+  return response.data;
+};

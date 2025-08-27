@@ -1,11 +1,13 @@
 import { ShoppingBag, ChevronRight, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getFeaturedProducts } from "../../../services/productService";
+import { getFeaturedProducts, getProductTopRated } from "../../../services/productService";
 import type { IProduct } from "../../../interfaces/product";
 import MySlider from "../../../components/Slider";
+import ScollTopRated from "../../../components/ScollTopRated";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   // Lấy sản phẩm nổi bật từ API
   const {
     data: featuredProductsData,
@@ -17,7 +19,17 @@ export default function HomePage() {
   });
 
   const featuredProducts = featuredProductsData?.data || [];
+  const {
+    data: topRatedProductsData,
+    isLoading:isLoadingTopRated,
+    isError:errorTopRated
+  } = useQuery({
+    queryKey: ["top-rated-products"],
+    queryFn: () => getProductTopRated(), // Lấy 6 sản phẩm nổi bật
+  });
 
+  const topratedProduct = topRatedProductsData?.data || [];
+  
   return (
     <div className="flex flex-col min-h-screen">
       {/* Phần chính (Hero Section) */}
@@ -26,7 +38,7 @@ export default function HomePage() {
 
         <div className="container relative z-10 px-4 md:px-6">
           <div className="max-w-3xl space-y-6">
-            <h1 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
               Trải Nghiệm Nghệ Thuật Cà Phê Đỉnh Cao
             </h1>
             <p className="text-xl text-gray-200 md:text-2xl">
@@ -53,7 +65,7 @@ export default function HomePage() {
       </section>
 
       {/* Sản phẩm nổi bật */}
-      <section className="py-25 bg-stone-50">
+      <section className="py-30 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
             <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
@@ -104,7 +116,8 @@ export default function HomePage() {
               {featuredProducts.map((product: IProduct) => (
                 <div
                   key={product.id}
-                  className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl"
+                  className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-xl cursor-pointer"
+                  onClick={() => navigate(`/products/${product.slug}`)}
                 >
                   <div className="aspect-square overflow-hidden">
                     <img
@@ -133,7 +146,7 @@ export default function HomePage() {
                       </span>
                       <Link
                         to={`/products/${product.slug}`}
-                        className="text-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                        className="text-amber-50 bg-amber-800 hover:text-amber-900 hover:bg-amber-50 px-3 py-1 rounded-md text-sm font-medium transition-colors"
                       >
                         Xem Chi Tiết
                       </Link>
@@ -141,6 +154,69 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          <div className="mt-12 text-center">
+            <Link
+              to="/products"
+              className="text-amber-800 hover:text-amber-900 text-lg font-medium inline-flex items-center"
+            >
+              Xem Tất Cả <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+      {/* Sản Phẩm Được Yêu Thích */}
+      <section className="py-10 bg-stone-50">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
+              Sản Phẩm Được Yêu Thích Nhất
+            </h2>
+            <div className="w-20 h-1 bg-amber-800 my-6"></div>
+            <p className="text-lg text-stone-600 max-w-2xl">
+              Khám phá những sản phẩm cà phê đặc biệt nhất được chúng tôi tuyển
+              chọn kỹ lưỡng từ khắp nơi trên thế giới.
+            </p>
+          </div>
+
+          {/* Loading State */}
+          {isLoadingTopRated && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-xl mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-8 bg-gray-200 rounded w-24"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {errorTopRated && (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">
+                Không thể tải sản phẩm nổi bật
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-amber-800 hover:text-amber-900 font-medium"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {!isLoadingTopRated && !errorTopRated && (
+            <div className="w-full h-full gap">
+              <ScollTopRated productsTopRated={topratedProduct} />
             </div>
           )}
 
