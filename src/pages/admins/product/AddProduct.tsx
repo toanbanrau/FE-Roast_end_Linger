@@ -31,7 +31,7 @@ import { getAllOrigins } from "../../../services/originService";
 import type { IProductOrigin } from "../../../interfaces/product";
 import type { ICategory } from "../../../interfaces/category";
 import type { IBrand } from "../../../interfaces/brand";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -99,8 +99,25 @@ const AddProduct = () => {
       navigate("/admin/product");
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: () => {
-      message.error("Có lỗi xảy ra khi thêm sản phẩm!");
+    onError: (error: any) => {
+      // Lấy message tổng quát
+      const message = error?.response?.data?.message || "Có lỗi xảy ra";
+
+      // Lấy danh sách lỗi chi tiết
+      const errors = error?.response?.data?.errors;
+
+      if (errors) {
+        // Duyệt qua từng lỗi và show toast
+        Object.values(errors).forEach((errArr: any) => {
+          if (Array.isArray(errArr)) {
+            errArr.forEach((msg) => toast.error(msg));
+          } else {
+            toast.error(String(errArr));
+          }
+        });
+      } else {
+        toast.error(message);
+      }
     },
   });
 

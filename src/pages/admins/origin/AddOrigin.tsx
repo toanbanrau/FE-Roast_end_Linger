@@ -37,13 +37,13 @@ const AddOrigin = () => {
         >
           <Input />
         </Form.Item>
-        <Form.Item
+        {/* <Form.Item
           name="country"
           label="Quốc gia"
           rules={[{ required: true, message: "Vui lòng nhập quốc gia!" }]}
         >
           <Input />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name="description"
           label="Mô tả"

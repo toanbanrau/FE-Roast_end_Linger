@@ -40,6 +40,7 @@ import type {
   ICreateAttributeValueRequest,
   IUpdateAttributeValueRequest,
 } from "../../../interfaces/attribute";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { confirm } = Modal;
@@ -52,7 +53,9 @@ const AttributeValues: React.FC = () => {
 
   // State
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingValue, setEditingValue] = useState<IAttributeValue | null>(null);
+  const [editingValue, setEditingValue] = useState<IAttributeValue | null>(
+    null
+  );
   const [form] = Form.useForm();
 
   // Queries
@@ -76,7 +79,9 @@ const AttributeValues: React.FC = () => {
       createAttributeValue(attributeId, data),
     onSuccess: () => {
       message.success("Tạo giá trị thành công!");
-      queryClient.invalidateQueries({ queryKey: ["attribute-values", attributeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["attribute-values", attributeId],
+      });
       setIsModalVisible(false);
       form.resetFields();
     },
@@ -86,11 +91,18 @@ const AttributeValues: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ valueId, data }: { valueId: number; data: IUpdateAttributeValueRequest }) =>
-      updateAttributeValue(attributeId, valueId, data),
+    mutationFn: ({
+      valueId,
+      data,
+    }: {
+      valueId: number;
+      data: IUpdateAttributeValueRequest;
+    }) => updateAttributeValue(attributeId, valueId, data),
     onSuccess: () => {
       message.success("Cập nhật giá trị thành công!");
-      queryClient.invalidateQueries({ queryKey: ["attribute-values", attributeId] });
+      queryClient.invalidateQueries({
+        queryKey: ["attribute-values", attributeId],
+      });
       setIsModalVisible(false);
       setEditingValue(null);
       form.resetFields();
@@ -103,11 +115,15 @@ const AttributeValues: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: (valueId: number) => deleteAttributeValue(attributeId, valueId),
     onSuccess: () => {
-      message.success("Xóa giá trị thành công!");
-      queryClient.invalidateQueries({ queryKey: ["attribute-values", attributeId] });
+      toast.success("Xóa giá trị thành công!");
+      queryClient.invalidateQueries({
+        queryKey: ["attribute-values", attributeId],
+      });
     },
-    onError: () => {
-      message.error("Có lỗi xảy ra khi xóa giá trị!");
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.message || "Có lỗi xảy ra khi xóa giá trị!";
+      toast.error(message);
     },
   });
 
@@ -138,16 +154,8 @@ const AttributeValues: React.FC = () => {
   };
 
   const handleDelete = (record: IAttributeValue) => {
-    confirm({
-      title: "Xác nhận xóa",
-      content: `Bạn có chắc chắn muốn xóa giá trị "${record.value}"?`,
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk() {
-        deleteMutation.mutate(record.id);
-      },
-    });
+    if (!window.confirm("Bạn Có Muốn Xóa")) return;
+    deleteMutation.mutate(record.id);
   };
 
   const handleSubmit = (formValues: any) => {
@@ -285,11 +293,7 @@ const AttributeValues: React.FC = () => {
           >
             Quay lại danh sách thuộc tính
           </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             Thêm giá trị mới
           </Button>
         </Space>
@@ -323,11 +327,7 @@ const AttributeValues: React.FC = () => {
         }}
         footer={null}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
             name="value"
             label="Giá trị"
@@ -351,15 +351,8 @@ const AttributeValues: React.FC = () => {
             <Input type="number" placeholder="1" />
           </Form.Item>
 
-          <Form.Item
-            name="status"
-            label="Trạng thái"
-            valuePropName="checked"
-          >
-            <Switch
-              checkedChildren="Hoạt động"
-              unCheckedChildren="Tạm dừng"
-            />
+          <Form.Item name="status" label="Trạng thái" valuePropName="checked">
+            <Switch checkedChildren="Hoạt động" unCheckedChildren="Tạm dừng" />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>

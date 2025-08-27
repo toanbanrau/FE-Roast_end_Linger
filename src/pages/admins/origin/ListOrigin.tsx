@@ -61,11 +61,11 @@ const ListOrigin = () => {
       dataIndex: "origin_name",
       key: "origin_name",
     },
-    {
-      title: "Quốc gia",
-      dataIndex: "country",
-      key: "country",
-    },
+    // {
+    //   title: "Quốc gia",
+    //   dataIndex: "country",
+    //   key: "country",
+    // },
     {
       title: "Mô tả",
       dataIndex: "description",
