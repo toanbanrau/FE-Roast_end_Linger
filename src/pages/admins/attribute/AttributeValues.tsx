@@ -205,11 +205,9 @@ const AttributeValues: React.FC = () => {
       key: "actions",
       width: 150,
       render: (_, record) => (
-        <Space>
+        <Space size="middle">
           <Tooltip title="Chỉnh sửa">
             <Button
-              type="primary"
-              size="small"
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             />
@@ -217,7 +215,6 @@ const AttributeValues: React.FC = () => {
           <Tooltip title="Xóa">
             <Button
               danger
-              size="small"
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
               loading={deleteMutation.isPending}

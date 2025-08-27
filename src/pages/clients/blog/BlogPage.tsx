@@ -245,13 +245,7 @@ export default function BlogPage() {
                         >
                           {category.category_name} ({category.posts_count || 0})
                         </button>
-                        <Link
-                          to={`/blog/category/${category.id}`}
-                          className="text-xs text-amber-600 hover:text-amber-800 px-2"
-                          title="Xem trang danh mục"
-                        >
-                          →
-                        </Link>
+                    
                       </div>
                     </li>
                   ))}
@@ -295,14 +289,10 @@ export default function BlogPage() {
                   "Công Thức",
                   "Rang",
                   "Thiết Bị",
-                ].map((tag, index) => (
-                  <Link
-                    key={index}
-                    to={`/blog/tag/${tag.toLowerCase()}`}
-                    className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1 rounded-full"
-                  >
+                ].map((tag) => (
+                  <p className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1 rounded-full">
                     {tag}
-                  </Link>
+                  </p>
                 ))}
               </div>
             </div>

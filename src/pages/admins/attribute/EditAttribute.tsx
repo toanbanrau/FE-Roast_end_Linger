@@ -137,8 +137,14 @@ const EditAttribute: React.FC = () => {
                 label="Tên thuộc tính"
                 rules={[
                   { required: true, message: "Vui lòng nhập tên thuộc tính!" },
-                  { min: 2, message: "Tên thuộc tính phải có ít nhất 2 ký tự!" },
-                  { max: 100, message: "Tên thuộc tính không được quá 100 ký tự!" },
+                  {
+                    min: 2,
+                    message: "Tên thuộc tính phải có ít nhất 2 ký tự!",
+                  },
+                  {
+                    max: 100,
+                    message: "Tên thuộc tính không được quá 100 ký tự!",
+                  },
                 ]}
               >
                 <Input placeholder="VD: Weight, Size, Color..." />
@@ -148,13 +154,12 @@ const EditAttribute: React.FC = () => {
               <Form.Item
                 name="attribute_type"
                 label="Loại thuộc tính"
-                rules={[{ required: true, message: "Vui lòng chọn loại thuộc tính!" }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn loại thuộc tính!" },
+                ]}
               >
                 <Select placeholder="Chọn loại thuộc tính">
-                  <Option value="select">Lựa chọn (Select)</Option>
-                  <Option value="text">Văn bản (Text)</Option>
-                  <Option value="number">Số (Number)</Option>
-                  <Option value="color">Màu sắc (Color)</Option>
+                  <Option value="select">Lựa chọn</Option>
                 </Select>
               </Form.Item>
             </Col>

@@ -171,13 +171,13 @@ const ListAttribute: React.FC = () => {
         </Tag>
       ),
     },
-    {
-      title: "Thứ tự",
-      dataIndex: "sort_order",
-      key: "sort_order",
-      width: 80,
-      sorter: (a, b) => a.sort_order - b.sort_order,
-    },
+    // {
+    //   title: "Thứ tự",
+    //   dataIndex: "sort_order",
+    //   key: "sort_order",
+    //   width: 80,
+    //   sorter: (a, b) => a.sort_order - b.sort_order,
+    // },
     {
       title: "Số giá trị",
       key: "values_count",
@@ -203,34 +203,29 @@ const ListAttribute: React.FC = () => {
     {
       title: "Hành động",
       key: "actions",
-      width: 280,
+      width: 200,
       render: (_, record) => (
-        <Space>
-          <Tooltip title="Xem chi tiết">
-            <Link to={`/admin/attribute/${record.id}`}>
-              <Button type="primary" size="small" icon={<EyeOutlined />}>
-                Xem
-              </Button>
-            </Link>
-          </Tooltip>
+        <Space size="middle">
+          <Button
+            onClick={() => navigate(`/admin/attribute/${record.id}`)}
+            icon={<EyeOutlined />}
+          />
+
           <Tooltip title="Chỉnh sửa">
-            <Link to={`/admin/attribute/edit/${record.id}`}>
-              <Button type="default" size="small" icon={<EditOutlined />}>
-                Sửa
-              </Button>
-            </Link>
+            <Button
+              onClick={() => navigate(`/admin/attribute/edit/${record.id}`)}
+              icon={<EditOutlined />}
+            />
           </Tooltip>
           <Tooltip title="Quản lý giá trị">
-            <Link to={`/admin/attribute/${record.id}/values`}>
-              <Button type="dashed" size="small" icon={<SettingOutlined />}>
-                Giá trị
-              </Button>
-            </Link>
+            <Button
+              onClick={() => navigate(`/admin/attribute/${record.id}/values`)}
+              icon={<SettingOutlined />}
+            ></Button>
           </Tooltip>
           <Tooltip title="Xóa thuộc tính">
             <Button
               danger
-              size="small"
               icon={<DeleteOutlined />}
               onClick={() =>
                 handleDeleteAttribute(
@@ -239,9 +234,7 @@ const ListAttribute: React.FC = () => {
                 )
               }
               loading={deleteMutation.isPending}
-            >
-              Xóa
-            </Button>
+            ></Button>
           </Tooltip>
         </Space>
       ),

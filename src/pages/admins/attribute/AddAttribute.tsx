@@ -114,10 +114,7 @@ const AddAttribute: React.FC = () => {
                 rules={[{ required: true, message: "Vui lòng chọn loại thuộc tính!" }]}
               >
                 <Select placeholder="Chọn loại thuộc tính">
-                  <Option value="select">Lựa chọn (Select)</Option>
-                  <Option value="text">Văn bản (Text)</Option>
-                  <Option value="number">Số (Number)</Option>
-                  <Option value="color">Màu sắc (Color)</Option>
+                  <Option value="select">Lựa chọn</Option>
                 </Select>
               </Form.Item>
             </Col>
