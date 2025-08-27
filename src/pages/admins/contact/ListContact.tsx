@@ -33,6 +33,22 @@ import {
 const { Search } = Input;
 const { Option } = Select;
 
+// Define the valid status order
+const STATUS_ORDER: ("new" | "processing" | "resolved")[] = [
+  "new",
+  "processing",
+  "resolved",
+];
+
+// Helper function to get the next valid status
+const getNextStatus = (currentStatus: "new" | "processing" | "resolved") => {
+  const currentIndex = STATUS_ORDER.indexOf(currentStatus);
+  if (currentIndex === -1 || currentIndex === STATUS_ORDER.length - 1) {
+    return null; // No next status if at the end or invalid
+  }
+  return STATUS_ORDER[currentIndex + 1];
+};
+
 export default function ListContact() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -90,8 +106,18 @@ export default function ListContact() {
 
   const handleStatusChange = (
     id: number,
-    status: "new" | "processing" | "resolved"
+    status: "new" | "processing" | "resolved",
+    currentStatus: "new" | "processing" | "resolved"
   ) => {
+    const nextStatus = getNextStatus(currentStatus);
+    if (status === currentStatus) {
+      // Allow keeping the current status (no change)
+      return;
+    }
+    if (nextStatus === null || status !== nextStatus) {
+      message.error("Không thể chuyển trạng thái lùi hoặc nhảy cóc!");
+      return;
+    }
     updateStatusMutation.mutate({ id, status });
   };
 
@@ -159,20 +185,31 @@ export default function ListContact() {
       title: "Trạng thái",
       key: "status",
       width: 150,
-      render: (_, record) => (
-        <Select
-          value={record.status}
-          style={{ width: "100%" }}
-          onChange={(status) => handleStatusChange(record.id, status)}
-          loading={updateStatusMutation.isPending}
-        >
-          {getContactStatusOptions().map((option) => (
-            <Option key={option.value} value={option.value}>
-              <Tag color={option.color}>{option.label}</Tag>
-            </Option>
-          ))}
-        </Select>
-      ),
+      render: (_, record) => {
+        const nextStatus = getNextStatus(record.status);
+        const allowedStatuses = [record.status, nextStatus].filter(
+          (status): status is "new" | "processing" | "resolved" => !!status
+        );
+
+        return (
+          <Select
+            value={record.status}
+            style={{ width: "100%" }}
+            onChange={(status) =>
+              handleStatusChange(record.id, status, record.status)
+            }
+            loading={updateStatusMutation.isPending}
+          >
+            {getContactStatusOptions()
+              .filter((option) => allowedStatuses.includes(option.value))
+              .map((option) => (
+                <Option key={option.value} value={option.value}>
+                  <Tag color={option.color}>{option.label}</Tag>
+                </Option>
+              ))}
+          </Select>
+        );
+      },
     },
     {
       title: "Ngày tạo",
@@ -191,14 +228,14 @@ export default function ListContact() {
         <Space size="middle">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
+           
               icon={<EyeOutlined />}
               onClick={() => navigate(`/admin/contact/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title="Xóa">
             <Button
-              type="text"
+         
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record.id)}
@@ -218,14 +255,6 @@ export default function ListContact() {
           <h1 className="text-2xl font-bold text-gray-800">Quản lý liên hệ</h1>
           <p className="text-gray-600">Quản lý các liên hệ từ khách hàng</p>
         </div>
-        {/* <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/admin/contact/add")}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          Thêm liên hệ mới
-        </Button> */}
       </div>
 
       {/* Filters */}
