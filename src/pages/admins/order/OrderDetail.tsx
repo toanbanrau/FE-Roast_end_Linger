@@ -357,6 +357,12 @@ export default function OrderDetail() {
                   loading={updatePaymentStatusMutation.isPending}
                   disabled={updatePaymentStatusMutation.isPending}
                   onChange={(value: boolean) => {
+                    if(order.is_paid == true && order.is_paid){
+                      return toast.error('Không thể đổi trạng thái đã thanh toán')
+                    }
+                    if(order.payment_method == 'cod' && order.status.id !== 8 ){
+                      return toast.error('Đơn Hàng Chưa Giao Không Thể Đổi Trạng Thái Thanh Toán')
+                    }
                     updatePaymentStatusMutation.mutate({
                       orderId: order.id,
                       isPaid: value,

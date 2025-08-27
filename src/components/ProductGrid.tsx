@@ -141,7 +141,7 @@ export default function ProductGrid({
                   </div>
                   <button
                     type="button"
-                    className="w-full bg-amber-800 hover:bg-amber-900 text-white px-3 py-2 xl:py-1.5 rounded-md text-sm xl:text-xs font-medium transition-colors"
+                    className="w-full bg-amber-800 hover:bg-amber-900 text-white px-3 py-2 xl:py-1.5 rounded-md text-sm xl:text-xs font-medium transition-colors cursor-pointer"
                   >
                     Xem Chi Tiết
                   </button>

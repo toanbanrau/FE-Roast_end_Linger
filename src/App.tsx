@@ -75,6 +75,7 @@ import UserForm from "./pages/admins/user/UserForm";
 import UserDetail from "./pages/admins/user/UserDetail";
 import ListReview from "./pages/admins/reviews/ListReview";
 import ReviewDetail from "./pages/admins/reviews/ReviewDetail";
+import NotFound from "./pages/NotFoundPage";
 
 function App() {
   // Kiểm tra token khi ứng dụng khởi động
@@ -398,6 +399,10 @@ function App() {
         },
       ],
     },
+    {
+      path:'*',
+      element:<NotFound/>
+    }
   ]);
 
   return (

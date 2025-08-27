@@ -253,13 +253,20 @@ export default function ListOrder() {
   const handlePaymentStatusChange = (
     orderId: number,
     paymentStatus: boolean,
-    currentPaymentStatus: boolean
+    currentPaymentStatus: boolean,
+    shiping_method:string,
+    status_id:number
   ) => {
     // Nếu đã thanh toán rồi thì không cho chuyển về chưa thanh toán
     if (currentPaymentStatus === true && paymentStatus === false) {
       toast.error("Không thể chuyển từ 'Đã thanh toán' về 'Chưa thanh toán'!");
       return;
     }
+    if(shiping_method == 'cod' && status_id !== 8 ){
+       toast.error('Đơn Hàng Chưa Giao Không Thể Đổi Đã Thanh Toán')
+       return
+    }
+
 
     // Nếu chuyển từ chưa thanh toán -> đã thanh toán thì cần confirm
     if (paymentStatus === true) {
@@ -370,7 +377,7 @@ export default function ListOrder() {
             loading={updatePaymentStatusMutation.isPending}
             disabled={updatePaymentStatusMutation.isPending}
             onChange={(value: boolean) => {
-              handlePaymentStatusChange(record.id, value, isPaid);
+              handlePaymentStatusChange(record.id, value, isPaid , record.payment_method,record.status.id);
             }}
           >
             <Option value={false}>
