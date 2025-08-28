@@ -17,22 +17,22 @@ const MySlider = () => {
   const slides = [
     {
       id: 1,
-      src: "/slider/mau-website-cafe.png",
+      src: "/slider/z6951855058241_fbec65f671ecf90d94b4cc43fd165a2b.jpg",
       alt: "Slide 1",
     },
     {
       id: 2,
-      src: "/slider/mot-so-mau-banner-quang-cao-ca-phe-pho-bien-hien-tai-2.jpg",
+      src: "/slider/z6951855058249_40ab8b6fd737854519073d6d9dd7821e.jpg",
       alt: "Slide 2",
     },
     {
       id: 3,
-      src: "/slider/mot-so-mau-banner-quang-cao-ca-phe-pho-bien-hien-tai-8.jpg",
+      src: "/slider/z6951855058250_62445d3998c9e21d1796d9ecf6631516.jpg",
       alt: "Slide 3",
     },
     {
       id: 4,
-      src: "/slider/TAN-GIA-BANG-DOWNLOAD-POSTER-CAFE-MIEN-PHI.jpg",
+      src: "/slider/z6951855058251_9f57925be900fab90238058c615e4cfb.jpg",
       alt: "Slide 4",
     },
   ];

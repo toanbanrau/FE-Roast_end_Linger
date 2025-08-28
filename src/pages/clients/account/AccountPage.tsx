@@ -195,7 +195,7 @@ export default function AccountPage() {
 
   return (
     <div className="container px-4 py-12 md:px-6 md:py-16">
-      <h1 className="text-3xl font-serif font-bold tracking-tight mb-8">
+      <h1 className="text-3xl font-bold tracking-tight mb-8">
         Thông Tin Tài Khoản
       </h1>
 
