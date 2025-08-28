@@ -147,9 +147,9 @@ export default function ProductsPage() {
                   type="checkbox"
                   checked={filters.categoryId === ""}
                   onChange={() => updateSearchParams({ category_id: "" })}
-                  className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
+                  className="rounded  border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               {categories.map((categoryItem: ICategory) => (
                 <div
@@ -166,7 +166,7 @@ export default function ProductsPage() {
                     }
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
-                  <label className="text-sm font-medium">
+                  <label className="text-sm pl-2 font-medium">
                     {categoryItem.category_name}
                   </label>
                 </div>
@@ -184,7 +184,7 @@ export default function ProductsPage() {
                   onChange={() => updateSearchParams({ coffee_type: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               {["arabica", "robusta", "blend"].map((type) => (
                 <div key={type} className="flex items-center space-x-2">
@@ -194,7 +194,7 @@ export default function ProductsPage() {
                     onChange={() => updateSearchParams({ coffee_type: type })}
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
-                  <label className="text-sm font-medium">
+                  <label className="text-sm pl-2 font-medium">
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </label>
                 </div>
@@ -212,7 +212,7 @@ export default function ProductsPage() {
                   onChange={() => updateSearchParams({ brand_id: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               {brands.map((brand: IBrand) => (
                 <div key={brand.id} className="flex items-center space-x-2">
@@ -224,7 +224,7 @@ export default function ProductsPage() {
                     }
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
-                  <label className="text-sm font-medium">
+                  <label className="text-sm pl-2 font-medium">
                     {brand.brand_name}
                   </label>
                 </div>
@@ -242,7 +242,7 @@ export default function ProductsPage() {
                   onChange={() => updateSearchParams({ origin_id: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               {origins.map((origin: IOrigin) => (
                 <div key={origin.id} className="flex items-center space-x-2">
@@ -254,7 +254,7 @@ export default function ProductsPage() {
                     }
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
-                  <label className="text-sm font-medium">
+                  <label className="text-sm pl-2 font-medium">
                     {origin.origin_name}
                   </label>
                 </div>
@@ -272,7 +272,7 @@ export default function ProductsPage() {
                   onChange={() => updateSearchParams({ roast_level: "" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               {["light", "medium", "dark", "extra_dark"].map((level) => (
                 <div key={level} className="flex items-center space-x-2">
@@ -282,7 +282,7 @@ export default function ProductsPage() {
                     onChange={() => updateSearchParams({ roast_level: level })}
                     className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                   />
-                  <label className="text-sm font-medium">
+                  <label className="text-sm pl-2 font-medium">
                     {level === "light"
                       ? "Rang nhẹ"
                       : level === "medium"
@@ -339,9 +339,9 @@ export default function ProductsPage() {
                   type="checkbox"
                   checked={filters.isFeatured === ""}
                   onChange={() => updateSearchParams({ is_featured: "" })}
-                  className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
+                  className="rounded  border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">Tất cả</label>
+                <label className="text-sm pl-2 font-medium">Tất cả</label>
               </div>
               <div className="flex items-center space-x-2">
                 <input
@@ -350,7 +350,7 @@ export default function ProductsPage() {
                   onChange={() => updateSearchParams({ is_featured: "true" })}
                   className="rounded border-gray-300 text-amber-800 focus:ring-amber-800"
                 />
-                <label className="text-sm font-medium">
+                <label className="text-sm pl-2 font-medium">
                   Chỉ sản phẩm nổi bật
                 </label>
               </div>
