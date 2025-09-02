@@ -225,7 +225,7 @@ export default function OrderDetailPage() {
                   {canCancelOrder(order.status) && (
                     <button
                       onClick={() => setIsCancelModalOpen(true)}
-                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-medium text-sm"
+                      className="inline-flex items-center gap-1 bg-red-500 p-2 rounded-2xl text-red-600 hover:text-red-700 font-medium text-sm cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                       Hủy đơn hàng

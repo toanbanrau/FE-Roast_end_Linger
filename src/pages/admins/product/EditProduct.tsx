@@ -949,72 +949,7 @@ const EditProduct = () => {
             >
               {hasVariants && (
                 <>
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 mb-4">
-                  <h4 className="font-medium mb-3 text-purple-900">
-                    🔧 Chọn thuộc tính làm biến thể:
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                    {(attributeGroups as any)?.attributes?.map((group: any) => (
-                      <label
-                        key={group.attribute_name}
-                        className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-purple-25 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 text-purple-600 rounded"
-                          checked={selectedAttributeTypes.includes(
-                            group.attribute_name
-                          )}
-                          onChange={(e) => {
-                            const attributeName = group.attribute_name;
-                            const isChecking = e.target.checked;
-
-                            if (!isChecking) {
-                              // Logic for unchecking
-                              const currentVariants = form.getFieldValue().variants || [];
-                              const isAttributeInUse = currentVariants.some(variant =>
-                                  variant && variant[attributeName] !== undefined && variant[attributeName] !== null && variant[attributeName] !== ''
-                              );
-
-                              if (isAttributeInUse) {
-                                  message.error(`Không thể bỏ chọn thuộc tính "${attributeName}" vì nó đang được sử dụng bởi một hoặc nhiều biến thể.`);
-                                  return;
-                              }
-                            }
-
-                            // Allow checking a new attribute or unchecking an unused one
-                            const newSelectedTypes = isChecking
-                                ? [...selectedAttributeTypes, attributeName]
-                                : selectedAttributeTypes.filter(attr => attr !== attributeName);
-
-                            setSelectedAttributeTypes(newSelectedTypes);
-
-                            // Force re-render of variants to show/hide the new attribute field
-                            const variants = form.getFieldValue('variants') || [];
-                            form.setFieldsValue({ variants: [...variants] });
-                          }}
-                        />
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {group.attribute_name}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {group.values?.length} tùy chọn
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <div className="text-sm text-purple-800">
-                      <span className="font-medium">💡 Mẹo:</span> Chọn thuộc
-                      tính nào sẽ được sử dụng để tạo biến thể.
-                      <br />
-                      <span className="font-medium">⚠️ Lưu ý:</span> Để thay đổi
-                      bộ thuộc tính, bạn cần xóa hết các biến thể hiện có trước.
-                    </div>
-                  </div>
-                </div>
+                {/* Phần chọn thuộc tính làm biến thể đã được ẩn */}
 
                 <Form.List name="variants">
                   {(fields, { add, remove }) => (
@@ -1179,7 +1114,7 @@ const EditProduct = () => {
                               </Col>
                             </Row>
 
-                            <Button
+                            {/* <Button
                               type="text"
                               danger
                               onClick={() => {
@@ -1189,7 +1124,7 @@ const EditProduct = () => {
                               className="absolute top-2 right-2"
                             >
                               Xóa
-                            </Button>
+                            </Button> */}
                           </Card>
                         );
                       })}
