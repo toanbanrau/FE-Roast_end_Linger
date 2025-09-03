@@ -29,6 +29,7 @@ import type { ICreateAttributeRequest } from "../../../interfaces/attribute";
 const { Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
+import { toast } from "react-toastify";
 
 const AddAttribute: React.FC = () => {
   const navigate = useNavigate();
@@ -39,13 +40,13 @@ const AddAttribute: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: createAttribute,
     onSuccess: () => {
-      message.success("Tạo thuộc tính thành công!");
+      toast.success("Tạo thuộc tính thành công!");
       queryClient.invalidateQueries({ queryKey: ["attributes"] });
       navigate("/admin/attribute");
     },
     onError: (error: any) => {
       console.error("Error creating attribute:", error);
-      message.error("Có lỗi xảy ra khi tạo thuộc tính!");
+      toast.error("Thuộc tính đã được sử dụng không xóa được!");
     },
   });
 

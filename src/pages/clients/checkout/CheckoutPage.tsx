@@ -338,9 +338,9 @@ export default function CheckoutPage() {
       setAppliedPromotion(null);
       setPromotionDiscount(0);
       setValue("promotion_code", "");
-      toast.warning(
-        `Mã giảm giá đã bị hủy vì đơn hàng dưới ${appliedPromotion.formatted_minimum_order}!`
-      );
+      // toast.warning(
+      //   `Mã giảm giá đã bị hủy vì đơn hàng dưới ${appliedPromotion.formatted_minimum_order}!`
+      // );
       return;
     }
 
