@@ -193,7 +193,7 @@ export default function BlogPage() {
                   </span>
                   <span className="text-xs text-stone-500">Nổi bật</span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">
                   {featuredPost.title}
                 </h2>
                 <p className="text-stone-600 mb-6">{featuredPost.summary}</p>

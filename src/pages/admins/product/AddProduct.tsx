@@ -1013,7 +1013,7 @@ const AddProduct = () => {
               <Form.Item
                 name="coffee_type"
                 label="Loại cà phê"
-                rules={[{ required: true }]}
+                rules={[{ required: true , message:'Vui lòng nhập loại cà phê' }]}
               >
                 <Select placeholder="Chọn loại cà phê">
                   {COFFEE_TYPES.map((type) => (
@@ -1027,7 +1027,7 @@ const AddProduct = () => {
               <Form.Item
                 name="roast_level"
                 label="Mức độ rang"
-                rules={[{ required: true }]}
+                rules={[{ required: true , message:'Vui lòng chọn mức độ rang'}]}
               >
                 <Select placeholder="Chọn mức độ rang">
                   <Option value="light">Light</Option>
@@ -1040,7 +1040,7 @@ const AddProduct = () => {
               <Form.Item
                 name="flavor_profile"
                 label="Hương vị"
-                rules={[{ required: true }]}
+                rules={[{ required: true,message:'Vui lòng nhập hương vị' }]}
               >
                 <Input placeholder="VD: Hương vị đậm đà, hậu vị ngọt" />
               </Form.Item>
@@ -1059,7 +1059,7 @@ const AddProduct = () => {
               <Form.Item
                 name="meta_title"
                 label="Meta Title"
-                rules={[{ required: true }]}
+                rules={[{ required: true ,message:'Vui lòng nhập SEO & Trạng Thái'}]}
               >
                 <Input placeholder="Tiêu đề SEO" />
               </Form.Item>

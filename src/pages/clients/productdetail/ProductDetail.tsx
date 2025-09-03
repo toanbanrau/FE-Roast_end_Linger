@@ -420,7 +420,7 @@ export default function ProductDetailPage() {
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-serif font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight">
               {product.product_name}
             </h1>
           </div>

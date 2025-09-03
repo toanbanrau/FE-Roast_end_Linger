@@ -7,7 +7,7 @@ export default function AboutPage() {
       {/* Phần mở đầu */}
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
         <img
-          src="https://media.istockphoto.com/id/1371315270/vi/anh/h%E1%BA%A1t-c%C3%A0-ph%C3%AA-trong-tay-m%E1%BB%99t-c%C3%B4ng-nh%C3%A2n.jpg?s=612x612&w=0&k=20&c=U1fYGg5t4WPyKKazgb6YKyiZyM2EwRC6YPM42MLzlxg="
+          src="slider/z6951855073212_b49342b4903509d1af9b2e8fd14d6ccb.jpg"
           alt="Đồn điền cà phê"
           className="absolute inset-0 object-cover w-full h-full brightness-50"
         />
@@ -54,7 +54,7 @@ export default function AboutPage() {
             </div>
             <div className="relative h-80 sm:h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
               <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRguBK4MEdK7oE48pqq9mV_v6GRgjiyhjr5pA&s"
+                src="slider/z6951855073213_61353c92738041f6f37722ad6f036c33.jpg"
                 alt="Lịch sử quán cà phê"
                 className="object-cover w-full h-full"
               />
@@ -67,7 +67,7 @@ export default function AboutPage() {
       <section className="py-16 sm:py-24 bg-stone-100">
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl font-serif font-bold tracking-tight text-stone-800 sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-800 sm:text-4xl">
               Giá Trị Mang Lại
             </h2>
             <div className="w-16 h-1 bg-amber-700 mx-auto"></div>
@@ -118,7 +118,7 @@ export default function AboutPage() {
       <section className="py-16 sm:py-24 bg-white">
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl font-serif font-bold tracking-tight text-stone-800 sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-800 sm:text-4xl">
               Gặp Gỡ Đội Ngũ Của Chúng Tôi
             </h2>
             <div className="w-16 h-1 bg-amber-700 mx-auto"></div>

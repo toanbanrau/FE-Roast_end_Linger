@@ -68,7 +68,7 @@ export default function HomePage() {
       <section className="py-30 bg-stone-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12">
-            <h2 className="text-3xl font-serif font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-stone-900">
               Sản Phẩm Nổi Bật
             </h2>
             <div className="w-20 h-1 bg-amber-800 my-6"></div>

@@ -82,7 +82,7 @@ const ListPromotion: React.FC = () => {
       title: "Tên khuyến mãi",
       dataIndex: "promotion_name",
       key: "promotion_name",
-      width: 200,
+      width: 250,
     },
     {
       title: "Mã khuyến mãi",
@@ -192,7 +192,7 @@ const ListPromotion: React.FC = () => {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} của ${total} khuyến mãi`,
         }}
-        scroll={{ x: 1200 }}
+        scroll={{ x: 1000 }}
         size="middle"
       />
 
