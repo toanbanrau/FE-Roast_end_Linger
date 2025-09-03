@@ -479,14 +479,14 @@ export default function ListReview() {
       {/* Filters */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16}>
-          <Col span={6}>
+          {/* <Col span={6}>
             <Search
               placeholder="Tìm kiếm theo user, sản phẩm, nội dung..."
               allowClear
               onSearch={handleSearch}
               style={{ width: "100%" }}
             />
-          </Col>
+          </Col> */}
           <Col span={4}>
             <Select
               placeholder="Trạng thái"
