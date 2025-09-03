@@ -1209,7 +1209,7 @@ const EditProduct = () => {
                 </Select>
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="roast_level"
                 label="Mức độ rang"
                 rules={[{ required: true ,message:'Vui lòng chọn mức độ rang'}]}
@@ -1221,7 +1221,7 @@ const EditProduct = () => {
                     </Option>
                   ))}
                 </Select>
-              </Form.Item>
+              </Form.Item> */}
 
               <Form.Item
                 name="flavor_profile"

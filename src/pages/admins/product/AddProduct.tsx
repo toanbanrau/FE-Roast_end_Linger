@@ -1023,7 +1023,7 @@ const AddProduct = () => {
                   ))}
                 </Select>
               </Form.Item>
-
+{/* 
               <Form.Item
                 name="roast_level"
                 label="Mức độ rang"
@@ -1035,7 +1035,7 @@ const AddProduct = () => {
                   <Option value="dark">Medium-Dark</Option>
                   <Option value="extra_dark">Dark</Option>
                 </Select>
-              </Form.Item>
+              </Form.Item> */}
 
               <Form.Item
                 name="flavor_profile"
