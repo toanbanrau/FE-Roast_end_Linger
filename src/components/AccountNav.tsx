@@ -7,7 +7,8 @@ import {
   LogOut,
   MapPin,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import {useUserStore} from "../stores/useUserStore.ts";
 
 interface AccountNavProps {
   active:
@@ -20,7 +21,13 @@ interface AccountNavProps {
 }
 
 export default function AccountNav({ active }: AccountNavProps) {
-  const navItems = [
+    const { logout} = useUserStore()
+    const nav = useNavigate();
+    const handleLogout =  () => {
+        logout()
+        nav('/auth/login')
+    }
+    const navItems = [
     {
       label: "Thông Tin",
       to: "/account",
@@ -84,7 +91,7 @@ export default function AccountNav({ active }: AccountNavProps) {
         </ul>
       </nav>
       <div className="p-4 border-t">
-        <button className="flex items-center gap-3 px-4 py-2 w-full text-left rounded-md hover:bg-stone-50 text-stone-700 hover:text-stone-900">
+        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 w-full text-left rounded-md hover:bg-stone-50 text-stone-700 hover:text-stone-900 cursor-pointer">
           <LogOut className="h-5 w-5" />
           <span>Đăng Xuất</span>
         </button>
