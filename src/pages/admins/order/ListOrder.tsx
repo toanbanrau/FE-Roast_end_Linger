@@ -484,46 +484,46 @@ export default function ListOrder() {
   return (
     <div className="p-6">
       {/* Thống kê */}
-      {stats && (
-        <Row gutter={16} className="mb-6">
-          <Col span={6}>
-            <Card>
-              <Statistic
-                title="Tổng đơn hàng"
-                value={stats.summary.total_orders}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card>
-              <Statistic
-                title="Tổng sản phẩm đã bán"
-                value={stats.summary.total_items_sold}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card>
-              <Statistic
-                title="Doanh thu tổng"
-                value={Number(stats.summary.total_revenue).toLocaleString()}
-                suffix="₫"
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card>
-              <Statistic
-                title="Giá trị đơn hàng trung bình"
-                value={Number(
-                  stats.summary.average_order_value
-                ).toLocaleString()}
-                suffix="₫"
-              />
-            </Card>
-          </Col>
-        </Row>
-      )}
+      {/*{stats && (*/}
+      {/*  <Row gutter={16} className="mb-6">*/}
+      {/*    <Col span={6}>*/}
+      {/*      <Card>*/}
+      {/*        <Statistic*/}
+      {/*          title="Tổng đơn hàng"*/}
+      {/*          value={stats.summary.total_orders}*/}
+      {/*        />*/}
+      {/*      </Card>*/}
+      {/*    </Col>*/}
+      {/*    <Col span={6}>*/}
+      {/*      <Card>*/}
+      {/*        <Statistic*/}
+      {/*          title="Tổng sản phẩm đã bán"*/}
+      {/*          value={stats.summary.total_items_sold}*/}
+      {/*        />*/}
+      {/*      </Card>*/}
+      {/*    </Col>*/}
+      {/*    <Col span={6}>*/}
+      {/*      <Card>*/}
+      {/*        <Statistic*/}
+      {/*          title="Doanh thu tổng"*/}
+      {/*          value={Number(stats.summary.total_revenue).toLocaleString()}*/}
+      {/*          suffix="₫"*/}
+      {/*        />*/}
+      {/*      </Card>*/}
+      {/*    </Col>*/}
+      {/*    <Col span={6}>*/}
+      {/*      <Card>*/}
+      {/*        <Statistic*/}
+      {/*          title="Giá trị đơn hàng trung bình"*/}
+      {/*          value={Number(*/}
+      {/*            stats.summary.average_order_value*/}
+      {/*          ).toLocaleString()}*/}
+      {/*          suffix="₫"*/}
+      {/*        />*/}
+      {/*      </Card>*/}
+      {/*    </Col>*/}
+      {/*  </Row>*/}
+      {/*)}*/}
 
       {/* Bộ lọc */}
       <Card className="mb-6">
