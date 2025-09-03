@@ -8,12 +8,20 @@ import {
   type PaginatedOrdersResponse,
 } from "../../../../services/checkoutService";
 import { getStatusText } from "../../../../utils/orderStatusUtils";
+import {formatTime} from "../../../../services/paymentService.ts";
 
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+    const formatTime = (dateString: string) => {
+        return new Date(dateString).toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
 
   const {
     data: ordersData,
@@ -155,7 +163,7 @@ export default function OrdersPage() {
                           </span>
                         </div>
                         <p className="text-sm text-stone-500">
-                          Ngày đặt: {formatDate(order.dates.created_at)}
+                          Ngày đặt: {formatDate(order.dates.created_at)} - Lúc {formatTime(order.dates.created_at)}
                         </p>
                       </div>
                       <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
