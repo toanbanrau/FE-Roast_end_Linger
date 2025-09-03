@@ -16,7 +16,7 @@ const AddBrand: React.FC = () => {
   const mutation = useMutation({
     mutationFn: createBrand,
     onSuccess: () => {
-      message.success("Thêm thương hiệu thành công!");
+      toast.success("Thêm thương hiệu thành công!");
       form.resetFields();
       navigate("/admin/brand");
       queryClient.invalidateQueries({ queryKey: ["brands"] });
@@ -61,7 +61,7 @@ const AddBrand: React.FC = () => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      className="max-w-md mx-auto bg-white p-6 rounded shadow"
+      className="max-w-md mx-auto bg-white p-6 "
     >
       <Form.Item
         label="Tên thương hiệu"

@@ -458,18 +458,18 @@ const Dashboard: React.FC = () => {
       </Row>
 
       {/* Bảng top categories */}
-      <Row gutter={16} style={{ marginTop: 24 }}>
-        <Col span={24}>
-          <Card title="🏆 Top Danh Mục Bán Chạy">
-            <Table
-              dataSource={topCategoriesData}
-              columns={categoryColumns}
-              pagination={false}
-              size="small"
-            />
-          </Card>
-        </Col>
-      </Row>
+      {/*<Row gutter={16} style={{ marginTop: 24 }}>*/}
+      {/*  <Col span={24}>*/}
+      {/*    <Card title="🏆 Top Danh Mục Bán Chạy">*/}
+      {/*      <Table*/}
+      {/*        dataSource={topCategoriesData}*/}
+      {/*        columns={categoryColumns}*/}
+      {/*        pagination={false}*/}
+      {/*        size="small"*/}
+      {/*      />*/}
+      {/*    </Card>*/}
+      {/*  </Col>*/}
+      {/*</Row>*/}
     </div>
   );
 };

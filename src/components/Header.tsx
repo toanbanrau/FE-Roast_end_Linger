@@ -204,7 +204,7 @@ export default function Header() {
             </div>
 
             <div className="flex flex-col h-full">
-              <nav className="flex flex-col gap-1 p-4 flex-1">
+              <nav className="flex flex-col gap-1 p-4 flex-1 bg-white">
                 <Link
                   to="/"
                   className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50"
@@ -247,7 +247,7 @@ export default function Header() {
                     <div className="border-t my-4"></div>
                     {user.role === "admin" && (
                       <Link
-                        to="/admin/dashboard"
+                        to="/admin"
                         className="text-lg font-medium py-3 px-2 rounded-md hover:bg-stone-50 text-blue-600"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -280,7 +280,7 @@ export default function Header() {
               </nav>
 
               {/* Mobile Auth Section */}
-              <div className="border-t p-4">
+              <div className="border-t p-4 bg-white">
                 {user ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
